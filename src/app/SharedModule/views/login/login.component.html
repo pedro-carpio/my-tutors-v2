@@ -1,0 +1,39 @@
+<div class="login-container">
+  <!-- Main content wrapper with Material card -->
+  <mat-card class="login-main-card">
+    <mat-card-content class="login-content">
+      
+      <!-- Left side - Firebase illustration -->
+      <div class="illustration-section">
+        <img src="WithFirebase.png" 
+             alt="Firebase illustration" 
+             class="firebase-illustration" />
+      </div>
+      
+      <!-- Right side - Login form -->
+      <div class="login-section">
+        <!-- Logo and title -->
+        <div class="brand-section">
+          <img src="FriendlyChatLogo.png" 
+               alt="Friendly Chat Logo" 
+               class="logo" />
+          <h1 class="app-title">Friendly Chat</h1>
+        </div>
+        
+        <!-- Google Sign-in button with Material design -->
+        <mat-card class="signin-card" (click)="login()">
+          <button mat-stroked-button class="google-signin-button">
+            <div class="button-content">
+              <img src="Google.png" 
+                   alt="Google logo" 
+                   class="google-logo" />
+              <span class="signin-text">Sign in with Google</span>
+              <mat-icon class="signin-icon">arrow_forward</mat-icon>
+            </div>
+          </button>
+        </mat-card>
+      </div>
+      
+    </mat-card-content>
+  </mat-card>
+</div>
