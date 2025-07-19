@@ -1,0 +1,99 @@
+<div class="chat-container">
+  <!-- Main chat area with Material card -->
+  <mat-card class="chat-main-card">
+    <mat-card-content class="chat-content">
+      <!-- Messages list -->
+      <div class="messages-container">
+        @for (message of (messages$ | async); track message) {
+          <div class="message-wrapper">
+            @if (user$ | async; as user) {
+              <div class="message-row" [class.message-row-reverse]="user.uid === message['uid']">
+                <!-- User avatar -->
+                <mat-card class="avatar-card">
+                  <img class="user-avatar" [src]="message['profilePicUrl']" [alt]="message['name']" />
+                </mat-card>
+                
+                <!-- Message content -->
+                <div class="message-content" [class.message-content-reverse]="user.uid === message['uid']">
+                  <!-- Main message bubble -->
+                  <mat-card class="message-bubble" 
+                           [class.message-bubble-own]="user.uid === message['uid']"
+                           [class.message-bubble-other]="user.uid !== message['uid']">
+                    <mat-card-content>
+                      <!-- Text message -->
+                      @if (message['text'] && message['text'].length > 0) {
+                        <p class="message-text">{{message['text']}}</p>
+                      }
+                      
+                      <!-- Image message -->
+                      @if (message['imageUrl'] && message['imageUrl'].length > 0) {
+                        <div class="message-image-container">
+                          <img class="message-image" [src]="message['imageUrl']" alt="image" />
+                        </div>
+                      }
+                      
+                      <!-- Timestamp -->
+                      <div class="message-timestamp">
+                        <mat-chip class="timestamp-chip">
+                          {{message['timestamp'].toDate().toLocaleTimeString()}}
+                        </mat-chip>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                  
+                  <!-- AI Response -->
+                  @if (message['response'] && message['response'].length > 0) {
+                    <mat-card class="ai-response-card">
+                      <mat-card-content>
+                        <p class="ai-response-text">{{message['response']}}</p>
+                        <div class="ai-response-indicator">
+                          <mat-chip class="ai-chip">
+                            <mat-icon>auto_awesome</mat-icon>
+                            AI generated
+                          </mat-chip>
+                        </div>
+                      </mat-card-content>
+                    </mat-card>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Input area with Material components -->
+  <mat-card class="input-area-card">
+    <mat-card-content class="input-content">
+      <div class="input-row">
+        <!-- Hidden file input -->
+        <input type="file" class="file-input" (change)="this.uploadImage($event)" #fileUpload style="display: none;">
+        
+        <!-- Upload button -->
+        <button mat-fab color="accent" class="upload-button" (click)="fileUpload.click()">
+          <mat-icon>attach_file</mat-icon>
+        </button>
+        
+        <!-- Text input -->
+        <mat-form-field class="message-input" appearance="outline">
+          <mat-label>Write your thoughts here...</mat-label>
+          <textarea matInput 
+                    rows="3" 
+                    [(ngModel)]="this.text"
+                    placeholder="Write your thoughts here..."
+                    cdkTextareaAutosize
+                    cdkAutosizeMinRows="1"
+                    cdkAutosizeMaxRows="4">
+          </textarea>
+        </mat-form-field>
+        
+        <!-- Send button -->
+        <button mat-fab color="primary" class="send-button" (click)="this.sendTextMessage()">
+          <mat-icon>send</mat-icon>
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
