@@ -1,0 +1,1 @@
+export const projectEnv = { projectId: "my-tutors-v2", appId: "1:748016308882:web:e4ad6587c7df98d7df8c4b", storageBucket: "my-tutors-v2.firebasestorage.app", apiKey: "AIzaSyBNVXO9RP_Xf6-KD4inwieMjAJXltPmBPQ", authDomain: "my-tutors-v2.firebaseapp.com", messagingSenderId: "748016308882", measurementId: "G-ZR5D3L3J2G" }
