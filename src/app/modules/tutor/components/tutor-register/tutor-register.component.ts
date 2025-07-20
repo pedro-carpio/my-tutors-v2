@@ -14,6 +14,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatStepperModule } from '@angular/material/stepper';
 
 import { SessionService } from '../../../../services/session.service';
+import { I18nService } from '../../../../services/i18n.service';
+import { ToolbarComponent } from '../../../../SharedModule/toolbar/toolbar.component';
+import { TranslatePipe } from "../../../../pipes/translate.pipe";
 
 interface LanguageOption {
   value: string;
@@ -39,8 +42,10 @@ interface ExperienceLevel {
     MatSelectModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    MatStepperModule
-  ],
+    MatStepperModule,
+    ToolbarComponent,
+    TranslatePipe
+],
   templateUrl: './tutor-register.component.html',
   styleUrls: ['./tutor-register.component.scss']
 })
@@ -83,7 +88,8 @@ export class TutorRegisterComponent implements OnInit {
     private fb: FormBuilder,
     private sessionService: SessionService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private i18nService: I18nService
   ) {}
 
   ngOnInit(): void {
@@ -109,6 +115,15 @@ export class TutorRegisterComponent implements OnInit {
     }, {
       validators: this.passwordMatchValidator
     });
+  }
+
+  // Getter para el idioma actual
+  get currentLanguage() {
+    return this.i18nService.getCurrentLanguage();
+  }
+  
+  changeLanguage() {
+    this.i18nService.toggleLanguage();
   }
 
   private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {

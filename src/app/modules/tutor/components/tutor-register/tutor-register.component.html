@@ -1,9 +1,10 @@
 <main class="register-container">
+  <app-toolbar></app-toolbar>
   <mat-card class="register-card">
     <mat-card-header class="register-header">
       <img src="FriendlyChatLogo.png" alt="Logo" class="logo" mat-card-avatar>
-      <mat-card-title>Registro de Tutor</mat-card-title>
-      <mat-card-subtitle>Comparte tu conocimiento y enseña idiomas</mat-card-subtitle>
+      <mat-card-title>{{ 'register.tutor.title' | translate }}</mat-card-title>
+      <mat-card-subtitle>{{ 'register.tutor.subtitle' | translate }}</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
@@ -45,7 +46,7 @@
         <!-- Step 1: Basic Information -->
         <mat-step [stepControl]="basicInfoForm">
           <form [formGroup]="basicInfoForm">
-            <ng-template matStepLabel>Información básica</ng-template>
+            <ng-template matStepLabel>{{ 'register.tutor.basicInfo' | translate }}</ng-template>
             
             <!-- Full Name -->
             <mat-form-field appearance="outline" class="full-width">

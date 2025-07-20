@@ -15,6 +15,9 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatExpansionModule } from '@angular/material/expansion';
 
 import { SessionService } from '../../../../services/session.service';
+import { I18nService } from '../../../../services/i18n.service';
+import { ToolbarComponent } from '../../../../SharedModule/toolbar/toolbar.component';
+import { TranslatePipe } from "../../../../pipes/translate.pipe";
 
 @Component({
   selector: 'app-student-register',
@@ -30,8 +33,10 @@ import { SessionService } from '../../../../services/session.service';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatStepperModule,
-    MatExpansionModule
-  ],
+    MatExpansionModule,
+    ToolbarComponent,
+    TranslatePipe
+],
   templateUrl: './student-register.component.html',
   styleUrls: ['./student-register.component.scss']
 })
@@ -40,6 +45,7 @@ export class StudentRegisterComponent {
   private sessionService = inject(SessionService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private i18nService = inject(I18nService);
 
   // Stepper forms
   basicInfoForm: FormGroup;
@@ -64,6 +70,15 @@ export class StudentRegisterComponent {
     }, { validators: this.passwordMatchValidator });
   }
 
+  // Getter para el idioma actual
+  get currentLanguage() {
+    return this.i18nService.getCurrentLanguage();
+  }
+  
+  changeLanguage() {
+    this.i18nService.toggleLanguage();
+  }
+
   async registerWithGoogle() {
     this.isGoogleLoading = true;
     
@@ -82,18 +97,18 @@ export class StudentRegisterComponent {
         // Disable email field since it comes from Google
         this.basicInfoForm.get('email')?.disable();
         
-        this.snackBar.open('¡Datos cargados desde Google! Completa el registro.', 'Cerrar', {
+        this.snackBar.open(this.i18nService.translate('register.google.dataLoaded'), this.i18nService.translate('common.close'), {
           duration: 3000,
           panelClass: ['success-snackbar']
         });
       } else {
-        this.snackBar.open(result.error || 'Error al conectar con Google', 'Cerrar', {
+        this.snackBar.open(result.error || this.i18nService.translate('register.google.connectionError'), this.i18nService.translate('common.close'), {
           duration: 5000,
           panelClass: ['error-snackbar']
         });
       }
     } catch (error: any) {
-      this.snackBar.open('Error al registrarse con Google', 'Cerrar', {
+      this.snackBar.open(this.i18nService.translate('register.google.registerError'), this.i18nService.translate('common.close'), {
         duration: 5000,
         panelClass: ['error-snackbar']
       });
@@ -140,7 +155,7 @@ export class StudentRegisterComponent {
       try {
         // For Google users, we don't need to create auth account again
         if (this.googleUserData) {
-          this.snackBar.open('¡Registro completado exitosamente!', 'Cerrar', {
+          this.snackBar.open(this.i18nService.translate('register.student.registerSuccess'), this.i18nService.translate('common.close'), {
             duration: 3000,
             panelClass: ['success-snackbar']
           });
@@ -161,21 +176,21 @@ export class StudentRegisterComponent {
             role: 'student'
           });
 
-          this.snackBar.open('¡Registro exitoso! Completa tu perfil.', 'Cerrar', {
+          this.snackBar.open(this.i18nService.translate('register.student.registerSuccess'), this.i18nService.translate('common.close'), {
             duration: 3000,
             panelClass: ['success-snackbar']
           });
         }
       } catch (error: any) {
-        let errorMessage = 'Error en el registro. Intenta nuevamente.';
+        let errorMessage = this.i18nService.translate('register.student.registerError');
         
         if (error.code === 'auth/email-already-in-use') {
-          errorMessage = 'Este email ya está registrado.';
+          errorMessage = this.i18nService.translate('register.student.emailExists');
         } else if (error.code === 'auth/weak-password') {
-          errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+          errorMessage = this.i18nService.translate('register.student.weakPassword');
         }
         
-        this.snackBar.open(errorMessage, 'Cerrar', {
+        this.snackBar.open(errorMessage, this.i18nService.translate('common.close'), {
           duration: 5000,
           panelClass: ['error-snackbar']
         });

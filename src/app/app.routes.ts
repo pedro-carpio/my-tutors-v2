@@ -42,10 +42,16 @@ export const routes: Routes = [
   },
 
   // Rutas protegidas generales
+  // {
+  //   path: 'chat',
+  //   loadComponent: () => import('./SharedModule/views/chat/chat.component').then(m => m.ChatComponent),
+  //   canActivate: [AuthGuard]
+  // },
+
   {
-    path: 'chat',
-    loadComponent: () => import('./SharedModule/views/chat/chat.component').then(m => m.ChatComponent),
-    canActivate: [AuthGuard]
+    path: 'home',
+    redirectTo: '/dashboard',
+    pathMatch: 'full'
   },
 
   // Dashboard general (temporal hasta crear dashboards específicos)

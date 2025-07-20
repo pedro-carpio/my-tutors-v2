@@ -16,6 +16,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
 
 import { SessionService } from '../../../../services/session.service';
+import { I18nService } from '../../../../services/i18n.service';
+import { ToolbarComponent } from '../../../../SharedModule/toolbar/toolbar.component';
+import { TranslatePipe } from "../../../../pipes/translate.pipe";
 
 interface LanguageOption {
   value: string;
@@ -43,8 +46,10 @@ interface InstitutionType {
     MatSnackBarModule,
     MatStepperModule,
     MatExpansionModule,
-    MatChipsModule
-  ],
+    MatChipsModule,
+    ToolbarComponent,
+    TranslatePipe
+],
   templateUrl: './institution-register.component.html',
   styleUrls: ['./institution-register.component.scss']
 })
@@ -81,7 +86,8 @@ export class InstitutionRegisterComponent implements OnInit {
     private fb: FormBuilder,
     private sessionService: SessionService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private i18nService: I18nService
   ) {}
 
   ngOnInit(): void {
@@ -111,6 +117,15 @@ export class InstitutionRegisterComponent implements OnInit {
     }, {
       validators: this.passwordMatchValidator
     });
+  }
+
+  // Getter para el idioma actual
+  get currentLanguage() {
+    return this.i18nService.getCurrentLanguage();
+  }
+  
+  changeLanguage() {
+    this.i18nService.toggleLanguage();
   }
 
   private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {

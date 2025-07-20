@@ -289,15 +289,9 @@ export class SessionService {
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
       
       // Get user role from Firestore
-      const users = await this.userService.getUserByEmail(email).toPromise();
-      const userData = users?.[0];
-      
-      if (userData) {
-        // Navigate based on role
-        this.navigateBasedOnRole(userData.role);
-      } else {
-        this.router.navigate(['/dashboard']);
-      }
+      const user = this.userService.getUserByEmail(email);
+
+      this.router.navigate(['/home']);
 
       return userCredential.user;
     } catch (error) {

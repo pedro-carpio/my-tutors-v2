@@ -1,9 +1,10 @@
 <main class="register-container">
+  <app-toolbar></app-toolbar>
   <mat-card class="register-card">
     <mat-card-header class="register-header">
       <img src="FriendlyChatLogo.png" alt="Logo" class="logo" mat-card-avatar>
-      <mat-card-title>Registro de Estudiante</mat-card-title>
-      <mat-card-subtitle>Únete y comienza a aprender idiomas</mat-card-subtitle>
+      <mat-card-title>{{ 'register.student.title' | translate }}</mat-card-title>
+      <mat-card-subtitle>{{ 'register.student.subtitle' | translate }}</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
@@ -45,41 +46,41 @@
         <!-- Step 1: Basic Information -->
         <mat-step [stepControl]="basicInfoForm">
           <form [formGroup]="basicInfoForm">
-            <ng-template matStepLabel>Información básica</ng-template>
+            <ng-template matStepLabel>{{ 'register.student.basicInfo' | translate }}</ng-template>
             
             <!-- Full Name -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Nombre completo</mat-label>
+              <mat-label>{{ 'register.student.fullName' | translate }}</mat-label>
               <input matInput 
                      formControlName="fullName" 
-                     placeholder="Ingresa tu nombre completo">
+                     [placeholder]="'register.student.fullNamePlaceholder' | translate">
               <mat-icon matPrefix>person</mat-icon>
               <mat-error *ngIf="basicInfoForm.get('fullName')?.hasError('required')">
-                El nombre es requerido
+                {{ 'errors.required' | translate }}
               </mat-error>
               <mat-error *ngIf="basicInfoForm.get('fullName')?.hasError('minlength')">
-                El nombre debe tener al menos 2 caracteres
+                {{ 'errors.minlength' | translate: {min: 2} }}
               </mat-error>
             </mat-form-field>
 
             <!-- Email -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Correo electrónico</mat-label>
+              <mat-label>{{ 'register.student.email' | translate }}</mat-label>
               <input matInput 
                      type="email"
                      formControlName="email" 
-                     placeholder="tu-email@ejemplo.com">
+                     [placeholder]="'register.student.emailPlaceholder' | translate">
               <mat-icon matPrefix>email</mat-icon>
               <mat-error *ngIf="basicInfoForm.get('email')?.hasError('required')">
-                El correo es requerido
+                {{ 'errors.required' | translate }}
               </mat-error>
               <mat-error *ngIf="basicInfoForm.get('email')?.hasError('email')">
-                Ingresa un correo válido
+                {{ 'errors.email' | translate }}
               </mat-error>
             </mat-form-field>
 
             <mat-card-actions class="step-buttons">
-              <button mat-raised-button matStepperNext color="primary">Siguiente</button>
+              <button mat-raised-button matStepperNext color="primary">{{ 'register.student.next' | translate }}</button>
             </mat-card-actions>
           </form>
         </mat-step>
@@ -87,15 +88,15 @@
         <!-- Step 2: Security -->
         <mat-step [stepControl]="securityForm">
           <form [formGroup]="securityForm">
-            <ng-template matStepLabel>Configuración de seguridad</ng-template>
+            <ng-template matStepLabel>{{ 'register.student.security' | translate }}</ng-template>
             
             <!-- Password -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Contraseña</mat-label>
+              <mat-label>{{ 'register.student.password' | translate }}</mat-label>
               <input matInput 
                      [type]="hidePassword ? 'password' : 'text'"
                      formControlName="password" 
-                     placeholder="Mínimo 6 caracteres">
+                     [placeholder]="'register.student.passwordPlaceholder' | translate">
               <mat-icon matPrefix>lock</mat-icon>
               <button mat-icon-button 
                       matSuffix 
@@ -104,20 +105,20 @@
                 <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
               </button>
               <mat-error *ngIf="securityForm.get('password')?.hasError('required')">
-                La contraseña es requerida
+                {{ 'errors.required' | translate }}
               </mat-error>
               <mat-error *ngIf="securityForm.get('password')?.hasError('minlength')">
-                La contraseña debe tener al menos 6 caracteres
+                {{ 'errors.minlength' | translate: {min: 6} }}
               </mat-error>
             </mat-form-field>
 
             <!-- Confirm Password -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Confirmar contraseña</mat-label>
+              <mat-label>{{ 'register.student.confirmPassword' | translate }}</mat-label>
               <input matInput 
                      [type]="hideConfirmPassword ? 'password' : 'text'"
                      formControlName="confirmPassword" 
-                     placeholder="Repite tu contraseña">
+                     [placeholder]="'register.student.confirmPasswordPlaceholder' | translate">
               <mat-icon matPrefix>lock_outline</mat-icon>
               <button mat-icon-button 
                       matSuffix 
@@ -126,23 +127,23 @@
                 <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
               </button>
               <mat-error *ngIf="securityForm.get('confirmPassword')?.hasError('required')">
-                Confirma tu contraseña
+                {{ 'errors.required' | translate }}
               </mat-error>
               <mat-error *ngIf="securityForm.get('confirmPassword')?.hasError('passwordMismatch')">
-                Las contraseñas no coinciden
+                {{ 'errors.passwordMismatch' | translate }}
               </mat-error>
             </mat-form-field>
 
             <mat-card-actions class="step-buttons">
-              <button mat-button matStepperPrevious>Atrás</button>
-              <button mat-raised-button matStepperNext color="primary">Siguiente</button>
+              <button mat-button matStepperPrevious>{{ 'register.student.back' | translate }}</button>
+              <button mat-raised-button matStepperNext color="primary">{{ 'register.student.next' | translate }}</button>
             </mat-card-actions>
           </form>
         </mat-step>
 
         <!-- Step 3: Confirmation -->
         <mat-step>
-          <ng-template matStepLabel>Confirmación</ng-template>
+          <ng-template matStepLabel>{{ 'register.student.confirmation' | translate }}</ng-template>
           
           <mat-card class="confirmation-content">
             <mat-card-header>
@@ -163,16 +164,16 @@
           </mat-card>
 
           <mat-card-actions class="step-buttons">
-            <button mat-button matStepperPrevious>Atrás</button>
+            <button mat-button matStepperPrevious>{{ 'register.student.back' | translate }}</button>
             <button mat-raised-button 
                     color="primary" 
                     (click)="onSubmit()"
                     [disabled]="!basicInfoForm.valid || !securityForm.valid || isLoading">
               <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
-              <span *ngIf="!isLoading">Crear cuenta de estudiante</span>
-              <span *ngIf="isLoading">Creando cuenta...</span>
+              <span *ngIf="!isLoading">{{ 'register.student.complete' | translate }}</span>
+              <span *ngIf="isLoading">{{ 'register.student.registering' | translate }}</span>
             </button>
-            <button mat-button (click)="stepper.reset(); resetForm()" type="button">Reiniciar</button>
+            <button mat-button (click)="stepper.reset(); resetForm()" type="button">{{ 'register.student.reset' | translate }}</button>
           </mat-card-actions>
         </mat-step>
 
@@ -182,20 +183,20 @@
     <mat-card-actions class="register-actions">
       <mat-card class="action-links">
         <button mat-button color="accent" (click)="navigateToLogin()">
-          ¿Ya tienes cuenta? Inicia sesión
+          {{ 'register.student.haveAccount' | translate }}
         </button>
       </mat-card>
       
       <mat-card class="role-switches">
-        <mat-card-subtitle class="switch-text">¿Quieres registrarte como:</mat-card-subtitle>
+        <mat-card-subtitle class="switch-text">{{ 'register.student.registerAs' | translate }}</mat-card-subtitle>
         <mat-card-actions class="switch-buttons">
           <button mat-stroked-button (click)="navigateToTutorRegister()">
             <mat-icon>school</mat-icon>
-            Tutor
+            {{ 'register.student.tutor' | translate }}
           </button>
           <button mat-stroked-button (click)="navigateToInstitutionRegister()">
             <mat-icon>business</mat-icon>
-            Institución
+            {{ 'register.student.institution' | translate }}
           </button>
         </mat-card-actions>
       </mat-card>

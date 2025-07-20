@@ -11,6 +11,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { SessionService } from '../../../services/session.service';
 import { I18nService } from '../../../services/i18n.service';
+import { ToolbarComponent } from '../../toolbar/toolbar.component';
 
 @Component({
   selector: 'app-forgotpassword',
@@ -27,7 +28,8 @@ import { I18nService } from '../../../services/i18n.service';
     MatInput,
     MatButton,
     MatIcon,
-    MatProgressSpinner
+    MatProgressSpinner,
+    ToolbarComponent
   ],
   templateUrl: './forgotpassword.component.html',
   styleUrl: './forgotpassword.component.scss'

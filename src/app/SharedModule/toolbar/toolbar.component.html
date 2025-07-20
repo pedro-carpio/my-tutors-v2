@@ -6,15 +6,15 @@
     [attr.aria-label]="'layout.changeLanguage' | translate" 
     (click)="changeLanguage()"
     [matTooltip]="'layout.changeLanguage' | translate">
-    <mat-icon>{{ currentLanguage === 'es' ? 'translate' : 'language' }}</mat-icon>
+    <mat-icon>language</mat-icon>
     <span class="language-indicator">{{ currentLanguage.toUpperCase() }}</span>
   </button>
-  <button 
+  <!-- <button 
     matIconButton 
     [attr.aria-label]="'layout.setTimezone' | translate"
     [matTooltip]="'layout.setTimezone' | translate">
     <mat-icon>schedule</mat-icon>
-  </button>
+  </button> -->
   <button 
     *ngIf="showLogout"
     mat-icon-button 
