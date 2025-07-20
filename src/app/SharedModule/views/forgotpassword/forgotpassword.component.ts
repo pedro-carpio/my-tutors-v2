@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { SessionService } from '../../../services/session.service';
 import { I18nService } from '../../../services/i18n.service';
 import { ToolbarComponent } from '../../toolbar/toolbar.component';
+import { TranslatePipe } from '../../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-forgotpassword',
@@ -29,7 +30,8 @@ import { ToolbarComponent } from '../../toolbar/toolbar.component';
     MatButton,
     MatIcon,
     MatProgressSpinner,
-    ToolbarComponent
+    ToolbarComponent,
+    TranslatePipe
   ],
   templateUrl: './forgotpassword.component.html',
   styleUrl: './forgotpassword.component.scss'
@@ -50,6 +52,16 @@ export class ForgotpasswordComponent {
     this.resetForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
     });
+  }
+
+  // Getter para el idioma actual
+  get currentLanguage() {
+    return this.i18nService.getCurrentLanguage();
+  }
+  
+  changeLanguage() {
+    this.i18nService.toggleLanguage();
+    console.log('Language changed to:', this.i18nService.getCurrentLanguage());
   }
 
   async onResetPassword() {
