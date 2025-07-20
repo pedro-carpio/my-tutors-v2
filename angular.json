@@ -67,7 +67,11 @@
               "buildTarget": "my-tutors-v3:build:production"
             },
             "development": {
-              "buildTarget": "my-tutors-v3:build:development"
+              "buildTarget": "my-tutors-v3:build:development",
+              "headers": {
+                "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+                "Cross-Origin-Embedder-Policy": "unsafe-none"
+              }
             }
           },
           "defaultConfiguration": "development"

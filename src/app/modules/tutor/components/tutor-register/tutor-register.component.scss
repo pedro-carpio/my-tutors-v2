@@ -1,0 +1,462 @@
+// .register-container {
+//   min-height: 100vh;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+//   padding: 20px;
+// }
+
+// .register-card {
+//   width: 100%;
+//   max-width: 500px;
+//   margin: 0 auto;
+//   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+//   border-radius: 16px !important;
+//   overflow: hidden;
+//   background: white;
+// }
+
+// .register-header {
+//   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+//   color: white;
+//   text-align: center;
+//   padding: 32px 24px;
+//   margin-bottom: 0;
+  
+//   .header-content {
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     gap: 16px;
+//   }
+  
+//   .logo {
+//     width: 64px;
+//     height: 64px;
+//     border-radius: 50%;
+//     background: rgba(255, 255, 255, 0.1);
+//     padding: 8px;
+//   }
+  
+//   .mat-mdc-card-title {
+//     color: white !important;
+//     font-size: 28px;
+//     font-weight: 600;
+//     margin: 0;
+//   }
+  
+//   .mat-mdc-card-subtitle {
+//     color: rgba(255, 255, 255, 0.9) !important;
+//     font-size: 16px;
+//     margin: 0;
+//   }
+// }
+
+// .register-form {
+//   padding: 32px 24px 24px;
+//   display: flex;
+//   flex-direction: column;
+//   gap: 20px;
+// }
+
+// .full-width {
+//   width: 100%;
+// }
+
+// .mat-mdc-form-field {
+//   .mat-mdc-text-field-wrapper {
+//     border-radius: 12px;
+//   }
+  
+//   .mat-mdc-form-field-prefix .mat-icon,
+//   .mat-mdc-form-field-suffix .mat-icon {
+//     color: #ff6b6b;
+//   }
+// }
+
+// .submit-button {
+//   height: 56px;
+//   border-radius: 28px !important;
+//   font-size: 16px;
+//   font-weight: 600;
+//   text-transform: uppercase;
+//   letter-spacing: 1px;
+//   margin-top: 16px;
+//   position: relative;
+//   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  
+//   &:disabled {
+//     background: #cccccc !important;
+//     color: #666666 !important;
+//   }
+  
+//   .button-spinner {
+//     position: absolute;
+//     left: 20px;
+//     top: 50%;
+//     transform: translateY(-50%);
+//   }
+// }
+
+// .register-actions {
+//   padding: 0 24px 24px;
+//   display: flex;
+//   flex-direction: column;
+//   gap: 20px;
+//   align-items: center;
+// }
+
+// .action-links {
+//   .mat-mdc-button {
+//     color: #ff6b6b;
+//     font-weight: 500;
+//   }
+// }
+
+// .role-switches {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   gap: 12px;
+//   width: 100%;
+  
+//   .switch-text {
+//     color: #666;
+//     font-size: 14px;
+//     margin: 0;
+//     text-align: center;
+//   }
+  
+//   .switch-buttons {
+//     display: flex;
+//     gap: 12px;
+//     flex-wrap: wrap;
+//     justify-content: center;
+    
+//     .mat-mdc-outlined-button {
+//       border-color: #ff6b6b;
+//       color: #ff6b6b;
+//       border-radius: 20px;
+//       padding: 0 20px;
+//       display: flex;
+//       align-items: center;
+//       gap: 8px;
+//       font-weight: 500;
+      
+//       &:hover {
+//         background-color: rgba(255, 107, 107, 0.1);
+//       }
+      
+//       .mat-icon {
+//         font-size: 18px;
+//         width: 18px;
+//         height: 18px;
+//       }
+//     }
+//   }
+// }
+
+// // Error styles
+// .mat-mdc-form-field.mat-form-field-invalid {
+//   .mat-mdc-text-field-wrapper {
+//     border-color: #f44336;
+//   }
+// }
+
+// // Success and error snackbar styles
+// ::ng-deep {
+//   .success-snackbar {
+//     background-color: #4caf50 !important;
+//     color: white !important;
+//   }
+  
+//   .error-snackbar {
+//     background-color: #f44336 !important;
+//     color: white !important;
+//   }
+// }
+
+// // Stepper styles
+// .mat-stepper-vertical {
+//   padding: 20px;
+// }
+
+// .step-buttons {
+//   display: flex;
+//   gap: 12px;
+//   margin-top: 20px;
+//   justify-content: flex-end;
+  
+//   .mat-mdc-button,
+//   .mat-mdc-raised-button {
+//     border-radius: 20px;
+//     padding: 0 24px;
+//     font-weight: 500;
+//   }
+  
+//   .mat-mdc-raised-button {
+//     background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+//   }
+// }
+
+// .confirmation-content {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   text-align: center;
+//   padding: 20px 0;
+  
+//   .confirmation-icon {
+//     font-size: 64px;
+//     width: 64px;
+//     height: 64px;
+//     color: #4caf50;
+//     margin-bottom: 16px;
+//   }
+  
+//   h3 {
+//     color: #333;
+//     margin: 0 0 8px 0;
+//     font-size: 24px;
+//     font-weight: 600;
+//   }
+  
+//   p {
+//     color: #666;
+//     margin: 0 0 24px 0;
+//     font-size: 16px;
+//   }
+// }
+
+// .summary-section {
+//   background: #f5f5f5;
+//   border-radius: 8px;
+//   padding: 16px;
+//   margin-bottom: 16px;
+//   text-align: left;
+//   width: 100%;
+//   max-width: 400px;
+  
+//   h4 {
+//     color: #ff6b6b;
+//     margin: 0 0 12px 0;
+//     font-size: 16px;
+//     font-weight: 600;
+//   }
+  
+//   p {
+//     margin: 0 0 8px 0;
+//     font-size: 14px;
+//     color: #333;
+    
+//     &:last-child {
+//       margin-bottom: 0;
+//     }
+    
+//     strong {
+//       color: #333;
+//       font-weight: 600;
+//     }
+//   }
+// }
+
+// // Stepper header customization
+// ::ng-deep {
+//   .mat-step-header {
+//     .mat-step-icon {
+//       background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+//     }
+    
+//     .mat-step-icon-selected {
+//       background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+//     }
+    
+//     .mat-step-icon-state-done {
+//       background: #4caf50;
+//     }
+//   }
+  
+//   .mat-step-label {
+//     color: #333;
+//     font-weight: 500;
+//   }
+  
+//   .mat-step-label-selected {
+//     color: #ff6b6b;
+//     font-weight: 600;
+//   }
+// }
+
+// // Responsive design
+// @media (max-width: 480px) {
+//   .register-container {
+//     padding: 10px;
+//   }
+  
+//   .register-card {
+//     max-width: 100%;
+//     margin: 0;
+//   }
+  
+//   .register-header {
+//     padding: 24px 16px;
+    
+//     .mat-mdc-card-title {
+//       font-size: 24px;
+//     }
+    
+//     .logo {
+//       width: 48px;
+//       height: 48px;
+//     }
+//   }
+  
+//   .register-form {
+//     padding: 24px 16px 16px;
+//     gap: 16px;
+//   }
+  
+//   .register-actions {
+//     padding: 0 16px 16px;
+//   }
+  
+//   .role-switches .switch-buttons {
+//     .mat-mdc-outlined-button {
+//       font-size: 13px;
+//       padding: 0 16px;
+//     }
+//   }
+// }
+
+// Google Registration Styles
+.google-registration-section {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.google-register-button {
+  width: 100%;
+  height: 56px;
+  border: 2px solid #4285f4;
+  border-radius: 12px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #4285f4;
+  transition: all 0.3s ease;
+  margin-bottom: 24px;
+  
+  &:hover:not([disabled]) {
+    background: #f8f9ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.google-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.google-text {
+  flex: 1;
+  text-align: center;
+}
+
+.google-icon {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.google-register-button:hover:not([disabled]) .google-icon {
+  transform: translateX(4px);
+}
+
+.button-spinner {
+  margin-right: 8px;
+}
+
+.divider {
+  position: relative;
+  margin: 24px 0;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e0e0e0;
+  }
+}
+
+.divider-text {
+  background: white;
+  padding: 0 16px;
+  color: #666;
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.google-user-info {
+  margin-bottom: 24px;
+}
+
+.google-info-card {
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  background: #f1f8e9;
+  
+  .mat-mdc-card-header {
+    padding: 16px;
+  }
+  
+  .mat-mdc-card-title {
+    color: #2e7d32 !important;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .mat-mdc-card-subtitle {
+    color: #4caf50 !important;
+    font-size: 14px;
+  }
+}
+
+.google-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .google-register-button {
+    height: 48px;
+    font-size: 14px;
+    gap: 8px;
+  }
+  
+  .google-logo {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .google-icon {
+    font-size: 18px;
+  }
+}

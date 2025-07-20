@@ -1,0 +1,279 @@
+<main class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header class="register-header">
+      <img src="FriendlyChatLogo.png" alt="Logo" class="logo" mat-card-avatar>
+      <mat-card-title>Registro de Tutor</mat-card-title>
+      <mat-card-subtitle>Comparte tu conocimiento y enseña idiomas</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Google Registration Button -->
+      <!-- <div class="google-registration-section" *ngIf="!googleUserData">
+        <button mat-stroked-button 
+                class="google-register-button"
+                (click)="registerWithGoogle()"
+                [disabled]="isGoogleLoading">
+          <mat-spinner *ngIf="isGoogleLoading" diameter="20" class="button-spinner"></mat-spinner>
+          <img *ngIf="!isGoogleLoading" src="Google.png" alt="Google logo" class="google-logo" />
+          <span class="google-text">
+            {{isGoogleLoading ? 'Conectando...' : 'Registrarse con Google'}}
+          </span>
+          <mat-icon *ngIf="!isGoogleLoading" class="google-icon">arrow_forward</mat-icon>
+        </button>
+        
+        <div class="divider">
+          <span class="divider-text">o</span>
+        </div>
+      </div> -->
+
+      <!-- Google User Info -->
+      <!-- <div class="google-user-info" *ngIf="googleUserData">
+        <mat-card class="google-info-card">
+          <mat-card-header>
+            <img [src]="googleUserData.photoURL || 'FriendlyChatLogo.png'" 
+                 alt="Foto de perfil" 
+                 class="google-avatar" 
+                 mat-card-avatar>
+            <mat-card-title>¡Conectado con Google!</mat-card-title>
+            <mat-card-subtitle>{{googleUserData.email}}</mat-card-subtitle>
+          </mat-card-header>
+        </mat-card>
+      </div> -->
+
+      <mat-stepper orientation="vertical" [linear]="isLinear" #stepper>
+        
+        <!-- Step 1: Basic Information -->
+        <mat-step [stepControl]="basicInfoForm">
+          <form [formGroup]="basicInfoForm">
+            <ng-template matStepLabel>Información básica</ng-template>
+            
+            <!-- Full Name -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nombre completo</mat-label>
+              <input matInput 
+                     formControlName="fullName" 
+                     placeholder="Ingresa tu nombre completo">
+              <mat-icon matPrefix>person</mat-icon>
+              <mat-error *ngIf="basicInfoForm.get('fullName')?.hasError('required')">
+                El nombre es requerido
+              </mat-error>
+              <mat-error *ngIf="basicInfoForm.get('fullName')?.hasError('minlength')">
+                El nombre debe tener al menos 2 caracteres
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Email -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Correo electrónico</mat-label>
+              <input matInput 
+                     type="email"
+                     formControlName="email" 
+                     placeholder="tu-email@ejemplo.com">
+              <mat-icon matPrefix>email</mat-icon>
+              <mat-error *ngIf="basicInfoForm.get('email')?.hasError('required')">
+                El correo es requerido
+              </mat-error>
+              <mat-error *ngIf="basicInfoForm.get('email')?.hasError('email')">
+                Ingresa un correo válido
+              </mat-error>
+            </mat-form-field>
+
+            <mat-card-actions class="step-buttons">
+              <button mat-raised-button matStepperNext color="primary">Siguiente</button>
+            </mat-card-actions>
+          </form>
+        </mat-step>
+
+        <!-- Step 2: Professional Information -->
+        <mat-step [stepControl]="professionalInfoForm">
+          <form [formGroup]="professionalInfoForm">
+            <ng-template matStepLabel>Información profesional</ng-template>
+            
+            <!-- Languages -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Idiomas que enseñas</mat-label>
+              <mat-select formControlName="languages" multiple>
+                <mat-option *ngFor="let language of availableLanguages" [value]="language.value">
+                  {{language.label}}
+                </mat-option>
+              </mat-select>
+              <mat-icon matPrefix>translate</mat-icon>
+              <mat-error *ngIf="professionalInfoForm.get('languages')?.hasError('required')">
+                Selecciona al menos un idioma
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Experience Level -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nivel de experiencia</mat-label>
+              <mat-select formControlName="experienceLevel">
+                <mat-option *ngFor="let level of experienceLevels" [value]="level.value">
+                  {{level.label}}
+                </mat-option>
+              </mat-select>
+              <mat-icon matPrefix>school</mat-icon>
+              <mat-error *ngIf="professionalInfoForm.get('experienceLevel')?.hasError('required')">
+                Selecciona tu nivel de experiencia
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Bio -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Biografía profesional</mat-label>
+              <textarea matInput 
+                        formControlName="bio"
+                        placeholder="Cuéntanos sobre tu experiencia enseñando idiomas..."
+                        rows="4">
+              </textarea>
+              <mat-icon matPrefix>description</mat-icon>
+              <mat-error *ngIf="professionalInfoForm.get('bio')?.hasError('required')">
+                La biografía es requerida
+              </mat-error>
+              <mat-error *ngIf="professionalInfoForm.get('bio')?.hasError('minlength')">
+                La biografía debe tener al menos 50 caracteres
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Hourly Rate -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Tarifa por hora (USD)</mat-label>
+              <input matInput 
+                     type="number"
+                     formControlName="hourlyRate" 
+                     placeholder="5">
+              <mat-icon matPrefix>attach_money</mat-icon>
+              <mat-error *ngIf="professionalInfoForm.get('hourlyRate')?.hasError('required')">
+                La tarifa es requerida
+              </mat-error>
+            </mat-form-field>
+
+            <mat-card-actions class="step-buttons">
+              <button mat-button matStepperPrevious>Atrás</button>
+              <button mat-raised-button matStepperNext color="primary">Siguiente</button>
+            </mat-card-actions>
+          </form>
+        </mat-step>
+
+        <!-- Step 3: Security -->
+        <mat-step [stepControl]="securityForm">
+          <form [formGroup]="securityForm">
+            <ng-template matStepLabel>Configuración de seguridad</ng-template>
+            
+            <!-- Password -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Contraseña</mat-label>
+              <input matInput 
+                     [type]="hidePassword ? 'password' : 'text'"
+                     formControlName="password" 
+                     placeholder="Mínimo 6 caracteres">
+              <mat-icon matPrefix>lock</mat-icon>
+              <button mat-icon-button 
+                      matSuffix 
+                      type="button"
+                      (click)="hidePassword = !hidePassword">
+                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-error *ngIf="securityForm.get('password')?.hasError('required')">
+                La contraseña es requerida
+              </mat-error>
+              <mat-error *ngIf="securityForm.get('password')?.hasError('minlength')">
+                La contraseña debe tener al menos 6 caracteres
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Confirm Password -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Confirmar contraseña</mat-label>
+              <input matInput 
+                     [type]="hideConfirmPassword ? 'password' : 'text'"
+                     formControlName="confirmPassword" 
+                     placeholder="Repite tu contraseña">
+              <mat-icon matPrefix>lock_outline</mat-icon>
+              <button mat-icon-button 
+                      matSuffix 
+                      type="button"
+                      (click)="hideConfirmPassword = !hideConfirmPassword">
+                <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-error *ngIf="securityForm.get('confirmPassword')?.hasError('required')">
+                Confirma tu contraseña
+              </mat-error>
+              <mat-error *ngIf="securityForm.get('confirmPassword')?.hasError('passwordMismatch')">
+                Las contraseñas no coinciden
+              </mat-error>
+            </mat-form-field>
+
+            <mat-card-actions class="step-buttons">
+              <button mat-button matStepperPrevious>Atrás</button>
+              <button mat-raised-button matStepperNext color="primary">Siguiente</button>
+            </mat-card-actions>
+          </form>
+        </mat-step>
+
+        <!-- Step 4: Confirmation -->
+        <mat-step>
+          <ng-template matStepLabel>Confirmación</ng-template>
+          
+          <section class="confirmation-content">
+            <mat-icon class="confirmation-icon">check_circle</mat-icon>
+            <h3>Revisa tu información</h3>
+            <p>Por favor, verifica que todos los datos estén correctos antes de crear tu cuenta.</p>
+            
+            <article class="summary-section">
+              <h4>Información básica:</h4>
+              <p><strong>Nombre:</strong> {{basicInfoForm.get('fullName')?.value}}</p>
+              <p><strong>Email:</strong> {{basicInfoForm.get('email')?.value}}</p>
+            </article>
+
+            <article class="summary-section">
+              <h4>Información profesional:</h4>
+              <p><strong>Idiomas:</strong> 
+                <span *ngFor="let lang of professionalInfoForm.get('languages')?.value; let last = last">
+                  {{getLanguageLabel(lang)}}{{!last ? ', ' : ''}}
+                </span>
+              </p>
+              <p><strong>Experiencia:</strong> {{getExperienceLabel(professionalInfoForm.get('experienceLevel')?.value)}}</p>
+              <p><strong>Tarifa:</strong> ${{professionalInfoForm.get('hourlyRate')?.value}} USD/hora</p>
+            </article>
+          </section>
+
+          <mat-card-actions class="step-buttons">
+            <button mat-button matStepperPrevious>Atrás</button>
+            <button mat-raised-button 
+                    color="primary" 
+                    (click)="onSubmit()"
+                    [disabled]="!basicInfoForm.valid || !professionalInfoForm.valid || !securityForm.valid || isLoading">
+              <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
+              <span *ngIf="!isLoading">Crear cuenta de tutor</span>
+              <span *ngIf="isLoading">Creando cuenta...</span>
+            </button>
+            <button mat-button (click)="stepper.reset(); resetForm()" type="button">Reiniciar</button>
+          </mat-card-actions>
+        </mat-step>
+
+      </mat-stepper>
+    </mat-card-content>
+
+    <mat-card-actions class="register-actions">
+      <section class="action-links">
+        <button mat-button color="accent" (click)="navigateToLogin()">
+          ¿Ya tienes cuenta? Inicia sesión
+        </button>
+      </section>
+      
+      <section class="role-switches">
+        <p class="switch-text">¿Quieres registrarte como:</p>
+        <nav class="switch-buttons">
+          <button mat-stroked-button (click)="navigateToStudentRegister()">
+            <mat-icon>person</mat-icon>
+            Estudiante
+          </button>
+          <button mat-stroked-button (click)="navigateToInstitutionRegister()">
+            <mat-icon>business</mat-icon>
+            Institución
+          </button>
+        </nav>
+      </section>
+    </mat-card-actions>
+  </mat-card>
+</main>

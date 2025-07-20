@@ -1,0 +1,54 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #drawer class="sidenav" fixedInViewport
+      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+      [mode]="(isHandset$ | async) ? 'over' : 'side'"
+      [opened]="(isHandset$ | async) === false">
+    <mat-toolbar>{{ 'layout.menu' | translate }}</mat-toolbar>
+    <mat-nav-list>
+      @for (item of menu; track $index) {
+        @if (!item.hidden) {
+          @if (item.type === 'group') {
+            <h3 mat-subheader >{{ item.title }}</h3>
+            @for (child of item.children; track $index) {
+              <a
+                mat-list-item
+                [routerLink]="child.url"
+                #link="routerLinkActive"
+                routerLinkActive
+                [activated]="link.isActive"
+                target="{{item.target}}"
+              >
+                @if (child.matIcon) {
+                  <button matIconButton matListItemMeta>
+                    <mat-icon>{{ child.matIcon }}</mat-icon>
+                  </button>
+                }
+                {{ child.title }}
+              </a>
+            }
+            <mat-divider></mat-divider>
+          } @else {
+            <a
+                mat-list-item
+                [routerLink]="item.url"
+                #link="routerLinkActive"
+                routerLinkActive
+                [activated]="link.isActive"
+                target="{{item.target}}"
+                >
+              @if (item.matIcon) {
+                <button matIconButton matListItemMeta>
+                  <mat-icon>{{ item.matIcon }}</mat-icon>
+                </button>
+              }
+              {{ item.title }}
+            </a>
+          }
+        }
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <ng-content></ng-content>
+  </mat-sidenav-content>
+</mat-sidenav-container>

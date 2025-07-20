@@ -1,0 +1,49 @@
+<app-layout>
+    <div class="dashboard-container">
+  <app-toolbar 
+    title="My Tutors - Dashboard" 
+    [showLogout]="true" 
+    (logout)="logout()">
+  </app-toolbar>
+
+  <div class="dashboard-content">
+    <mat-card class="welcome-card">
+      <mat-card-header>
+        <mat-card-title>¡Bienvenido!</mat-card-title>
+        <mat-card-subtitle>Selecciona tu tipo de cuenta para continuar</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <p>Para acceder a todas las funcionalidades, selecciona tu tipo de cuenta:</p>
+        
+        <div class="role-selection">
+          <mat-card class="role-card" (click)="selectRole('student')">
+            <mat-card-content>
+              <mat-icon class="role-icon">person</mat-icon>
+              <h3>Estudiante</h3>
+              <p>Busca tutores y aprende idiomas</p>
+            </mat-card-content>
+          </mat-card>
+          
+          <mat-card class="role-card" (click)="selectRole('tutor')">
+            <mat-card-content>
+              <mat-icon class="role-icon">school</mat-icon>
+              <h3>Tutor</h3>
+              <p>Enseña idiomas y gana dinero</p>
+            </mat-card-content>
+          </mat-card>
+          
+          <mat-card class="role-card" (click)="selectRole('institution')">
+            <mat-card-content>
+              <mat-icon class="role-icon">business</mat-icon>
+              <h3>Institución</h3>
+              <p>Gestiona cursos y estudiantes</p>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+</app-layout>

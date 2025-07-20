@@ -1,0 +1,26 @@
+<mat-toolbar color="primary">
+  <span>{{ title || ('layout.appName' | translate) }}</span>
+  <span class="spacer"></span>
+  <button 
+    matIconButton 
+    [attr.aria-label]="'layout.changeLanguage' | translate" 
+    (click)="changeLanguage()"
+    [matTooltip]="'layout.changeLanguage' | translate">
+    <mat-icon>{{ currentLanguage === 'es' ? 'translate' : 'language' }}</mat-icon>
+    <span class="language-indicator">{{ currentLanguage.toUpperCase() }}</span>
+  </button>
+  <button 
+    matIconButton 
+    [attr.aria-label]="'layout.setTimezone' | translate"
+    [matTooltip]="'layout.setTimezone' | translate">
+    <mat-icon>schedule</mat-icon>
+  </button>
+  <button 
+    *ngIf="showLogout"
+    mat-icon-button 
+    (click)="onLogout()"
+    [attr.aria-label]="'layout.logout' | translate"
+    [matTooltip]="'layout.logout' | translate">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>

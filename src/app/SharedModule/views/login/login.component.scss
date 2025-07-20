@@ -1,268 +1,416 @@
-.login-container {
-  min-height: 80vh;
-  height: 100vh;
-  width: 100vw;
-  padding: 40px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
+// .login-container {
+//   min-height: 80vh;
+//   height: 100vh;
+//   width: 100vw;
+//   padding: 40px 20px;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+// }
 
-.login-main-card {
-  width: 100%;
-  max-width: 1200px;
-  min-height: 600px;
-  border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  background: white;
-}
+// .login-main-card {
+//   width: 100%;
+//   max-width: 1200px;
+//   min-height: 600px;
+//   border-radius: 24px;
+//   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+//   overflow: hidden;
+//   background: white;
+// }
 
-.login-content {
-  display: flex;
-  min-height: 600px;
-  padding: 0 !important;
+// .login-content {
+//   display: flex;
+//   min-height: 600px;
+//   padding: 0 !important;
   
-  @media (max-width: 768px) {
-    flex-direction: column-reverse;
-  }
-}
+//   @media (max-width: 768px) {
+//     flex-direction: column-reverse;
+//   }
+// }
 
-.illustration-section {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(45deg, #f3e5f5 0%, #e8f5e8 100%);
-  padding: 40px;
+// .illustration-section {
+//   flex: 1;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   background: linear-gradient(45deg, #f3e5f5 0%, #e8f5e8 100%);
+//   padding: 40px;
   
-  @media (max-width: 768px) {
-    min-height: 200px;
-    padding: 20px;
-  }
-}
+//   @media (max-width: 768px) {
+//     min-height: 200px;
+//     padding: 20px;
+//   }
+// }
 
-.firebase-illustration {
-  width: 100%;
-  max-width: 350px;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
-}
+// .firebase-illustration {
+//   width: 100%;
+//   max-width: 350px;
+//   height: auto;
+//   object-fit: contain;
+//   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+// }
 
-.login-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 40px;
-  padding: 40px;
-  background: white;
+// .login-section {
+//   flex: 1;
+//   display: flex;
+//   flex-direction: column;
+//   justify-content: center;
+//   align-items: center;
+//   gap: 40px;
+//   padding: 40px;
+//   background: white;
   
-  @media (max-width: 768px) {
-    padding: 30px 20px;
-    gap: 30px;
-  }
-}
+//   @media (max-width: 768px) {
+//     padding: 30px 20px;
+//     gap: 30px;
+//   }
+// }
 
-.brand-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  text-align: center;
-}
+// .brand-section {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   gap: 20px;
+//   text-align: center;
+// }
 
-.logo {
-  width: 200px;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+// .logo {
+//   width: 200px;
+//   height: auto;
+//   object-fit: contain;
+//   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
   
-  @media (max-width: 768px) {
-    width: 150px;
-  }
-}
+//   @media (max-width: 768px) {
+//     width: 150px;
+//   }
+// }
 
-.app-title {
-  font-size: 3rem;
-  font-weight: 300;
-  color: #3f51b5;
-  margin: 0;
-  letter-spacing: -1px;
+// .app-title {
+//   font-size: 3rem;
+//   font-weight: 300;
+//   color: #3f51b5;
+//   margin: 0;
+//   letter-spacing: -1px;
   
-  @media (max-width: 768px) {
-    font-size: 2.5rem;
-  }
+//   @media (max-width: 768px) {
+//     font-size: 2.5rem;
+//   }
   
-  @media (max-width: 480px) {
-    font-size: 2rem;
-  }
-}
+//   @media (max-width: 480px) {
+//     font-size: 2rem;
+//   }
+// }
 
-.signin-card {
-  width: 100%;
-  max-width: 400px;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid #e0e0e0;
-  overflow: hidden;
-  
-  &:hover {
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-    border-color: #4285f4;
-  }
-  
-  .mat-mdc-card-content {
-    padding: 0 !important;
-  }
-}
+// // Login options container
+// .login-options {
+//   width: 100%;
+//   max-width: 400px;
+//   display: flex;
+//   flex-direction: column;
+//   gap: 24px;
+// }
 
-.google-signin-button {
-  width: 100%;
-  height: 64px;
-  border: none;
-  background: white;
-  border-radius: 16px;
-  font-size: 18px;
-  font-weight: 500;
-  color: #333;
-  transition: all 0.3s ease;
+// // Toggle buttons for switching between login methods
+// .login-toggle {
+//   display: flex;
+//   background: #f5f5f5;
+//   border-radius: 12px;
+//   padding: 4px;
+//   gap: 4px;
   
-  &:hover {
-    background: #f8f9fa;
-  }
-  
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-.button-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0 20px;
-  gap: 16px;
-}
-
-.google-logo {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.signin-text {
-  flex: 1;
-  text-align: center;
-  font-size: 18px;
-  font-weight: 500;
-  color: #333;
-  
-  @media (max-width: 480px) {
-    font-size: 16px;
-  }
-}
-
-.signin-icon {
-  color: #4285f4;
-  font-size: 24px;
-  transition: transform 0.3s ease;
-}
-
-.signin-card:hover .signin-icon {
-  transform: translateX(4px);
-}
-
-// Loading state animation
-.signin-card.loading {
-  pointer-events: none;
-  
-  .signin-text {
-    opacity: 0.6;
-  }
-  
-  .signin-icon {
-    animation: spin 1s linear infinite;
-  }
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-// Responsive design improvements
-@media (max-width: 968px) {
-  .login-container {
-    padding: 20px 10px;
-  }
-  
-  .login-main-card {
-    max-width: 100%;
-    margin: 0 10px;
-  }
-}
-
-@media (max-width: 768px) {
-  .login-container {
-    min-height: 100vh;
-    padding: 0;
-  }
-  
-  .login-main-card {
-    border-radius: 0;
-    height: 100vh;
-    margin: 0;
-  }
-  
-  .signin-card {
-    max-width: 100%;
-  }
-}
-
-// Accessibility improvements
-.google-signin-button:focus {
-  outline: 2px solid #4285f4;
-  outline-offset: 2px;
-}
-
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .login-main-card {
-    background: #1e1e1e;
-  }
-  
-  .login-section {
-    background: #1e1e1e;
-  }
-  
-  .app-title {
-    color: #bb86fc;
-  }
-  
-  .signin-card {
-    background: #2d2d2d;
-    border-color: #404040;
-  }
-  
-  .google-signin-button {
-    background: #2d2d2d;
-    color: #ffffff;
+//   .toggle-btn {
+//     flex: 1;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     gap: 8px;
+//     padding: 12px 16px;
+//     border-radius: 8px;
+//     font-weight: 500;
+//     transition: all 0.3s ease;
+//     color: #666;
     
-    &:hover {
-      background: #404040;
-    }
-  }
+//     &.active {
+//       background: white;
+//       color: #3f51b5;
+//       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+//     }
+    
+//     .mat-icon {
+//       font-size: 20px;
+//       width: 20px;
+//       height: 20px;
+//     }
+//   }
+// }
+
+// // Google sign-in section
+// .google-signin-section, .email-login-section {
+//   width: 100%;
+// }
+
+// .google-signin-button {
+//   width: 100%;
+//   height: 56px;
+//   border: 2px solid #e0e0e0;
+//   background: white;
+//   border-radius: 12px;
+//   font-size: 16px;
+//   font-weight: 500;
+//   color: #333;
+//   transition: all 0.3s ease;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   gap: 12px;
   
-  .signin-text {
-    color: #ffffff;
-  }
-}
+//   &:hover:not(:disabled) {
+//     background: #f8f9fa;
+//     border-color: #4285f4;
+//     transform: translateY(-1px);
+//     box-shadow: 0 4px 12px rgba(66, 133, 244, 0.15);
+//   }
+  
+//   &:disabled {
+//     opacity: 0.6;
+//     cursor: not-allowed;
+//   }
+  
+//   &.alternative {
+//     border-color: #e0e0e0;
+//     color: #666;
+//     font-size: 14px;
+//     height: 48px;
+    
+//     &:hover:not(:disabled) {
+//       border-color: #4285f4;
+//     }
+//   }
+// }
+
+// .google-logo {
+//   width: 24px;
+//   height: 24px;
+//   object-fit: contain;
+//   flex-shrink: 0;
+// }
+
+// .signin-text {
+//   font-size: 16px;
+//   font-weight: 500;
+  
+//   @media (max-width: 480px) {
+//     font-size: 14px;
+//   }
+// }
+
+// .signin-icon {
+//   color: #4285f4;
+//   font-size: 20px;
+//   transition: transform 0.3s ease;
+// }
+
+// .google-signin-button:hover .signin-icon {
+//   transform: translateX(4px);
+// }
+
+// // Email login form styles
+// .login-form {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 20px;
+//   width: 100%;
+// }
+
+// .full-width {
+//   width: 100%;
+// }
+
+// .login-submit-button {
+//   height: 48px;
+//   border-radius: 12px;
+//   font-size: 16px;
+//   font-weight: 600;
+//   text-transform: none;
+//   position: relative;
+  
+//   .spinner {
+//     position: absolute;
+//     left: 16px;
+//   }
+// }
+
+// .forgot-password-btn {
+//   color: #3f51b5;
+//   font-size: 14px;
+//   text-transform: none;
+//   align-self: center;
+  
+//   &:hover {
+//     background: rgba(63, 81, 181, 0.1);
+//   }
+// }
+
+// // Divider section
+// .divider-section {
+//   display: flex;
+//   align-items: center;
+//   gap: 16px;
+//   margin: 8px 0;
+  
+//   .mat-divider {
+//     flex: 1;
+//   }
+  
+//   .divider-text {
+//     color: #999;
+//     font-size: 14px;
+//     font-weight: 500;
+//   }
+// }
+
+// // Registration section styles
+// .registration-section {
+//   margin-top: 40px;
+//   text-align: center;
+  
+//   .register-text {
+//     color: #666;
+//     font-size: 14px;
+//     margin-bottom: 20px;
+//   }
+  
+//   .register-buttons {
+//     display: flex;
+//     flex-direction: column;
+//     gap: 12px;
+    
+//     @media (min-width: 480px) {
+//       flex-direction: row;
+//       justify-content: center;
+//       flex-wrap: wrap;
+//     }
+//   }
+  
+//   .register-btn {
+//     border-radius: 20px;
+//     padding: 0 20px;
+//     display: flex;
+//     align-items: center;
+//     gap: 8px;
+//     font-weight: 500;
+//     min-width: 120px;
+    
+//     @media (max-width: 479px) {
+//       justify-content: center;
+//     }
+    
+//     .mat-icon {
+//       font-size: 18px;
+//       width: 18px;
+//       height: 18px;
+//     }
+    
+//     &:hover {
+//       background-color: rgba(102, 126, 234, 0.1);
+//     }
+//   }
+// }
+
+// // Responsive design improvements
+// @media (max-width: 968px) {
+//   .login-container {
+//     padding: 20px 10px;
+//   }
+  
+//   .login-main-card {
+//     max-width: 100%;
+//     margin: 0 10px;
+//   }
+// }
+
+// @media (max-width: 768px) {
+//   .login-container {
+//     min-height: 100vh;
+//     padding: 0;
+//   }
+  
+//   .login-main-card {
+//     border-radius: 0;
+//     height: 100vh;
+//     margin: 0;
+//   }
+  
+//   .login-options {
+//     max-width: 100%;
+//   }
+// }
+
+// // Accessibility improvements
+// .google-signin-button:focus,
+// .login-submit-button:focus {
+//   outline: 2px solid #3f51b5;
+//   outline-offset: 2px;
+// }
+
+// // Loading state animation
+// .login-submit-button.loading {
+//   pointer-events: none;
+// }
+
+// @keyframes spin {
+//   from { transform: rotate(0deg); }
+//   to { transform: rotate(360deg); }
+// }
+
+// // Dark mode support
+// @media (prefers-color-scheme: dark) {
+//   .login-main-card {
+//     background: #1e1e1e;
+//   }
+  
+//   .login-section {
+//     background: #1e1e1e;
+//   }
+  
+//   .app-title {
+//     color: #bb86fc;
+//   }
+  
+//   .login-toggle {
+//     background: #2d2d2d;
+    
+//     .toggle-btn {
+//       color: #ccc;
+      
+//       &.active {
+//         background: #404040;
+//         color: #bb86fc;
+//       }
+//     }
+//   }
+  
+//   .google-signin-button {
+//     background: #2d2d2d;
+//     border-color: #404040;
+//     color: #ffffff;
+    
+//     &:hover:not(:disabled) {
+//       background: #404040;
+//       border-color: #bb86fc;
+//     }
+//   }
+  
+//   .full-width {
+//     .mat-form-field {
+//       .mat-form-field-outline {
+//         color: #666;
+//       }
+//     }
+//   }
+  
+//   .divider-text {
+//     color: #999;
+//   }
+// }
