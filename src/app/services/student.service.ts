@@ -40,6 +40,16 @@ export class StudentService {
     return docData(docRef) as Observable<Student | undefined>;
   }
 
+  // Get students by institution ID
+  getStudentsByInstitution(institutionId: string): Observable<Student[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      orderBy('full_name', 'asc')
+    );
+    return collectionData(q) as Observable<Student[]>;
+  }
+
   // Get all students
   getAllStudents(): Observable<Student[]> {
     const q = query(

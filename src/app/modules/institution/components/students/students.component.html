@@ -1,0 +1,66 @@
+<app-layout #layout>
+  <app-toolbar 
+    slot="toolbar"
+    title="Dashboard" 
+    [showLogout]="true"
+    [showMenuButton]="(layout.isHandset$ | async) || false"
+    (logout)="logout()"
+    (menuToggle)="layout.toggleDrawer()">
+  </app-toolbar>
+
+  <mat-card class="welcome-card">
+    <mat-card-header>
+      <mat-card-title>Gestión de Estudiantes</mat-card-title>
+      <mat-card-subtitle>Administra los estudiantes de tu institución</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <mat-toolbar>
+        <span>Lista de Estudiantes</span>
+        <span class="spacer"></span>
+        <button mat-fab 
+                color="primary" 
+                (click)="openAddStudentDialog()"
+                matTooltip="Agregar nuevo estudiante">
+          <mat-icon>add</mat-icon>
+        </button>
+      </mat-toolbar>
+
+      <mat-list *ngIf="students$ | async as students; else noStudents">
+        <ng-container *ngFor="let student of students; let last = last">
+          <mat-list-item class="student-item">
+            <mat-icon matListItemIcon>school</mat-icon>
+            <div matListItemTitle>
+              <strong>{{ student.full_name }}</strong>
+            </div>
+            <div matListItemLine *ngIf="student.goals && student.goals.length > 0">
+              Objetivos: 
+              <span *ngFor="let goal of student.goals; let last = last">
+                {{ goal.name }}<span *ngIf="!last">, </span>
+              </span>
+            </div>
+            <div matListItemLine *ngIf="!student.goals || student.goals.length === 0">
+              Sin objetivos definidos
+            </div>
+            <button mat-icon-button 
+                    matTooltip="Ver perfil completo"
+                    color="primary">
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </mat-list-item>
+          <mat-divider [inset]="true" *ngIf="!last"></mat-divider>
+        </ng-container>
+      </mat-list>
+
+      <ng-template #noStudents>
+        <mat-list>
+          <mat-list-item>
+            <mat-icon matListItemIcon>info</mat-icon>
+            <div matListItemTitle>No hay estudiantes registrados en tu institución</div>
+            <div matListItemLine>Haz clic en el botón + para agregar el primer estudiante</div>
+          </mat-list-item>
+        </mat-list>
+      </ng-template>
+    </mat-card-content>
+  </mat-card>
+</app-layout>

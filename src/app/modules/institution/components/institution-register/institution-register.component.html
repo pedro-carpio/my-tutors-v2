@@ -157,6 +157,21 @@
       <mat-step [stepControl]="educationalInfoForm">
         <form [formGroup]="educationalInfoForm">
           <ng-template matStepLabel>Información educativa</ng-template>
+          
+          <!-- Languages Offered -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Idiomas que ofrece la institución</mat-label>
+            <mat-select multiple formControlName="languagesOffered" placeholder="Selecciona los idiomas">
+              <mat-option *ngFor="let language of availableLanguages" [value]="language.id">
+                {{language.name}}
+              </mat-option>
+            </mat-select>
+            <mat-icon matPrefix>language</mat-icon>
+            <!-- <mat-error *ngIf="educationalInfoForm.get('languagesOffered')?.hasError('required')">
+              Selecciona al menos un idioma
+            </mat-error> -->
+          </mat-form-field>
+
           <!-- Description -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Descripción de la institución</mat-label>

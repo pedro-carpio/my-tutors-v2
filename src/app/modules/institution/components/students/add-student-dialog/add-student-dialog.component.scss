@@ -1,0 +1,52 @@
+.student-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 500px;
+  max-width: 600px;
+}
+
+.goals-section {
+  margin-top: 16px;
+}
+
+.goals-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.goals-header h3 {
+  margin: 0;
+  flex: 1;
+}
+
+.goals-array {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.goal-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  position: relative;
+}
+
+.goal-group button[mat-icon-button] {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.no-goals {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 16px;
+}

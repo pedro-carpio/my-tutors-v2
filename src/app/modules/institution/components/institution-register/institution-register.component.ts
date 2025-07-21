@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatStepperModule } from '@angular/material/stepper';
@@ -17,8 +18,10 @@ import { MatChipsModule } from '@angular/material/chips';
 
 import { SessionService } from '../../../../services/session.service';
 import { I18nService } from '../../../../services/i18n.service';
+import { LanguageService } from '../../../../services/language.service';
 import { ToolbarComponent } from '../../../../SharedModule/toolbar/toolbar.component';
 import { TranslatePipe } from "../../../../pipes/translate.pipe";
+import { Language } from '../../../../types/firestore.types';
 
 interface LanguageOption {
   value: string;
@@ -42,6 +45,7 @@ interface InstitutionType {
     MatButtonModule,
     MatIconModule,
     MatSelectModule,
+    MatOptionModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatStepperModule,
@@ -66,17 +70,20 @@ export class InstitutionRegisterComponent implements OnInit {
   isLoading = false;
   isGoogleLoading = false;
   googleUserData: any = null;
+  availableLanguages: Language[] = [];
 
   constructor(
     private fb: FormBuilder,
     private sessionService: SessionService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private i18nService: I18nService
+    private i18nService: I18nService,
+    private languageService: LanguageService
   ) {}
 
   ngOnInit(): void {
     this.initForm();
+    this.loadLanguages();
   }
 
   private initForm(): void {
@@ -93,7 +100,8 @@ export class InstitutionRegisterComponent implements OnInit {
     });
 
     this.educationalInfoForm = this.fb.group({
-      languagesOffered: [[], [Validators.required]],
+      languagesOffered: [[], []],
+      // languagesOffered: [[], [Validators.required]],
       description: ['', [Validators.required, Validators.minLength(100)]]
     });
 
@@ -112,6 +120,21 @@ export class InstitutionRegisterComponent implements OnInit {
   
   changeLanguage() {
     this.i18nService.toggleLanguage();
+  }
+
+  private loadLanguages(): void {
+    this.languageService.getAllLanguages().subscribe({
+      next: (languages) => {
+        this.availableLanguages = languages;
+      },
+      error: (error) => {
+        console.error('Error loading languages:', error);
+        this.snackBar.open('Error al cargar idiomas', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
   }
 
   private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {

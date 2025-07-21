@@ -128,6 +128,14 @@ export const routes: Routes = [
         loadComponent: () => import('./SharedModule/views/calendar/calendar.component').then(m => m.LayoutCalendarComponent),
       },
       {
+        path: 'students',
+        loadComponent: () => import('./modules/institution/components/students/students.component').then(m => m.StudentsComponent)
+      },
+      {
+        path: 'tutors',
+        loadComponent: () => import('./modules/institution/components/tutors/tutors.component').then(m => m.TutorsComponent)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

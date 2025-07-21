@@ -1,0 +1,100 @@
+<h2 mat-dialog-title>Agregar Nuevo Tutor</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="tutorForm" class="tutor-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" type="email" placeholder="correo@ejemplo.com">
+      <mat-error *ngIf="tutorForm.get('email')?.invalid && tutorForm.get('email')?.touched">
+        {{ getErrorMessage('email') }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre Completo</mat-label>
+      <input matInput formControlName="full_name" placeholder="Nombre y apellidos del tutor">
+      <mat-error *ngIf="tutorForm.get('full_name')?.invalid && tutorForm.get('full_name')?.touched">
+        {{ getErrorMessage('full_name') }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Fecha de Nacimiento</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="birth_date">
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-error *ngIf="tutorForm.get('birth_date')?.invalid && tutorForm.get('birth_date')?.touched">
+        {{ getErrorMessage('birth_date') }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>País</mat-label>
+      <mat-select formControlName="country">
+        <mat-option *ngFor="let country of countries" [value]="country">
+          {{ country }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="tutorForm.get('country')?.invalid && tutorForm.get('country')?.touched">
+        {{ getErrorMessage('country') }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>URL de Foto (Opcional)</mat-label>
+      <input matInput formControlName="photo_url" placeholder="https://ejemplo.com/foto.jpg">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Máximo Horas por Semana</mat-label>
+      <input matInput type="number" formControlName="max_hours_per_week" min="1" max="168">
+      <mat-error *ngIf="tutorForm.get('max_hours_per_week')?.invalid && tutorForm.get('max_hours_per_week')?.touched">
+        {{ getErrorMessage('max_hours_per_week') }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Biografía</mat-label>
+      <textarea matInput formControlName="bio" rows="4" 
+                placeholder="Describe la experiencia y especialidades del tutor"></textarea>
+      <mat-error *ngIf="tutorForm.get('bio')?.invalid && tutorForm.get('bio')?.touched">
+        {{ getErrorMessage('bio') }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Idioma Nativo</mat-label>
+      <mat-select formControlName="birth_language">
+        <mat-option *ngFor="let language of languages" [value]="language">
+          {{ language }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="tutorForm.get('birth_language')?.invalid && tutorForm.get('birth_language')?.touched">
+        {{ getErrorMessage('birth_language') }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Años de Experiencia</mat-label>
+      <input matInput type="number" formControlName="experience_level" min="0">
+      <mat-error *ngIf="tutorForm.get('experience_level')?.invalid && tutorForm.get('experience_level')?.touched">
+        {{ getErrorMessage('experience_level') }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Tarifa por Hora (USD)</mat-label>
+      <input matInput type="number" formControlName="hourly_rate" min="1" step="0.01">
+      <mat-error *ngIf="tutorForm.get('hourly_rate')?.invalid && tutorForm.get('hourly_rate')?.touched">
+        {{ getErrorMessage('hourly_rate') }}
+      </mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="tutorForm.invalid">
+    Agregar Tutor
+  </button>
+</mat-dialog-actions>

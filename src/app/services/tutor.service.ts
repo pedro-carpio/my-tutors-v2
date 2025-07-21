@@ -40,6 +40,16 @@ export class TutorService {
     return docData(docRef) as Observable<Tutor | undefined>;
   }
 
+  // Get tutors by institution ID
+  getTutorsByInstitution(institutionId: string): Observable<Tutor[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      orderBy('full_name', 'asc')
+    );
+    return collectionData(q) as Observable<Tutor[]>;
+  }
+
   // Get all tutors
   getAllTutors(): Observable<Tutor[]> {
     const q = query(

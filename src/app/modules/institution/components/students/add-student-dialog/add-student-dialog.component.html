@@ -1,0 +1,80 @@
+<h2 mat-dialog-title>Agregar Nuevo Estudiante</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="studentForm" class="student-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" type="email" placeholder="correo@ejemplo.com">
+      <mat-error *ngIf="studentForm.get('email')?.invalid && studentForm.get('email')?.touched">
+        {{ getErrorMessage('email') }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre Completo</mat-label>
+      <input matInput formControlName="full_name" placeholder="Nombre y apellidos del estudiante">
+      <mat-error *ngIf="studentForm.get('full_name')?.invalid && studentForm.get('full_name')?.touched">
+        {{ getErrorMessage('full_name') }}
+      </mat-error>
+    </mat-form-field>
+
+    <div class="goals-section">
+      <div class="goals-header">
+        <h3>Objetivos de Aprendizaje</h3>
+        <button mat-icon-button type="button" (click)="addGoal()" color="primary">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+
+      <div formArrayName="goals" class="goals-array">
+        <div *ngFor="let goal of goalsFormArray.controls; let i = index" 
+             [formGroupName]="i" 
+             class="goal-group">
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre del Objetivo</mat-label>
+            <input matInput formControlName="name" placeholder="Ej: Conversación fluida">
+            <mat-error *ngIf="goalsFormArray.at(i).get('name')?.invalid && goalsFormArray.at(i).get('name')?.touched">
+              {{ getGoalErrorMessage(i, 'name') }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Descripción</mat-label>
+            <textarea matInput formControlName="description" rows="2" 
+                      placeholder="Describe el objetivo específico"></textarea>
+            <mat-error *ngIf="goalsFormArray.at(i).get('description')?.invalid && goalsFormArray.at(i).get('description')?.touched">
+              {{ getGoalErrorMessage(i, 'description') }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Idioma</mat-label>
+            <mat-select formControlName="lang">
+              <mat-option *ngFor="let language of languages" [value]="language.code">
+                {{ language.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="goalsFormArray.at(i).get('lang')?.invalid && goalsFormArray.at(i).get('lang')?.touched">
+              {{ getGoalErrorMessage(i, 'lang') }}
+            </mat-error>
+          </mat-form-field>
+
+          <button mat-icon-button type="button" (click)="removeGoal(i)" color="warn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+
+        <div *ngIf="goalsFormArray.length === 0" class="no-goals">
+          <p>No hay objetivos agregados. Haz clic en + para agregar el primer objetivo.</p>
+        </div>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="studentForm.invalid">
+    Agregar Estudiante
+  </button>
+</mat-dialog-actions>

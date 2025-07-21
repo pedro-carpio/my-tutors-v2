@@ -23,12 +23,14 @@ export interface Tutor {
   birth_language: string;
   experience_level: number;
   hourly_rate: number;
+  institution_id?: string; // Opcional para tutores independientes
 }
 
 export interface Student {
   user_id: string;
   full_name: string;
   goals?: Goal[];
+  institution_id?: string; // Opcional para estudiantes independientes
 }
 
 export interface Goal {
@@ -44,6 +46,8 @@ export interface Institution {
   phone: string;
   description: string;
   logo_url?: string;
+  tutors?: string[];
+  students?: string[];
 }
 
 export interface Language {
@@ -76,6 +80,7 @@ export interface Course {
   capacity: number;
   start_date: Date;
   end_date: Date;
+  students?: string[]; // Array of student IDs
 }
 
 export interface Class {

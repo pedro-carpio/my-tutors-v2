@@ -13,7 +13,14 @@ import {
   User as FirebaseUser,
   sendPasswordResetEmail,
 } from '@angular/fire/auth';
-import { FieldValue, serverTimestamp } from '@angular/fire/firestore';
+import { 
+  FieldValue, 
+  serverTimestamp, 
+  Firestore,
+  doc,
+  setDoc,
+  deleteDoc
+} from '@angular/fire/firestore';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { UserService } from './user.service';
@@ -40,6 +47,7 @@ export interface RegistrationData {
 })
 export class SessionService {
   auth: Auth = inject(Auth);
+  firestore: Firestore = inject(Firestore);
   router: Router = inject(Router);
   userService: UserService = inject(UserService);
   tutorService: TutorService = inject(TutorService);
@@ -249,6 +257,25 @@ export class SessionService {
     }
   }
 
+  // Create user for administrative purposes (without sign-in)
+  async createUserForAdmin(email: string, role: UserRole): Promise<string> {
+    try {
+      // First check if email already exists
+      const existingUsers = await this.userService.getUserByEmail(email).toPromise();
+      if (existingUsers && existingUsers.length > 0) {
+        throw new Error('Este email ya está registrado');
+      }
+
+      // Create user record in Firestore without Firebase Auth
+      const userId = await this.userService.createUserForAdmin(email, role);
+      
+      return userId;
+    } catch (error) {
+      console.error('Error creating user for admin:', error);
+      throw error;
+    }
+  }
+
   async registerTutor(email: string, password: string, fullName: string, tutorData: any): Promise<{success: boolean, error?: string}> {
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
@@ -310,8 +337,18 @@ export class SessionService {
       }
 
       return userCredential.user;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      
+      // Check if user exists in Firestore but not in Firebase Auth (needs activation)
+      if (error.code === 'auth/user-not-found') {
+        const needsActivation = await this.userService.needsActivation(email);
+        if (needsActivation) {
+          // User exists in Firestore but needs Firebase Auth account
+          throw new Error('NEEDS_ACTIVATION');
+        }
+      }
+      
       throw error;
     }
   }
@@ -435,6 +472,105 @@ export class SessionService {
     } catch (error: any) {
       console.error('Error registering institution:', error);
       return { success: false, error: error.message || 'Error al registrar la institución' };
+    }
+  }
+
+  // Activate account for users created administratively
+  async activateAccount(email: string, newPassword: string): Promise<{success: boolean, error?: string}> {
+    try {
+      // Get user from Firestore to verify they exist and need activation
+      const users = await this.userService.getUserByEmail(email).toPromise();
+      const userData = users?.[0];
+      
+      if (!userData) {
+        return { success: false, error: 'Usuario no encontrado' };
+      }
+
+      // Create Firebase Auth account
+      const userCredential = await createUserWithEmailAndPassword(this.auth, email, newPassword);
+      
+      if (userCredential.user) {
+        // Update the user document to include the Firebase Auth ID
+        await this.userService.updateUser(userData.id, {
+          id: userCredential.user.uid
+        });
+
+        // Navigate based on role
+        this.navigateBasedOnRole(userData.role);
+        
+        return { success: true };
+      } else {
+        return { success: false, error: 'Error al activar la cuenta' };
+      }
+    } catch (error: any) {
+      console.error('Error activating account:', error);
+      
+      if (error.code === 'auth/email-already-in-use') {
+        // If the email is already in Firebase Auth, try to sign in
+        try {
+          const userCredential = await signInWithEmailAndPassword(this.auth, email, newPassword);
+          const users = await this.userService.getUserByEmail(email).toPromise();
+          const userData = users?.[0];
+          
+          if (userData) {
+            this.navigateBasedOnRole(userData.role);
+            return { success: true };
+          }
+        } catch (signInError) {
+          return { success: false, error: 'Credenciales incorrectas' };
+        }
+      }
+      
+      return { success: false, error: error.message || 'Error al activar la cuenta' };
+    }
+  }
+
+  // First time login for users created administratively
+  async firstTimeLogin(email: string, newPassword: string): Promise<{success: boolean, error?: string}> {
+    try {
+      // Check if user exists in Firestore and needs activation
+      const users = await this.userService.getUserByEmail(email).toPromise();
+      const userData = users?.[0];
+      
+      if (!userData) {
+        return { success: false, error: 'Usuario no encontrado' };
+      }
+
+      // Verify this user needs activation
+      const needsActivation = await this.userService.needsActivation(email);
+      if (!needsActivation) {
+        return { success: false, error: 'Esta cuenta ya está activada' };
+      }
+
+      // Create Firebase Auth account with the new password
+      const userCredential = await createUserWithEmailAndPassword(this.auth, email, newPassword);
+      
+      if (userCredential.user) {
+        // Migrate user document from Firestore auto-ID to Firebase Auth UID
+        await this.userService.migrateUserToFirebaseAuth(userData.id, userCredential.user.uid, userData);
+        
+        // Update display name if available
+        if (userCredential.user) {
+          await updateProfile(userCredential.user, {
+            displayName: email.split('@')[0] // Use email prefix as display name for now
+          });
+        }
+
+        // Navigate based on role
+        this.navigateBasedOnRole(userData.role);
+        
+        return { success: true };
+      } else {
+        return { success: false, error: 'Error al activar la cuenta' };
+      }
+    } catch (error: any) {
+      console.error('Error in first time login:', error);
+      
+      if (error.code === 'auth/email-already-in-use') {
+        return { success: false, error: 'Este email ya tiene una cuenta activa' };
+      }
+      
+      return { success: false, error: error.message || 'Error al activar la cuenta' };
     }
   }
 

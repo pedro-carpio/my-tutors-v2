@@ -47,6 +47,8 @@ export class LoginComponent {
   isLoading = false;
   hidePassword = true;
   showEmailLogin = false;
+  showFirstTimeSetup = false;
+  firstTimeEmail = '';
 
   constructor() {
     this.loginForm = this.formBuilder.group({
@@ -77,6 +79,12 @@ export class LoginComponent {
       } catch (error: any) {
         console.error('Login error:', error);
         
+        // Check if user needs activation
+        if (error.message === 'NEEDS_ACTIVATION') {
+          this.handleFirstTimeUser(this.loginForm.value.email, this.loginForm.value.password);
+          return;
+        }
+        
         let errorMessage = this.i18nService.translate('auth.login.loginError');
         
         if (error.code === 'auth/user-not-found') {
@@ -101,6 +109,123 @@ export class LoginComponent {
     } else {
       this.markFormGroupTouched();
     }
+  }
+
+  private async handleFirstTimeUser(email: string, password: string): Promise<void> {
+    try {
+      // Option 1: Simple confirmation (current implementation)
+      const useSimpleConfirm = true; // Toggle this for different UX
+      
+      if (useSimpleConfirm) {
+        const confirmActivation = confirm(
+          `Parece que esta es tu primera vez iniciando sesión. ¿Quieres usar "${password}" como tu contraseña permanente?`
+        );
+        
+        if (confirmActivation) {
+          const result = await this.sessionService.firstTimeLogin(email, password);
+          
+          if (result.success) {
+            this.snackBar.open(
+              'Cuenta activada exitosamente. Bienvenido!',
+              'Cerrar',
+              {
+                duration: 5000,
+                panelClass: ['success-snackbar']
+              }
+            );
+          } else {
+            this.snackBar.open(
+              result.error || 'Error al activar la cuenta',
+              'Cerrar',
+              {
+                duration: 5000,
+                panelClass: ['error-snackbar']
+              }
+            );
+          }
+        }
+      } else {
+        // Option 2: Show inline form for better UX
+        this.showFirstTimeSetup = true;
+        this.firstTimeEmail = email;
+        this.snackBar.open(
+          'Esta es tu primera vez iniciando sesión. Por favor, configura tu contraseña.',
+          'Cerrar',
+          {
+            duration: 5000,
+            panelClass: ['info-snackbar']
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error activating first time user:', error);
+      this.snackBar.open(
+        'Error al activar la cuenta. Contacta al administrador.',
+        'Cerrar',
+        {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        }
+      );
+    }
+  }
+
+  async onFirstTimeSetup(newPassword: string): Promise<void> {
+    if (!newPassword || newPassword.length < 6) {
+      this.snackBar.open(
+        'La contraseña debe tener al menos 6 caracteres',
+        'Cerrar',
+        {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        }
+      );
+      return;
+    }
+
+    this.isLoading = true;
+    
+    try {
+      const result = await this.sessionService.firstTimeLogin(this.firstTimeEmail, newPassword);
+      
+      if (result.success) {
+        this.showFirstTimeSetup = false;
+        this.snackBar.open(
+          'Cuenta activada exitosamente. Bienvenido!',
+          'Cerrar',
+          {
+            duration: 5000,
+            panelClass: ['success-snackbar']
+          }
+        );
+      } else {
+        this.snackBar.open(
+          result.error || 'Error al activar la cuenta',
+          'Cerrar',
+          {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error in first time setup:', error);
+      this.snackBar.open(
+        'Error al configurar la cuenta',
+        'Cerrar',
+        {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        }
+      );
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  cancelFirstTimeSetup(): void {
+    this.showFirstTimeSetup = false;
+    this.firstTimeEmail = '';
   }
 
   private markFormGroupTouched(): void {

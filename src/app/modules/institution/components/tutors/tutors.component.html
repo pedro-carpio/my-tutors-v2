@@ -1,0 +1,67 @@
+<app-layout #layout>
+  <app-toolbar 
+    slot="toolbar"
+    title="Dashboard" 
+    [showLogout]="true"
+    [showMenuButton]="(layout.isHandset$ | async) || false"
+    (logout)="logout()"
+    (menuToggle)="layout.toggleDrawer()">
+  </app-toolbar>
+
+  <mat-card class="welcome-card">
+    <mat-card-header>
+      <mat-card-title>Gestión de Tutores</mat-card-title>
+      <mat-card-subtitle>Administra los tutores de tu institución</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <mat-toolbar>
+        <span>Lista de Tutores</span>
+        <span class="spacer"></span>
+        <button mat-fab 
+                color="primary" 
+                (click)="openAddTutorDialog()"
+                matTooltip="Agregar nuevo tutor">
+          <mat-icon>add</mat-icon>
+        </button>
+      </mat-toolbar>
+
+      <mat-list *ngIf="tutors$ | async as tutors; else noTutors">
+        <ng-container *ngFor="let tutor of tutors; let last = last">
+          <mat-list-item class="tutor-item">
+            <mat-icon matListItemIcon>person</mat-icon>
+            <div matListItemTitle>
+              <strong>{{ tutor.full_name }}</strong>
+            </div>
+            <div matListItemLine>
+              {{ tutor.country }} • {{ tutor.birth_language }}
+            </div>
+            <div matListItemLine>
+              Experiencia: {{ tutor.experience_level }} años • 
+              Tarifa: ${{ tutor.hourly_rate }}/hora
+            </div>
+            <div matListItemLine>
+              Máximo {{ tutor.max_hours_per_week }} horas/semana
+            </div>
+            <button mat-icon-button 
+                    matTooltip="Ver perfil completo"
+                    color="primary">
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </mat-list-item>
+          <mat-divider [inset]="true" *ngIf="!last"></mat-divider>
+        </ng-container>
+      </mat-list>
+
+      <ng-template #noTutors>
+        <mat-list>
+          <mat-list-item>
+            <mat-icon matListItemIcon>info</mat-icon>
+            <div matListItemTitle>No hay tutores registrados en tu institución</div>
+            <div matListItemLine>Haz clic en el botón + para agregar el primer tutor</div>
+          </mat-list-item>
+        </mat-list>
+      </ng-template>
+    </mat-card-content>
+  </mat-card>
+</app-layout>
