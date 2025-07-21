@@ -16,23 +16,34 @@ export interface Tutor {
   user_id: string;
   full_name: string;
   birth_date: Date;
-  nationality: string;
+  country: string;
   photo_url?: string;
   max_hours_per_week: number;
+  bio: string;
+  birth_language: string;
+  experience_level: number;
+  hourly_rate: number;
 }
 
 export interface Student {
   user_id: string;
   full_name: string;
-  goals: string;
-  level_cefr: LevelCEFR;
+  goals?: Goal[];
+}
+
+export interface Goal {
+  description: string;
+  name: string;
+  lang: string; // ISO 639‑1 code
 }
 
 export interface Institution {
   user_id: string;
   name: string;
-  contact_email: string;
-  address: string;
+  country: string;
+  phone: string;
+  description: string;
+  logo_url?: string;
 }
 
 export interface Language {
@@ -41,8 +52,8 @@ export interface Language {
   name: string;
 }
 
-export interface TutorLanguage {
-  tutor_id: string;
+export interface UserLanguage {
+  user_id: string;
   language_id: string;
   level_cefr: LevelCEFR;
 }

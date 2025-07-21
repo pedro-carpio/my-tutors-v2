@@ -75,7 +75,11 @@ export const routes: Routes = [
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
-      }
+      },
+      {
+        path: 'calendar',
+        loadComponent: () => import('./SharedModule/views/calendar/calendar.component').then(m => m.LayoutCalendarComponent),
+      },
     ]
   },
 
@@ -92,6 +96,10 @@ export const routes: Routes = [
       {
         path: 'pending-verification',
         loadComponent: () => import('./SharedModule/views/chat/chat.component').then(m => m.ChatComponent)
+      },
+      {
+        path: 'calendar',
+        loadComponent: () => import('./SharedModule/views/calendar/calendar.component').then(m => m.LayoutCalendarComponent),
       },
       {
         path: '',
@@ -114,6 +122,10 @@ export const routes: Routes = [
       {
         path: 'pending-verification',
         loadComponent: () => import('./SharedModule/views/chat/chat.component').then(m => m.ChatComponent)
+      },
+      {
+        path: 'calendar',
+        loadComponent: () => import('./SharedModule/views/calendar/calendar.component').then(m => m.LayoutCalendarComponent),
       },
       {
         path: '',

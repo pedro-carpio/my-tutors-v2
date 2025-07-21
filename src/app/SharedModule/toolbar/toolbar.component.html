@@ -1,4 +1,12 @@
 <mat-toolbar color="primary">
+  <button 
+    *ngIf="showMenuButton"
+    mat-icon-button 
+    (click)="onMenuToggle()"
+    [attr.aria-label]="'layout.menu' | translate"
+    [matTooltip]="'layout.menu' | translate">
+    <mat-icon>menu</mat-icon>
+  </button>
   <span>{{ title || ('layout.appName' | translate) }}</span>
   <span class="spacer"></span>
   <button 

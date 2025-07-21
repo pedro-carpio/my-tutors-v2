@@ -141,7 +141,55 @@
           </form>
         </mat-step>
 
-        <!-- Step 3: Confirmation -->
+        <!-- Step 3: Goals Selection -->
+        <mat-step [stepControl]="goalsForm">
+          <form [formGroup]="goalsForm">
+            <ng-template matStepLabel>{{ 'register.student.goals' | translate }}</ng-template>
+            
+            <div class="goals-section">
+              <p class="goals-description">{{ 'register.student.goalsDescription' | translate }}</p>
+              
+              <!-- Goals Selection -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>{{ 'register.student.selectGoals' | translate }}</mat-label>
+                <mat-select 
+                  multiple 
+                  formControlName="selectedGoals"
+                  (selectionChange)="onGoalsSelectionChange($event.value)">
+                  <mat-option *ngFor="let goal of availableGoals" [value]="goal">
+                    {{goal.name}}
+                  </mat-option>
+                </mat-select>
+                <mat-hint>{{ 'register.student.selectMultipleGoals' | translate }}</mat-hint>
+                <mat-error *ngIf="goalsForm.get('selectedGoals')?.hasError('required')">
+                  {{ 'errors.required' | translate }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Selected Goals Display -->
+              <div class="selected-goals" *ngIf="selectedGoals.length > 0">
+                <h4>{{ 'register.student.selectedGoals' | translate }}</h4>
+                <mat-chip-listbox class="goals-chips">
+                  <mat-chip-option 
+                    *ngFor="let goal of selectedGoals" 
+                    [selectable]="false"
+                    [removable]="true"
+                    (removed)="removeGoal(goal)">
+                    {{goal.name}}
+                    <mat-icon matChipRemove>cancel</mat-icon>
+                  </mat-chip-option>
+                </mat-chip-listbox>
+              </div>
+            </div>
+
+            <mat-card-actions class="step-buttons">
+              <button mat-button matStepperPrevious>{{ 'register.student.back' | translate }}</button>
+              <button mat-raised-button matStepperNext color="primary">{{ 'register.student.next' | translate }}</button>
+            </mat-card-actions>
+          </form>
+        </mat-step>
+
+        <!-- Step 4: Confirmation -->
         <mat-step>
           <ng-template matStepLabel>{{ 'register.student.confirmation' | translate }}</ng-template>
           
@@ -160,6 +208,24 @@
                 <p><strong>Nombre:</strong> {{basicInfoForm.get('fullName')?.value}}</p>
                 <p><strong>Email:</strong> {{basicInfoForm.get('email')?.value}}</p>
               </mat-expansion-panel>
+
+              <mat-expansion-panel class="summary-section">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>{{ 'register.student.selectedGoals' | translate }}</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="goals-summary">
+                  <mat-chip-listbox class="summary-chips" *ngIf="selectedGoals.length > 0">
+                    <mat-chip-option 
+                      *ngFor="let goal of selectedGoals"
+                      [selectable]="false">
+                      {{goal.name}}
+                    </mat-chip-option>
+                  </mat-chip-listbox>
+                  <p *ngIf="selectedGoals.length === 0" class="no-goals">
+                    {{ 'register.student.noGoalsSelected' | translate }}
+                  </p>
+                </div>
+              </mat-expansion-panel>
             </mat-card-content>
           </mat-card>
 
@@ -168,7 +234,7 @@
             <button mat-raised-button 
                     color="primary" 
                     (click)="onSubmit()"
-                    [disabled]="!basicInfoForm.valid || !securityForm.valid || isLoading">
+                    [disabled]="!basicInfoForm.valid || !securityForm.valid || !goalsForm.valid || isLoading">
               <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
               <span *ngIf="!isLoading">{{ 'register.student.complete' | translate }}</span>
               <span *ngIf="isLoading">{{ 'register.student.registering' | translate }}</span>

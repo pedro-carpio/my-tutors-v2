@@ -1,0 +1,11 @@
+<app-layout #layout>
+      <app-toolbar 
+    slot="toolbar"
+    title="Dashboard" 
+    [showLogout]="true"
+    [showMenuButton]="(layout.isHandset$ | async) || false"
+    (logout)="logout()"
+    (menuToggle)="layout.toggleDrawer()">
+  </app-toolbar>
+  <app-calendar></app-calendar>
+</app-layout>

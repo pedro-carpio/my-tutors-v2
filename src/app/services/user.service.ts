@@ -28,16 +28,11 @@ export class UserService {
   private firestore: Firestore = inject(Firestore);
   private collectionName = 'users';
 
-  // Create a new user
-  async createUser(userData: Omit<User, 'id' | 'created_at'>): Promise<string> {
+  // Create a new user with specific ID (from Firebase Auth)
+  async createUser(userData: User): Promise<void> {
     try {
-      const userToCreate: Omit<User, 'id'> = {
-        ...userData,
-        created_at: serverTimestamp(),
-      };
-      
-      const docRef = await addDoc(collection(this.firestore, this.collectionName), userToCreate);
-      return docRef.id;
+      const docRef = doc(this.firestore, this.collectionName, userData.id);
+      await setDoc(docRef, userData);
     } catch (error) {
       console.error('Error creating user:', error);
       throw error;

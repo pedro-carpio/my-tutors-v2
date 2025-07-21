@@ -67,21 +67,6 @@ export class InstitutionRegisterComponent implements OnInit {
   isGoogleLoading = false;
   googleUserData: any = null;
 
-  availableLanguages: LanguageOption[] = [
-    { value: 'spanish', label: 'Español' },
-    { value: 'english', label: 'Inglés' },
-    { value: 'french', label: 'Francés' },
-    { value: 'german', label: 'Alemán' },
-    { value: 'italian', label: 'Italiano' },
-    { value: 'portuguese', label: 'Portugués' },
-    { value: 'mandarin', label: 'Mandarín' },
-    { value: 'japanese', label: 'Japonés' },
-    { value: 'korean', label: 'Coreano' },
-    { value: 'arabic', label: 'Árabe' },
-    { value: 'russian', label: 'Ruso' },
-    { value: 'dutch', label: 'Holandés' }
-  ];
-
   constructor(
     private fb: FormBuilder,
     private sessionService: SessionService,
@@ -98,7 +83,8 @@ export class InstitutionRegisterComponent implements OnInit {
     this.basicInfoForm = this.fb.group({
       institutionName: ['', [Validators.required, Validators.minLength(3)]],
       contactPerson: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email]],
+      logo_url: ['', [Validators.pattern(/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))$/)]],
     });
 
     this.contactInfoForm = this.fb.group({
@@ -188,7 +174,7 @@ export class InstitutionRegisterComponent implements OnInit {
               phone: formValue.phone,
               country: formValue.country,
               languagesOffered: formValue.languagesOffered,
-              description: formValue.description
+              description: formValue.description,
             }
           );
 
@@ -299,11 +285,5 @@ export class InstitutionRegisterComponent implements OnInit {
 
   navigateToTutorRegister(): void {
     this.router.navigate(['/register/tutor']);
-  }
-
-  // Helper method for getting language labels
-  getLanguageLabel(value: string): string {
-    const language = this.availableLanguages.find(lang => lang.value === value);
-    return language ? language.label : value;
   }
 }

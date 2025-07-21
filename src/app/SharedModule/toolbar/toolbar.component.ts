@@ -23,7 +23,9 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 export class ToolbarComponent {
   @Input() title: string = '';
   @Input() showLogout: boolean = false;
+  @Input() showMenuButton: boolean = false;
   @Output() logout = new EventEmitter<void>();
+  @Output() menuToggle = new EventEmitter<void>();
   
   private i18nService = inject(I18nService);
 
@@ -39,5 +41,9 @@ export class ToolbarComponent {
 
   onLogout() {
     this.logout.emit();
+  }
+
+  onMenuToggle() {
+    this.menuToggle.emit();
   }
 }

@@ -30,7 +30,7 @@ import {
 import { getToken, Messaging, onMessage } from '@angular/fire/messaging';
 import { Router } from '@angular/router';
 import { SessionService } from './session.service';
-import { User } from '@angular/fire/auth';
+import { User as FirebaseUser } from '@angular/fire/auth';
 
 type ChatMessage = {
   name: string | null,
@@ -54,7 +54,7 @@ export class ChatService {
   LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif?a';
 
   // observable that is updated when the auth state changes
-  currentUser: User | null = this.session.currentUser;
+  currentUser: FirebaseUser | null = this.session.currentUser;
 
   // Adds a text or image message to Cloud Firestore.
     addMessage = async (

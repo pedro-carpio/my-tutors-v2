@@ -1,0 +1,35 @@
+<div class="calendar">
+    <mat-toolbar>
+        <div class="title">{{ monthNames[currentMonth] }} {{ currentYear }}</div>
+        <span class="spacer"></span>
+        <button mat-icon-button aria-label="Previous month" (click)="prevMonth()">
+            <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button mat-icon-button aria-label="Next month" (click)="nextMonth()">
+            <mat-icon>chevron_right</mat-icon>
+        </button>
+    </mat-toolbar>
+    <div class="grid">
+        @for (d of dayNames; track $index) {
+            <div class="cell header">{{ d }}</div>
+        }
+        @for (week of weeks; track $index) {
+            <ng-container>
+                @for (day of week; track $index) {
+                    <div 
+                        class="cell day" 
+                        [class.today]="day.isToday"
+                        [class.active]="day.active"
+                        [class.inactive]="!day.active && day.date"
+                        [matBadge]="day.count > 0 ? day.count : null"
+                        (click)="dayClicked(day)"
+                    >
+                        @if (day.date) {
+                            <span>{{ day.date.getDate() }}</span>
+                        }
+                    </div>
+                }
+            </ng-container>
+        }
+    </div>
+</div>

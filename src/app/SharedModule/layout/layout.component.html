@@ -3,12 +3,19 @@
       [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
       [mode]="(isHandset$ | async) ? 'over' : 'side'"
       [opened]="(isHandset$ | async) === false">
-    <mat-toolbar>{{ 'layout.menu' | translate }}</mat-toolbar>
+    <mat-toolbar>
+      <span>{{ 'layout.menu' | translate }}</span>
+    </mat-toolbar>
     <mat-nav-list>
-      @for (item of menu; track $index) {
+      @if (filteredMenu.length === 0) {
+        <div style="padding: 16px; text-align: center; opacity: 0.6;">
+          <p>{{ 'layout.noMenuItems' | translate }}</p>
+        </div>
+      }
+      @for (item of filteredMenu; track $index) {
         @if (!item.hidden) {
           @if (item.type === 'group') {
-            <h3 mat-subheader >{{ item.title }}</h3>
+            <h3 mat-subheader>{{ getTranslatedTitle(item) }}</h3>
             @for (child of item.children; track $index) {
               <a
                 mat-list-item
@@ -16,14 +23,14 @@
                 #link="routerLinkActive"
                 routerLinkActive
                 [activated]="link.isActive"
-                target="{{item.target}}"
+                target="{{child.target}}"
               >
                 @if (child.matIcon) {
                   <button matIconButton matListItemMeta>
                     <mat-icon>{{ child.matIcon }}</mat-icon>
                   </button>
                 }
-                {{ child.title }}
+                {{ getTranslatedTitle(child) }}
               </a>
             }
             <mat-divider></mat-divider>
@@ -41,7 +48,7 @@
                   <mat-icon>{{ item.matIcon }}</mat-icon>
                 </button>
               }
-              {{ item.title }}
+              {{ getTranslatedTitle(item) }}
             </a>
           }
         }
@@ -49,6 +56,7 @@
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
+    <ng-content select="[slot=toolbar]"></ng-content>
     <ng-content></ng-content>
   </mat-sidenav-content>
 </mat-sidenav-container>

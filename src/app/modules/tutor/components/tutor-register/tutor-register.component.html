@@ -79,6 +79,65 @@
               </mat-error>
             </mat-form-field>
 
+            <!-- Birth Date -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Fecha de nacimiento</mat-label>
+              <input matInput 
+                     [matDatepicker]="picker"
+                     formControlName="birthDate" 
+                     placeholder="Selecciona tu fecha de nacimiento">
+              <mat-icon matPrefix>cake</mat-icon>
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="basicInfoForm.get('birthDate')?.hasError('required')">
+                La fecha de nacimiento es requerida
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Country -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>País de residencia</mat-label>
+              <input matInput 
+                     formControlName="country" 
+                     placeholder="Ingresa tu país de residencia">
+              <mat-icon matPrefix>place</mat-icon>
+              <mat-error *ngIf="basicInfoForm.get('country')?.hasError('required')">
+                El país es requerido
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Photo URL -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>URL de foto de perfil</mat-label>
+              <input matInput 
+                     formControlName="photoUrl" 
+                     placeholder="https://ejemplo.com/tu-foto.jpg">
+                     
+              <mat-icon matPrefix>photo_camera</mat-icon>
+              <mat-error *ngIf="basicInfoForm.get('photoUrl')?.hasError('pattern')">
+                Debe ser una URL de imagen válida
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Max Hours Per Week -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Horas máximas por semana</mat-label>
+              <input matInput 
+                     type="number"
+                     formControlName="maxHoursPerWeek" 
+                     placeholder="10">
+              <mat-icon matPrefix>schedule</mat-icon>
+              <mat-error *ngIf="basicInfoForm.get('maxHoursPerWeek')?.hasError('required')">
+                Las horas son requeridas
+              </mat-error>
+              <mat-error *ngIf="basicInfoForm.get('maxHoursPerWeek')?.hasError('min')">
+                Debes ingresar al menos 1 hora
+              </mat-error>
+              <mat-error *ngIf="basicInfoForm.get('maxHoursPerWeek')?.hasError('max')">
+                No puedes ingresar más de 40 horas
+              </mat-error>
+            </mat-form-field>
+
             <mat-card-actions class="step-buttons">
               <button mat-raised-button matStepperNext color="primary">Siguiente</button>
             </mat-card-actions>
@@ -90,6 +149,20 @@
           <form [formGroup]="professionalInfoForm">
             <ng-template matStepLabel>Información profesional</ng-template>
             
+            <!-- Birth Language -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Idioma nativo</mat-label>
+              <mat-select formControlName="birthLanguage">
+                <mat-option *ngFor="let language of availableLanguages" [value]="language.value">
+                  {{language.label}}
+                </mat-option>
+              </mat-select>
+              <mat-icon matPrefix>language</mat-icon>
+              <mat-error *ngIf="professionalInfoForm.get('birthLanguage')?.hasError('required')">
+                Selecciona tu idioma nativo
+              </mat-error>
+            </mat-form-field>
+
             <!-- Languages -->
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Idiomas que enseñas</mat-label>

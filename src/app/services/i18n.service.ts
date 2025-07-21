@@ -71,7 +71,26 @@ export class I18nService {
           menu: 'Menú',
           appName: 'My Tutors',
           changeLanguage: 'Cambiar idioma',
-          setTimezone: 'Configurar zona horaria'
+          setTimezone: 'Configurar zona horaria',
+          noMenuItems: 'No hay elementos de menú disponibles'
+        },
+
+        // Navegación
+        navigation: {
+          dashboard: 'Panel Principal',
+          home: 'Inicio',
+          student: 'Estudiante',
+          myClasses: 'Mis Clases',
+          findTutors: 'Buscar Tutores',
+          tutor: 'Tutor',
+          myStudents: 'Mis Estudiantes',
+          availability: 'Disponibilidad',
+          institution: 'Institución',
+          manageTutors: 'Gestionar Tutores',
+          manageStudents: 'Gestionar Estudiantes',
+          admin: 'Administración',
+          userManagement: 'Gestión de Usuarios',
+          systemSettings: 'Configuración del Sistema'
         },
         
         // Autenticación
@@ -147,7 +166,12 @@ export class I18nService {
             registerSuccess: '¡Registro exitoso! Completa tu perfil.',
             registerError: 'Error en el registro. Intenta nuevamente.',
             emailExists: 'Este email ya está registrado.',
-            weakPassword: 'La contraseña debe tener al menos 6 caracteres.'
+            weakPassword: 'La contraseña debe tener al menos 6 caracteres.',
+            goals: 'Objetivos',
+            goalsDescription: 'Define tus objetivos de aprendizaje.',
+            selectGoals: 'Selecciona tus objetivos',
+            selectMultipleGoals: 'Puedes seleccionar múltiples objetivos',
+            selectedGoals: 'Objetivos seleccionados',
           },
           tutor: {
             title: 'Registro de Tutor',
@@ -287,7 +311,26 @@ export class I18nService {
           menu: 'Menu',
           appName: 'My Tutors',
           changeLanguage: 'Change language',
-          setTimezone: 'Set timezone'
+          setTimezone: 'Set timezone',
+          noMenuItems: 'No menu items available'
+        },
+
+        // Navigation
+        navigation: {
+          dashboard: 'Dashboard',
+          home: 'Home',
+          student: 'Student',
+          myClasses: 'My Classes',
+          findTutors: 'Find Tutors',
+          tutor: 'Tutor',
+          myStudents: 'My Students',
+          availability: 'Availability',
+          institution: 'Institution',
+          manageTutors: 'Manage Tutors',
+          manageStudents: 'Manage Students',
+          admin: 'Administration',
+          userManagement: 'User Management',
+          systemSettings: 'System Settings'
         },
         
         // Authentication
@@ -363,7 +406,12 @@ export class I18nService {
             registerSuccess: 'Registration successful! Complete your profile.',
             registerError: 'Registration error. Please try again.',
             emailExists: 'This email is already registered.',
-            weakPassword: 'Password must be at least 6 characters.'
+            weakPassword: 'Password must be at least 6 characters.',
+            goals: 'Goals',
+            goalsDescription: 'Define your learning goals.',
+            selectGoals: 'Select your goals',
+            selectMultipleGoals: 'You can select multiple goals',
+            selectedGoals: 'Selected goals',
           },
           tutor: {
             title: 'Tutor Registration',

@@ -25,6 +25,7 @@ export class StudentService {
   // Create or update student profile
   async createStudent(studentData: Student): Promise<void> {
     try {
+      console.log(studentData);
       const docRef = doc(this.firestore, this.collectionName, studentData.user_id);
       await setDoc(docRef, studentData);
     } catch (error) {

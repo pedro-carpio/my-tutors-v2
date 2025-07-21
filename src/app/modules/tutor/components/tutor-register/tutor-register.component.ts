@@ -13,6 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatStepperModule } from '@angular/material/stepper';
 
+import {MatDatepickerModule} from '@angular/material/datepicker';
 import { SessionService } from '../../../../services/session.service';
 import { I18nService } from '../../../../services/i18n.service';
 import { ToolbarComponent } from '../../../../SharedModule/toolbar/toolbar.component';
@@ -44,7 +45,8 @@ interface ExperienceLevel {
     MatSnackBarModule,
     MatStepperModule,
     ToolbarComponent,
-    TranslatePipe
+    TranslatePipe,
+    MatDatepickerModule
 ],
   templateUrl: './tutor-register.component.html',
   styleUrls: ['./tutor-register.component.scss']
@@ -99,10 +101,15 @@ export class TutorRegisterComponent implements OnInit {
   private initForm(): void {
     this.basicInfoForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email]],
+      birthDate: ['', [Validators.required]],
+      country: ['', [Validators.required]],
+      photoUrl: ['', [Validators.pattern(/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))$/)]],
+      maxHoursPerWeek: ['', [Validators.required, Validators.min(1), Validators.max(40)]]
     });
 
     this.professionalInfoForm = this.fb.group({
+      birthLanguage: ['', [Validators.required]],
       languages: [[], [Validators.required]],
       experienceLevel: ['', [Validators.required]],
       bio: ['', [Validators.required, Validators.minLength(50)]],

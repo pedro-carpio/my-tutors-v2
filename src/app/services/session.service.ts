@@ -10,13 +10,23 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
   user,
-  User,
+  User as FirebaseUser,
   sendPasswordResetEmail,
 } from '@angular/fire/auth';
+import { FieldValue, serverTimestamp } from '@angular/fire/firestore';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { UserService } from './user.service';
-import { UserRole } from '../types/firestore.types';
+import { TutorService } from './tutor.service';
+import { StudentService } from './student.service';
+import { InstitutionService } from './institution.service';
+import { 
+  User, 
+  UserRole, 
+  Tutor, 
+  Student, 
+  Institution 
+} from '../types/firestore.types';
 
 export interface RegistrationData {
   email: string;
@@ -32,11 +42,14 @@ export class SessionService {
   auth: Auth = inject(Auth);
   router: Router = inject(Router);
   userService: UserService = inject(UserService);
+  tutorService: TutorService = inject(TutorService);
+  studentService: StudentService = inject(StudentService);
+  institutionService: InstitutionService = inject(InstitutionService);
   private provider = new GoogleAuthProvider();
 
   // observable that is updated when the auth state changes
   user$ = user(this.auth);
-  currentUser: User | null = this.auth.currentUser;
+  currentUser: FirebaseUser | null = this.auth.currentUser;
   userSubscription: Subscription;
   
   constructor() {
@@ -45,7 +58,7 @@ export class SessionService {
       prompt: 'select_account'
     });
     
-    this.userSubscription = this.user$.subscribe((aUser: User | null) => {
+    this.userSubscription = this.user$.subscribe((aUser: FirebaseUser | null) => {
         this.currentUser = aUser;
     });
   }
@@ -65,14 +78,11 @@ export class SessionService {
             this.navigateBasedOnRole(userData.role);
           } else {
             // New Google user - create basic profile and redirect to role selection
-            const newUser = {
-              uid: result.user.uid,
+            const newUser: User = {
+              id: result.user.uid,
               email: result.user.email!,
-              name: result.user.displayName || 'Usuario',
-              role: 'student' as UserRole, // Default role
-              isActive: true,
-              createdAt: new Date(),
-              updatedAt: new Date()
+              role: 'student' as UserRole,
+              created_at: serverTimestamp()
             };
             
             await this.userService.createUser(newUser);
@@ -119,14 +129,11 @@ export class SessionService {
             this.navigateBasedOnRole(userData.role);
           } else {
             // New Google user - create basic profile and redirect to role selection
-            const newUser = {
-              uid: result.user.uid,
+            const newUser: User = {
+              id: result.user.uid,
               email: result.user.email!,
-              name: result.user.displayName || 'Usuario',
-              role: 'student' as UserRole, // Default role
-              isActive: true,
-              createdAt: new Date(),
-              updatedAt: new Date()
+              role: 'student' as UserRole,
+              created_at: serverTimestamp()
             };
             
             await this.userService.createUser(newUser);
@@ -159,14 +166,11 @@ export class SessionService {
         }
 
         // Create new user profile with specified role
-        const userProfile = {
-          uid: result.user.uid,
+        const userProfile: User = {
+          id: result.user.uid,
           email: result.user.email!,
-          name: result.user.displayName || 'Usuario',
           role: role,
-          isActive: role === 'student', // Students are active by default, others need approval
-          createdAt: new Date(),
-          updatedAt: new Date()
+          created_at: serverTimestamp()
         };
 
         await this.userService.createUser(userProfile);
@@ -219,7 +223,7 @@ export class SessionService {
   }
 
   // Email/Password registration
-  async register(registrationData: RegistrationData): Promise<User> {
+  async register(registrationData: RegistrationData): Promise<FirebaseUser> {
     try {
       // Create Firebase Auth account
       const userCredential = await createUserWithEmailAndPassword(
@@ -231,12 +235,6 @@ export class SessionService {
       // Update display name
       await updateProfile(userCredential.user, {
         displayName: registrationData.fullName
-      });
-
-      // Create user document in Firestore
-      await this.userService.createUser({
-        email: registrationData.email,
-        role: registrationData.role
       });
 
       // Navigate to onboarding
@@ -260,18 +258,31 @@ export class SessionService {
           displayName: fullName 
         });
 
-        // Create tutor profile
-        const tutorProfile = {
-          uid: userCredential.user.uid,
+        // Create user profile first
+        const userProfile: User = {
+          id: userCredential.user.uid,
           email: email,
-          name: fullName,
           role: 'tutor' as UserRole,
-          isActive: false, // Tutors need approval
-          createdAt: new Date(),
-          updatedAt: new Date()
+          created_at: serverTimestamp()
         };
 
-        await this.userService.createUser(tutorProfile);
+        await this.userService.createUser(userProfile);
+        
+        // Create tutor specific data
+        const tutorProfile: Tutor = {
+          user_id: userCredential.user.uid,
+          full_name: fullName,
+          birth_date: tutorData.birth_date || new Date(),
+          country: tutorData.country || '',
+          photo_url: tutorData.photo_url,
+          max_hours_per_week: tutorData.max_hours_per_week || 40,
+          bio: tutorData.bio || '',
+          birth_language: tutorData.birth_language || '',
+          experience_level: tutorData.experience_level || 0,
+          hourly_rate: tutorData.hourly_rate || 0
+        };
+
+        await this.tutorService.createTutor(tutorProfile);
         
         return { success: true };
       } else {
@@ -284,14 +295,19 @@ export class SessionService {
   }
 
   // Email/Password login
-  async loginWithEmail(email: string, password: string): Promise<User> {
+  async loginWithEmail(email: string, password: string): Promise<FirebaseUser> {
     try {
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
       
-      // Get user role from Firestore
-      const user = this.userService.getUserByEmail(email);
-
-      this.router.navigate(['/home']);
+      // Get user role from Firestore to navigate correctly
+      const users = await this.userService.getUserByEmail(email).toPromise();
+      const userData = users?.[0];
+      
+      if (userData) {
+        this.navigateBasedOnRole(userData.role);
+      } else {
+        this.router.navigate(['/home']);
+      }
 
       return userCredential.user;
     } catch (error) {
@@ -334,6 +350,44 @@ export class SessionService {
     }
   }
 
+  async registerStudent(email: string, password: string, fullName: string, studentData: any): Promise<{success: boolean, error?: string}> {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+      
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, { 
+          displayName: fullName 
+        });
+
+        // Create user profile first
+        const userProfile: User = {
+          id: userCredential.user.uid,
+          email: email,
+          role: 'student' as UserRole,
+          created_at: serverTimestamp()
+        };
+
+        await this.userService.createUser(userProfile);
+        
+        // Create student specific data
+        const studentProfile: Student = {
+          user_id: userCredential.user.uid,
+          full_name: fullName,
+          goals: studentData.goals || []
+        };
+
+        await this.studentService.createStudent(studentProfile);
+        
+        return { success: true };
+      } else {
+        return { success: false, error: 'Error al crear el usuario' };
+      }
+    } catch (error: any) {
+      console.error('Error registering student:', error);
+      return { success: false, error: error.message || 'Error al registrar el estudiante' };
+    }
+  }
+
   logout() {
     signOut(this.auth).then(() => {
         this.router.navigate(['/', 'login'])
@@ -351,19 +405,28 @@ export class SessionService {
         await updateProfile(userCredential.user, { 
           displayName: contactPerson 
         });
-
-        // Create institution profile
-        const institutionProfile = {
-          uid: userCredential.user.uid,
+        
+        // Create user profile first
+        const userProfile: User = {
+          id: userCredential.user.uid,
           email: email,
-          name: contactPerson,
           role: 'institution' as UserRole,
-          isActive: false,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          created_at: serverTimestamp()
         };
 
-        await this.userService.createUser(institutionProfile);
+        await this.userService.createUser(userProfile);
+        
+        // Create institution specific data
+        const institutionProfile: Institution = {
+          user_id: userCredential.user.uid,
+          name: institutionData.name || contactPerson,
+          country: institutionData.country || '',
+          phone: institutionData.phone || '',
+          description: institutionData.description || '',
+          logo_url: institutionData.logo_url || ''
+        };
+
+        await this.institutionService.createInstitution(institutionProfile);
         
         return { success: true };
       } else {

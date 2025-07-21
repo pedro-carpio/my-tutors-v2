@@ -1,0 +1,24 @@
+<mat-card>
+    <mat-toolbar>
+        <span>Calendar</span>
+        <span class="spacer"></span>
+        <div class="splited">
+            <label>Change view</label>
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Calendar view options">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item>
+                    <mat-icon>calendar_view_month</mat-icon>
+                    <span>Monthly</span>
+                </button>
+                <button mat-menu-item>
+                    <mat-icon>calendar_view_week</mat-icon>
+                    <span>Weekly</span>
+                </button>
+            </mat-menu>
+        </div>
+    </mat-toolbar>
+    <mat-divider></mat-divider>
+    <app-month></app-month>
+</mat-card>

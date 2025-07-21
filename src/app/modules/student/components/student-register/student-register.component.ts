@@ -13,11 +13,15 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { SessionService } from '../../../../services/session.service';
 import { I18nService } from '../../../../services/i18n.service';
+import { GoalService } from '../../../../services/goal.service';
 import { ToolbarComponent } from '../../../../SharedModule/toolbar/toolbar.component';
 import { TranslatePipe } from "../../../../pipes/translate.pipe";
+import { Goal } from '../../../../types/firestore.types';
 
 @Component({
   selector: 'app-student-register',
@@ -34,6 +38,8 @@ import { TranslatePipe } from "../../../../pipes/translate.pipe";
     MatSnackBarModule,
     MatStepperModule,
     MatExpansionModule,
+    MatSelectModule,
+    MatChipsModule,
     ToolbarComponent,
     TranslatePipe
 ],
@@ -46,10 +52,12 @@ export class StudentRegisterComponent {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private i18nService = inject(I18nService);
+  private goalService = inject(GoalService);
 
   // Stepper forms
   basicInfoForm: FormGroup;
   securityForm: FormGroup;
+  goalsForm: FormGroup;
   
   isLinear = true;
   hidePassword = true;
@@ -57,6 +65,10 @@ export class StudentRegisterComponent {
   isLoading = false;
   isGoogleLoading = false;
   googleUserData: any = null;
+  
+  // Goals data
+  availableGoals: Goal[] = [];
+  selectedGoals: Goal[] = [];
 
   constructor() {
     this.basicInfoForm = this.fb.group({
@@ -68,6 +80,13 @@ export class StudentRegisterComponent {
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
+
+    this.goalsForm = this.fb.group({
+      selectedGoals: [[], [Validators.required]]
+    });
+
+    // Load available goals
+    this.loadGoals();
   }
 
   // Getter para el idioma actual
@@ -77,6 +96,40 @@ export class StudentRegisterComponent {
   
   changeLanguage() {
     this.i18nService.toggleLanguage();
+  }
+
+  loadGoals() {
+    this.goalService.getAllGoals().subscribe({
+      next: (goals) => {
+        this.availableGoals = goals;
+      },
+      error: (error) => {
+        console.error('Error loading goals:', error);
+        // Fallback to default goals if service fails
+          // { name: 'Conversación', description: 'Mejorar habilidades de conversación', lang: this.currentLanguage },
+          // { name: 'Gramática', description: 'Aprender y practicar gramática', lang: this.currentLanguage },
+          // { name: 'Escritura', description: 'Desarrollar habilidades de escritura', lang: this.currentLanguage },
+          // { name: 'Comprensión auditiva', description: 'Mejorar la comprensión oral', lang: this.currentLanguage },
+          // { name: 'Preparación de exámenes', description: 'Prepararse para exámenes oficiales', lang: this.currentLanguage },
+          // { name: 'Vocabulario', description: 'Ampliar vocabulario', lang: this.currentLanguage },
+          // { name: 'Pronunciación', description: 'Mejorar la pronunciación', lang: this.currentLanguage },
+          // { name: 'Negocios', description: 'Inglés para negocios y trabajo', lang: this.currentLanguage }
+      }
+    });
+  }
+
+  onGoalsSelectionChange(selectedGoals: Goal[]) {
+    this.selectedGoals = selectedGoals;
+    this.goalsForm.patchValue({ selectedGoals });
+  }
+
+  compareGoals(goal1: Goal, goal2: Goal): boolean {
+    return goal1 && goal2 ? goal1.name === goal2.name : goal1 === goal2;
+  }
+
+  removeGoal(goalToRemove: Goal) {
+    this.selectedGoals = this.selectedGoals.filter(goal => goal.name !== goalToRemove.name);
+    this.goalsForm.patchValue({ selectedGoals: this.selectedGoals });
   }
 
   async registerWithGoogle() {
@@ -131,6 +184,8 @@ export class StudentRegisterComponent {
     // Reset forms
     this.basicInfoForm.reset();
     this.securityForm.reset();
+    this.goalsForm.reset();
+    this.selectedGoals = [];
     
     // Re-enable email field
     this.basicInfoForm.get('email')?.enable();
@@ -149,19 +204,35 @@ export class StudentRegisterComponent {
   }
 
   async onSubmit() {
-    if (this.basicInfoForm.valid && this.securityForm.valid) {
+    if (this.basicInfoForm.valid && this.securityForm.valid && this.goalsForm.valid) {
       this.isLoading = true;
       
       try {
+        const studentData = {
+          goals: this.selectedGoals
+        };
+
         // For Google users, we don't need to create auth account again
         if (this.googleUserData) {
-          this.snackBar.open(this.i18nService.translate('register.student.registerSuccess'), this.i18nService.translate('common.close'), {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          });
-          
-          // Navigate based on role
-          this.router.navigate(['/student/dashboard']);
+          // Register student with goals
+          const result = await this.sessionService.registerStudent(
+            this.basicInfoForm.get('email')?.value,
+            'google-auth', // No password needed for Google users
+            this.basicInfoForm.get('fullName')?.value,
+            studentData
+          );
+
+          if (result.success) {
+            this.snackBar.open(this.i18nService.translate('register.student.registerSuccess'), this.i18nService.translate('common.close'), {
+              duration: 3000,
+              panelClass: ['success-snackbar']
+            });
+            
+            // Navigate based on role
+            this.router.navigate(['/student/dashboard']);
+          } else {
+            throw new Error(result.error);
+          }
         } else {
           // Regular email/password registration
           const formValue = {
@@ -169,17 +240,24 @@ export class StudentRegisterComponent {
             ...this.securityForm.value
           };
           
-          await this.sessionService.register({
-            email: formValue.email,
-            password: formValue.password,
-            fullName: formValue.fullName,
-            role: 'student'
-          });
+          const result = await this.sessionService.registerStudent(
+            formValue.email,
+            formValue.password,
+            formValue.fullName,
+            studentData
+          );
 
-          this.snackBar.open(this.i18nService.translate('register.student.registerSuccess'), this.i18nService.translate('common.close'), {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          });
+          if (result.success) {
+            this.snackBar.open(this.i18nService.translate('register.student.registerSuccess'), this.i18nService.translate('common.close'), {
+              duration: 3000,
+              panelClass: ['success-snackbar']
+            });
+            
+            // Navigate to student dashboard
+            this.router.navigate(['/student/dashboard']);
+          } else {
+            throw new Error(result.error);
+          }
         }
       } catch (error: any) {
         let errorMessage = this.i18nService.translate('register.student.registerError');
