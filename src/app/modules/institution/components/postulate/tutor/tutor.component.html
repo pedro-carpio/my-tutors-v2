@@ -1,0 +1,492 @@
+<mat-card class="postulation-container">
+  <mat-card-header>
+    <mat-card-title>Postulate como Tutor de Idiomas</mat-card-title>
+    <mat-card-subtitle>
+      ¡Únete a nuestra comunidad de tutores de idiomas y comparte tu pasión por la enseñanza! 
+      Buscamos profesionales entusiastas que deseen marcar la diferencia en el aprendizaje de idiomas.
+    </mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <!-- Mensaje de agradecimiento cuando el formulario ha sido enviado -->
+    <div *ngIf="hasSent" class="thank-you-message">
+      <div class="thank-you-content">
+        <mat-icon class="thank-you-icon">check_circle</mat-icon>
+        <h2>¡Gracias por tu postulación!</h2>
+        <p class="thank-you-text">
+          Hemos recibido tu postulación exitosamente. Nuestro equipo revisará tu información 
+          y nos pondremos en contacto contigo pronto.
+        </p>
+        <p class="contact-info">
+          Te contactaremos al email: <strong>{{ step1Form.get('email')?.value }}</strong>
+        </p>
+        <div class="thank-you-actions">
+          <button mat-raised-button color="primary" (click)="startNewPostulation()">
+            Nueva Postulación
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario original (solo se muestra si no ha sido enviado) -->
+    <div *ngIf="!hasSent">
+      <p class="info-text">
+        <mat-icon>info</mat-icon>
+        Puedes dejar este formulario en todo momento y continuar luego con el botón de guardar temporalmente., 
+        también, puedes continuar en otro dispositivo con el botón de "Compartir este formulario"
+      </p>
+
+    <mat-stepper orientation="vertical" #stepper>
+      <!-- Paso 1: Datos personales -->
+      <mat-step [stepControl]="step1Form" label="Datos personales">
+        <form [formGroup]="step1Form">
+          <section class="form-section">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre Completo</mat-label>
+              <input matInput formControlName="full_name" placeholder="Ariel Apellido Dejemplo">
+              <mat-error *ngIf="step1Form.get('full_name')?.invalid && step1Form.get('full_name')?.touched">
+                {{ getErrorMessage(step1Form, 'full_name') }}
+              </mat-error>
+            </mat-form-field>
+
+            <div class="descriptive">Por favor verifica que tu email sea correcto y el que usas profesionalmente</div>
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" placeholder="ejemplo@gmail.com">
+              <mat-error *ngIf="step1Form.get('email')?.invalid && step1Form.get('email')?.touched">
+                {{ getErrorMessage(step1Form, 'email') }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Teléfono</mat-label>
+              <input matInput formControlName="phone" placeholder="+59161234567">
+              <mat-error *ngIf="step1Form.get('phone')?.invalid && step1Form.get('phone')?.touched">
+                {{ getErrorMessage(step1Form, 'phone') }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-checkbox formControlName="has_whatsapp" class="whatsapp-checkbox">
+              Mi teléfono tiene WhatsApp
+            </mat-checkbox>
+
+            <mat-form-field appearance="outline">
+              <mat-label>País donde radico en este momento</mat-label>
+              <mat-select formControlName="country">
+                <mat-option *ngFor="let country of countries" [value]="country">
+                  {{ country }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="step1Form.get('country')?.invalid && step1Form.get('country')?.touched">
+                {{ getErrorMessage(step1Form, 'country') }}
+              </mat-error>
+            </mat-form-field>
+
+            <div class="descriptive">Es deseable conocer que tienes un entorno digital profesional y para ello nos gustaría explorar tu perfil de LinkedIn</div>
+            <mat-form-field appearance="outline">
+              <mat-label>Link de perfil de LinkedIn</mat-label>
+              <input matInput formControlName="linkedin_profile" placeholder="linkedin.com/in/tu-perfil">
+            </mat-form-field>
+          </section>
+
+          <section class="step-actions">
+            <button mat-button matStepperNext [disabled]="step1Form.invalid">Siguiente</button>
+          </section>
+        </form>
+      </mat-step>
+
+      <!-- Paso 2: Competencia Lingüística -->
+      <mat-step [stepControl]="step2Form" label="Competencia Lingüística">
+        <form [formGroup]="step2Form">
+          <section class="form-section">
+            <mat-form-field appearance="outline">
+              <mat-label>Idioma Nativo</mat-label>
+              <input matInput formControlName="native_language" placeholder="Español">
+              <mat-error *ngIf="step2Form.get('native_language')?.invalid && step2Form.get('native_language')?.touched">
+                {{ getErrorMessage(step2Form, 'native_language') }}
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Otras Lenguas -->
+            <section class="dynamic-section">
+              <header class="section-header">
+                <h3>Otras Lenguas</h3>
+                <button mat-icon-button type="button" (click)="addOtherLanguage()" color="primary">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </header>
+
+              <div formArrayName="other_languages" class="dynamic-array">
+                <div *ngFor="let language of otherLanguagesFormArray.controls; let i = index" class="dynamic-item">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Idioma {{ i + 1 }}</mat-label>
+                    <input matInput [formControlName]="i" placeholder="Inglés">
+                    <mat-error *ngIf="otherLanguagesFormArray.at(i).invalid && otherLanguagesFormArray.at(i).touched">
+                      {{ getArrayErrorMessage(otherLanguagesFormArray, i, i.toString()) }}
+                    </mat-error>
+                  </mat-form-field>
+                  <button mat-icon-button type="button" (click)="removeOtherLanguage(i)" color="warn">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Certificaciones de enseñanza -->
+            <section class="dynamic-section">
+              <header class="section-header">
+                <h3>Certificaciones de enseñanza</h3>
+                <button mat-icon-button type="button" (click)="addTeachingCertification()" color="primary">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </header>
+              <p class="section-hint">¿Tienes certificaciones que avalen tu capacidad de enseñanza? Pueden ser Licenciaturas o maestrías en educación o certificaciones de idiomas (DADIC, TEFL, CELTA)</p>
+
+              <div formArrayName="teaching_certifications" class="dynamic-array">
+                <div *ngFor="let cert of teachingCertificationsFormArray.controls; let i = index" 
+                     [formGroupName]="i" class="certification-group">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nombre</mat-label>
+                    <input matInput formControlName="name">
+                    <mat-error *ngIf="teachingCertificationsFormArray.at(i).get('name')?.invalid && teachingCertificationsFormArray.at(i).get('name')?.touched">
+                      {{ getArrayErrorMessage(teachingCertificationsFormArray, i, 'name') }}
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Descripción</mat-label>
+                    <textarea matInput formControlName="description" rows="2"></textarea>
+                    <mat-error *ngIf="teachingCertificationsFormArray.at(i).get('description')?.invalid && teachingCertificationsFormArray.at(i).get('description')?.touched">
+                      {{ getArrayErrorMessage(teachingCertificationsFormArray, i, 'description') }}
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Link (opcional)</mat-label>
+                    <input matInput formControlName="link">
+                  </mat-form-field>
+
+                  <button mat-icon-button type="button" (click)="removeTeachingCertification(i)" color="warn">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Certificaciones de idioma -->
+            <section class="dynamic-section">
+              <header class="section-header">
+                <h3>Certificaciones de idioma</h3>
+                <button mat-icon-button type="button" (click)="addLanguageCertification()" color="primary">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </header>
+              <p class="section-hint">¿Tal vez tienes documentos que certifiquen tu capacidad de habla en otros idiomas? (TOEFL, IELTS, DELE, etc)</p>
+
+              <div formArrayName="language_certifications" class="dynamic-array">
+                <div *ngFor="let cert of languageCertificationsFormArray.controls; let i = index" 
+                     [formGroupName]="i" class="certification-group">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nombre</mat-label>
+                    <input matInput formControlName="name">
+                    <mat-error *ngIf="languageCertificationsFormArray.at(i).get('name')?.invalid && languageCertificationsFormArray.at(i).get('name')?.touched">
+                      {{ getArrayErrorMessage(languageCertificationsFormArray, i, 'name') }}
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Link (opcional)</mat-label>
+                    <input matInput formControlName="link">
+                  </mat-form-field>
+
+                  <button mat-icon-button type="button" (click)="removeLanguageCertification(i)" color="warn">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Variante dialectal -->
+            <section class="checkbox-section">
+              <mat-checkbox formControlName="has_dialectal_variant">
+                ¿Tu Español pertenece a una variante dialectal? (andino, camba, rioplatense, caribeño, chileno)
+              </mat-checkbox>
+              
+              <mat-form-field appearance="outline" *ngIf="step2Form.get('has_dialectal_variant')?.value">
+                <mat-label>Variante dialectal</mat-label>
+                <input matInput formControlName="dialectal_variant" placeholder="Ej: andino">
+              </mat-form-field>
+            </section>
+          </section>
+
+          <section class="step-actions">
+            <button mat-button matStepperPrevious>Anterior</button>
+            <button mat-button matStepperNext [disabled]="step2Form.invalid">Siguiente</button>
+          </section>
+        </form>
+      </mat-step>
+
+      <!-- Paso 3: Pedagogía & Metodología -->
+      <mat-step [stepControl]="step3Form" label="Pedagogía & Metodología">
+        <form [formGroup]="step3Form">
+          <section class="form-section">
+
+            <div class="descriptive">Cuéntanos cómo implementas tus clases virtualmente</div>
+            <mat-form-field appearance="outline">
+              <mat-label>Describe brevemente</mat-label>
+              <textarea matInput formControlName="class_adaptation_description" rows="3" 
+                        placeholder="Uso tarjetas visuales + role-play + feedback inmediato para estilos kinestésicos…"></textarea>
+              <mat-error *ngIf="step3Form.get('class_adaptation_description')?.invalid && step3Form.get('class_adaptation_description')?.touched">
+                {{ getErrorMessage(step3Form, 'class_adaptation_description') }}
+              </mat-error>
+            </mat-form-field>
+
+            <div class="descriptive">¿Conoces metodologías? por ejemplo Comunicativa, CLIL, PPP, TBL</div>
+            <mat-form-field appearance="outline">
+              <mat-label>Descríbenos un poco</mat-label>
+              <textarea matInput formControlName="methodology_description" rows="3" 
+                        placeholder="Detalla de forma concisa lo que te nazca contarnos de tus metodologías favoritas"></textarea>
+              <mat-error *ngIf="step3Form.get('methodology_description')?.invalid && step3Form.get('methodology_description')?.touched">
+                {{ getErrorMessage(step3Form, 'methodology_description') }}
+              </mat-error>
+            </mat-form-field>
+
+            <div class="descriptive">¿Tienes material adaptativo que quieras mostrarnos? por ejemplo puede ser un pdf, una diapositiva o un ejercicio adaptado a un estilo visual/escrito.</div>
+            <mat-form-field appearance="outline">
+              <mat-label>Adjunta un link</mat-label>
+              <input matInput formControlName="adaptive_material_link" placeholder="example.com/clase7.pdf">
+              <mat-error *ngIf="step3Form.get('adaptive_material_link')?.invalid && step3Form.get('adaptive_material_link')?.touched">
+                {{ getErrorMessage(step3Form, 'adaptive_material_link') }}
+              </mat-error>
+            </mat-form-field>
+
+            
+            <mat-checkbox formControlName="knows_cervantes_education">
+              Conozco la educación implementada por el Instituto Cervantes
+            </mat-checkbox>
+          </section>
+
+          <section class="step-actions">
+            <button mat-button matStepperPrevious>Anterior</button>
+            <button mat-button matStepperNext [disabled]="step3Form.invalid">Siguiente</button>
+          </section>
+        </form>
+      </mat-step>
+
+      <!-- Paso 4: Experiencia & Referencias -->
+      <mat-step [stepControl]="step4Form" label="Experiencia & Referencias">
+        <form [formGroup]="step4Form">
+          <section class="form-section">
+            <div class="experience-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Experiencia aproximada enseñando idiomas</mat-label>
+                <input matInput formControlName="teaching_experience_amount" type="number" placeholder="100">
+                <mat-error *ngIf="step4Form.get('teaching_experience_amount')?.invalid && step4Form.get('teaching_experience_amount')?.touched">
+                  {{ getErrorMessage(step4Form, 'teaching_experience_amount') }}
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Unidad</mat-label>
+                <mat-select formControlName="teaching_experience_unit">
+                  <mat-option *ngFor="let unit of experienceUnits" [value]="unit.value">
+                    {{ unit.label }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <!-- Referencias -->
+            <section class="dynamic-section">
+              <header class="section-header">
+                <h3>Referencias</h3>
+                <button mat-icon-button type="button" (click)="addReference()" color="primary">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </header>
+              <p class="section-hint">Nos interesa poder contar con otras personas a las que podamos recurrir para avalar la información de ser necesario. Aceptamos instituciones o estudiantes. <b>Si fuiste referida o referido por alguien dentro de la empresa puedes introducir su información aquí.</b></p>
+
+              <div formArrayName="references" class="dynamic-array">
+                <div *ngFor="let ref of referencesFormArray.controls; let i = index" 
+                     [formGroupName]="i" class="reference-group">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nombre</mat-label>
+                    <input matInput formControlName="name">
+                    <mat-error *ngIf="referencesFormArray.at(i).get('name')?.invalid && referencesFormArray.at(i).get('name')?.touched">
+                      {{ getArrayErrorMessage(referencesFormArray, i, 'name') }}
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Contacto</mat-label>
+                    <input matInput formControlName="contact">
+                    <mat-error *ngIf="referencesFormArray.at(i).get('contact')?.invalid && referencesFormArray.at(i).get('contact')?.touched">
+                      {{ getArrayErrorMessage(referencesFormArray, i, 'contact') }}
+                    </mat-error>
+                  </mat-form-field>
+
+                  <button mat-icon-button type="button" (click)="removeReference(i)" color="warn">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Portfolio -->
+            <section class="checkbox-section">
+              <mat-checkbox formControlName="has_portfolio">
+                Tengo Portafolio
+              </mat-checkbox>
+              <p class="section-hint">¿Tienes a tu disposición un portafolio que muestre tus capacidades?</p>
+              
+              <mat-form-field appearance="outline" *ngIf="step4Form.get('has_portfolio')?.value">
+                <mat-label>Link del portafolio</mat-label>
+                <input matInput formControlName="portfolio_link" placeholder="ejemplo.com/portafolio">
+              </mat-form-field>
+            </section>
+
+            <section class="checkbox-section">
+              <mat-checkbox formControlName="has_recorded_class">
+                Tengo una clase grabada
+              </mat-checkbox>
+              <p class="section-hint">¿Tienes a tu disposición una clase grabada que muestre tu experiencia?</p>
+
+              <mat-form-field appearance="outline" *ngIf="step4Form.get('has_recorded_class')?.value">
+                <mat-label>Link de la clase grabada</mat-label>
+                <input matInput formControlName="recorded_class_link" placeholder="ejemplo.com/clase9">
+              </mat-form-field>
+            </section>
+
+            <!-- Curriculum -->
+            <section class="checkbox-section">
+              <mat-checkbox formControlName="has_curriculum">
+                Tengo mi curriculum u hoja de vida
+              </mat-checkbox>
+              
+              <mat-form-field appearance="outline" *ngIf="step4Form.get('has_curriculum')?.value">
+                <mat-label>Link del curriculum</mat-label>
+                <input matInput formControlName="curriculum_link" placeholder="ejemplo.com/curriculum">
+              </mat-form-field>
+            </section>
+          </section>
+
+          <section class="step-actions">
+            <button mat-button matStepperPrevious>Anterior</button>
+            <button mat-button matStepperNext [disabled]="step4Form.invalid">Siguiente</button>
+          </section>
+        </form>
+      </mat-step>
+
+      <!-- Paso 5: Habilidades y disponibilidad -->
+      <mat-step [stepControl]="step5Form" label="Habilidades y disponibilidad">
+        <form [formGroup]="step5Form">
+          <section class="form-section">
+            <mat-checkbox formControlName="knows_zoom">
+              Sé usar Zoom (salas, levantar la mano, reacciones, etc)
+            </mat-checkbox>
+            <p class="small-text">En caso de que no lo sepas se te dará clases, no te preocupes 🫶</p>
+
+            <mat-checkbox formControlName="knows_airtm">
+              Sé usar Airtm para recibir pagos
+            </mat-checkbox>
+            <p class="small-text">En caso de que no lo sepas se te dará clases, no te preocupes 🫶</p>
+
+            <section class="checkbox-section">
+              <mat-checkbox formControlName="knows_crypto_platform">
+                Sé usar otra plataforma de gestión de criptoactivos
+              </mat-checkbox>
+              
+              <mat-form-field appearance="outline" *ngIf="step5Form.get('knows_crypto_platform')?.value">
+                <mat-label>Plataforma</mat-label>
+                <input matInput formControlName="crypto_platform_name" placeholder="Meru, binance, Takenos...">
+              </mat-form-field>
+            </section>
+
+            <mat-checkbox formControlName="has_hd_equipment">
+              Tengo una computadora con cámara HD + micrófono
+            </mat-checkbox>
+
+            <div class="descriptive">
+                <b>Velocidad de internet:</b>
+                <br><b>Paso 1</b><br>
+                Ubícate físicamente en el equipo en el que darás clases, si no estás en el, no te olvides que puedes hacer click en el botón de guardar temporalmente envío de postulación, donde se te facilitará con un link para que puedas abrirlo en el dispositivo que quieras.
+                <br><b>Paso 2</b><br>
+                Entra a <a href="https://www.speedtest.net/es">https://www.speedtest.net/es</a> y haz click en el botón Inicio,
+                <br><b>Paso 3</b><br>
+                Copia el link en el que te encuentras <strong>o</strong> haz click en el icono de compartir, y copia el contenido del segmento "web". debes tener algo similar a <a href="https://www.speedtest.net/es/result/18002313245">https://www.speedtest.net/es/result/18002313245</a>
+                <br><b>Paso 4</b><br>
+                Pega en el campo siguiente el link que acabas de copiar
+            </div>
+            <mat-form-field appearance="outline">
+              <mat-label>Velocidad de internet</mat-label>
+              <input matInput formControlName="internet_speed_test_link" 
+                     placeholder="https://www.speedtest.net/es/result/18002313245">
+              <mat-error *ngIf="step5Form.get('internet_speed_test_link')?.invalid && step5Form.get('internet_speed_test_link')?.touched">
+                {{ getErrorMessage(step5Form, 'internet_speed_test_link') }}
+              </mat-error>
+            </mat-form-field>
+
+            <div>
+                Cuéntanos tu disponibilidad horaria semanal, puedes detallar cosas como cuántas horas a la semana dispones para trabajar por ejemplo 20h/semana, si solamente puedes dar clases en un periodo de tiempo o si tienes preferencias de cuándo dar clases
+            </div>
+            <mat-form-field appearance="outline">
+              <mat-label>Mi disponibilidad horaria</mat-label>
+              <textarea matInput formControlName="weekly_availability_description" rows="3" 
+                        placeholder="Dispongo de 20h por semana y me interesa trabajar por las ma..."></textarea>
+              <mat-error *ngIf="step5Form.get('weekly_availability_description')?.invalid && step5Form.get('weekly_availability_description')?.touched">
+                {{ getErrorMessage(step5Form, 'weekly_availability_description') }}
+              </mat-error>
+            </mat-form-field>
+
+            <div class="rate-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Pretensión de tarifa por hora</mat-label>
+                <input matInput formControlName="hourly_rate_amount" type="number">
+                <mat-error *ngIf="step5Form.get('hourly_rate_amount')?.invalid && step5Form.get('hourly_rate_amount')?.touched">
+                  {{ getErrorMessage(step5Form, 'hourly_rate_amount') }}
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Moneda</mat-label>
+                <mat-select formControlName="hourly_rate_currency">
+                  <mat-option *ngFor="let currency of currencies" [value]="currency">
+                    {{ currency }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="step5Form.get('hourly_rate_currency')?.invalid && step5Form.get('hourly_rate_currency')?.touched">
+                  {{ getErrorMessage(step5Form, 'hourly_rate_currency') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+            <p class="section-hint">Cuéntanos cuál sería tu pretensión de tarifa por hora acorde a tu experiencia y capacidad, por favor considera un monto honesto que podamos usar como una referencia tuya adicional</p>
+          </section>
+
+          <section class="step-actions">
+            <button mat-button matStepperPrevious>Anterior</button>
+            <button mat-raised-button color="primary" [disabled]="step5Form.invalid" (click)="completePostulation()">
+              Completar Postulación
+            </button>
+          </section>
+        </form>
+      </mat-step>
+    </mat-stepper>
+    </div> <!-- Cierre del div *ngIf="!hasSent" -->
+  </mat-card-content>
+</mat-card>
+
+<!-- Botón flotante para acciones (solo se muestra si no ha sido enviado) -->
+<button *ngIf="!hasSent" mat-fab color="primary" class="floating-action-button" [matMenuTriggerFor]="actionMenu">
+  <mat-icon>add</mat-icon>
+</button>
+
+<mat-menu #actionMenu="matMenu">
+  <button mat-menu-item (click)="saveAndShare()">
+    <mat-icon>save</mat-icon>
+    <span>Guardar temporalmente</span>
+  </button>
+  <button mat-menu-item (click)="saveAndShare()">
+    <mat-icon>share</mat-icon>
+    <span>Continuar en otro equipo</span>
+  </button>
+</mat-menu>

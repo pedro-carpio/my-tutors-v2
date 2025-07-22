@@ -12,6 +12,11 @@ export const routes: Routes = [
   },
 
   {
+    path: 'postular',
+    loadComponent: () => import('./modules/institution/components/postulate/tutor/tutor.component').then(m => m.TutorPostulationFormComponent),
+  },
+
+  {
         path: 'forgot-password',
         loadComponent: () => import('./SharedModule/views/forgotpassword/forgotpassword.component').then(m => m.ForgotpasswordComponent)
       },

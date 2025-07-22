@@ -11,6 +11,7 @@ export * from './availability.service';
 export * from './feedback.service';
 export * from './chat.service';
 export * from './session.service';
+export * from './postulant.service';
 
 // Export types
 export * from '../types/firestore.types';

@@ -1,0 +1,294 @@
+mat-form-field {
+    margin-top: 0.5rem;
+}
+
+.whatsapp-checkbox {
+    margin-top: -1rem;
+}
+
+.postulation-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+}
+
+.thank-you-message {
+  text-align: center;
+  padding: 3rem 2rem;
+  
+  .thank-you-content {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .thank-you-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    color: #4caf50;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    color: #2e7d32;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
+  .thank-you-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+
+  .contact-info {
+    background-color: #f5f5f5;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    color: #555;
+    
+    strong {
+      color: #1976d2;
+    }
+  }
+
+  .thank-you-actions {
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 2rem 1rem;
+    
+    .thank-you-icon {
+      font-size: 3rem;
+      width: 3rem;
+      height: 3rem;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+    
+    .thank-you-text {
+      font-size: 1rem;
+    }
+  }
+}
+
+.info-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #e3f2fd;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  color: #1976d2;
+  mat-icon {
+    width: 48px;
+  }
+    @media (max-width: 768px) {
+        font-size: 0.95rem;
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.step-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.dynamic-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  
+  h3 {
+    margin: 0;
+    color: #424242;
+  }
+}
+
+.section-hint {
+  color: #666;
+  font-size: 0.875rem;
+  margin-bottom: 2rem;
+  margin-top: -1rem;
+  line-height: 1.4;
+}
+
+.small-text {
+  color: #666;
+  font-size: 0.75rem;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+}
+
+.dynamic-array {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dynamic-item {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  
+  mat-form-field {
+    flex: 1;
+  }
+}
+
+.certification-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  position: relative;
+  
+  button[mat-icon-button] {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+}
+
+.reference-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  
+  mat-form-field {
+    flex: 1;
+  }
+}
+
+.checkbox-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  
+  mat-checkbox {
+    margin-bottom: 0.5rem;
+  }
+}
+
+.experience-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  
+  mat-form-field:first-child {
+    flex: 2;
+  }
+  
+  mat-form-field:last-child {
+    flex: 1;
+  }
+}
+
+.rate-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  
+  mat-form-field {
+    flex: 1;
+  }
+}
+
+.floating-action-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .postulation-container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  
+  .experience-row,
+  .rate-row {
+    flex-direction: column;
+    
+    mat-form-field {
+      flex: 1;
+    }
+  }
+  
+  .dynamic-item {
+    flex-direction: column;
+    align-items: stretch;
+    
+    button[mat-icon-button] {
+      align-self: flex-end;
+    }
+  }
+  
+  .reference-group {
+    flex-direction: column;
+    
+    mat-form-field {
+      flex: 1;
+    }
+  }
+  
+  .certification-group {
+    button[mat-icon-button] {
+      position: static;
+      align-self: flex-end;
+      margin-top: 0.5rem;
+    }
+  }
+}
+
+// Material stepper customization
+::ng-deep {
+  .mat-stepper-vertical .mat-step-content {
+    margin-left: 36px;
+    border-left: 1px solid #e0e0e0;
+    padding-left: 24px;
+  }
+  
+  .mat-step-header {
+    pointer-events: none;
+  }
+  
+  .mat-step-icon {
+    background-color: #1976d2 !important;
+  }
+  
+  .mat-step-icon-selected {
+    background-color: #4caf50 !important;
+  }
+}

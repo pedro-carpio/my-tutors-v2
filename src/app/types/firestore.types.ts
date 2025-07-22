@@ -111,3 +111,69 @@ export interface Payment {
   status: PaymentStatus;
   created_at: FieldValue | Timestamp;
 }
+
+export interface TeachingCertification {
+  name: string;
+  description: string;
+  link?: string;
+}
+
+export interface LanguageCertification {
+  name: string;
+  link?: string;
+}
+
+export interface Reference {
+  name: string;
+  contact: string;
+}
+
+export interface Postulant {
+  id?: string;
+  // Paso 1 - Datos personales
+  temporal: boolean;
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  has_whatsapp?: boolean;
+  country?: string;
+  linkedin_profile?: string;
+  
+  // Paso 2 - Competencia Lingüística
+  native_language?: string;
+  other_languages?: string[];
+  teaching_certifications?: TeachingCertification[];
+  language_certifications?: LanguageCertification[];
+  has_dialectal_variant?: boolean;
+  dialectal_variant?: string;
+  
+  // Paso 3 - Pedagogía & Metodología
+  knows_cervantes_education?: boolean;
+  methodology_description?: string;
+  adaptive_material_link?: string;
+  class_adaptation_description?: string;
+  
+  // Paso 4 - Experiencia & Referencias
+  teaching_experience_amount?: number;
+  teaching_experience_unit?: 'hours' | 'years';
+  references?: Reference[];
+  has_portfolio?: boolean;
+  portfolio_link?: string;
+  recorded_class_link?: string;
+  has_curriculum?: boolean;
+  curriculum_link?: string;
+  
+  // Paso 5 - Habilidades y disponibilidad
+  knows_zoom?: boolean;
+  knows_airtm?: boolean;
+  knows_crypto_platform?: boolean;
+  crypto_platform_name?: string;
+  has_hd_equipment?: boolean;
+  internet_speed_test_link?: string;
+  weekly_availability_description?: string;
+  hourly_rate_amount?: number;
+  hourly_rate_currency?: string;
+  
+  created_at?: FieldValue | Timestamp;
+  updated_at?: FieldValue | Timestamp;
+}
