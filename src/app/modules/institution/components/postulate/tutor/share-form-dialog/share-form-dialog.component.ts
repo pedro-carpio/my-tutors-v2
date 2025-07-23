@@ -29,6 +29,9 @@ import { Clipboard } from '@angular/cdk/clipboard';
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Enlace para continuar</mat-label>
         <input matInput [value]="shareUrl" readonly>
+        <mat-hint class="text-warn">
+          Este vinculo posee tus datos personales
+        </mat-hint>
         <button matSuffix mat-icon-button (click)="copyToClipboard()" [attr.aria-label]="'Copiar enlace'">
           <mat-icon>content_copy</mat-icon>
         </button>

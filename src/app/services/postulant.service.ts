@@ -38,8 +38,6 @@ export class PostulantService {
 
       const postulantDataWithMeta: Postulant = {
         ...postulantData,
-          
-        temporal: postulantData.temporal || true,
         id: postulantId,
         created_at: serverTimestamp(),
         updated_at: serverTimestamp()
@@ -61,8 +59,6 @@ export class PostulantService {
 
       const postulantDataWithMeta: Postulant = {
         ...postulantData,
-          
-        temporal: postulantData.temporal || true,
         id: postulantId,
         created_at: serverTimestamp(),
         updated_at: serverTimestamp()
@@ -88,7 +84,6 @@ export class PostulantService {
       const docRef = doc(this.firestore, this.collectionName, postulantId);
       const updateData = {
           ...postulantData,
-          temporal: postulantData.temporal || true,
         updated_at: serverTimestamp()
       };
       await updateDoc(docRef, updateData);

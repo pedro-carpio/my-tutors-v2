@@ -18,7 +18,11 @@
           y nos pondremos en contacto contigo pronto.
         </p>
         <p class="contact-info">
-          Te contactaremos al email: <strong>{{ step1Form.get('email')?.value }}</strong>
+          Te contactaremos al email ingresado <strong>{{ step1Form.get('email')?.value }}</strong>
+          <br>
+          @if (step1Form.get('has_whatsapp')?.value) {
+            y tambien a tu WhatsApp <strong>{{ step1Form.get('phone')?.value }}</strong>
+          }
         </p>
         <div class="thank-you-actions">
           <button mat-raised-button color="primary" (click)="startNewPostulation()">
@@ -90,7 +94,7 @@
           </section>
 
           <section class="step-actions">
-            <button mat-button matStepperNext [disabled]="step1Form.invalid">Siguiente</button>
+            <button mat-button matStepperNext [disabled]="step1Form.invalid || isLoading">Siguiente</button>
           </section>
         </form>
       </mat-step>
@@ -220,8 +224,8 @@
           </section>
 
           <section class="step-actions">
-            <button mat-button matStepperPrevious>Anterior</button>
-            <button mat-button matStepperNext [disabled]="step2Form.invalid">Siguiente</button>
+            <button mat-button matStepperPrevious [disabled]="isLoading">Anterior</button>
+            <button mat-button matStepperNext [disabled]="step2Form.invalid || isLoading">Siguiente</button>
           </section>
         </form>
       </mat-step>
@@ -267,8 +271,8 @@
           </section>
 
           <section class="step-actions">
-            <button mat-button matStepperPrevious>Anterior</button>
-            <button mat-button matStepperNext [disabled]="step3Form.invalid">Siguiente</button>
+            <button mat-button matStepperPrevious [disabled]="isLoading">Anterior</button>
+            <button mat-button matStepperNext [disabled]="step3Form.invalid || isLoading">Siguiente</button>
           </section>
         </form>
       </mat-step>
@@ -371,8 +375,8 @@
           </section>
 
           <section class="step-actions">
-            <button mat-button matStepperPrevious>Anterior</button>
-            <button mat-button matStepperNext [disabled]="step4Form.invalid">Siguiente</button>
+            <button mat-button matStepperPrevious [disabled]="isLoading">Anterior</button>
+            <button mat-button matStepperNext [disabled]="step4Form.invalid || isLoading">Siguiente</button>
           </section>
         </form>
       </mat-step>
@@ -463,8 +467,8 @@
           </section>
 
           <section class="step-actions">
-            <button mat-button matStepperPrevious>Anterior</button>
-            <button mat-raised-button color="primary" [disabled]="step5Form.invalid" (click)="completePostulation()">
+            <button mat-button matStepperPrevious [disabled]="isLoading">Anterior</button>
+            <button mat-raised-button color="primary" [disabled]="step5Form.invalid || isLoading" (click)="completePostulation()">
               Completar Postulación
             </button>
           </section>
@@ -476,17 +480,24 @@
 </mat-card>
 
 <!-- Botón flotante para acciones (solo se muestra si no ha sido enviado) -->
-<button *ngIf="!hasSent" mat-fab color="primary" class="floating-action-button" [matMenuTriggerFor]="actionMenu">
+<button *ngIf="!hasSent" mat-fab color="primary" class="floating-action-button" 
+        [matMenuTriggerFor]="actionMenu" [disabled]="isLoading">
   <mat-icon>add</mat-icon>
 </button>
 
 <mat-menu #actionMenu="matMenu">
-  <button mat-menu-item (click)="saveAndShare()">
+  <button mat-menu-item (click)="saveAndShare()" [disabled]="isLoading">
     <mat-icon>save</mat-icon>
     <span>Guardar temporalmente</span>
   </button>
-  <button mat-menu-item (click)="saveAndShare()">
+  <button mat-menu-item (click)="saveAndShare()" [disabled]="isLoading">
     <mat-icon>share</mat-icon>
     <span>Continuar en otro equipo</span>
   </button>
 </mat-menu>
+
+<!-- Overlay de carga -->
+<div *ngIf="isLoading" class="loading-overlay">
+  <div class="loading-backdrop"></div>
+    <mat-spinner diameter="60"></mat-spinner>
+</div>

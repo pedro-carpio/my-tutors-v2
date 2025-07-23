@@ -13,6 +13,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PostulantService } from '../../../../../services/postulant.service';
 import { Postulant, TeachingCertification, LanguageCertification, Reference } from '../../../../../types/firestore.types';
 import { ShareFormDialogComponent } from './share-form-dialog/share-form-dialog.component';
@@ -33,7 +34,8 @@ import { ShareFormDialogComponent } from './share-form-dialog/share-form-dialog.
     MatCardModule,
     MatMenuModule,
     MatSnackBarModule,
-    MatDialogModule
+    MatDialogModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './tutor.component.html',
   styleUrl: './tutor.component.scss'
@@ -47,6 +49,7 @@ export class TutorPostulationFormComponent implements OnInit {
 
   currentPostulantId: string | null = null;
   hasSent: boolean = false;
+  isLoading: boolean = false;
 
   // Formularios para cada paso
   step1Form: FormGroup = this.fb.group({
@@ -120,7 +123,6 @@ export class TutorPostulationFormComponent implements OnInit {
 
   ngOnInit(): void {
     // Verificar si hay un UID en los parámetros de la URL
-    this.resetFormArrays()
     this.route.queryParams.subscribe(params => {
       const uid = params['uid'];
       if (uid) {
@@ -131,15 +133,30 @@ export class TutorPostulationFormComponent implements OnInit {
   }
 
   private async loadPostulantData(postulantId: string): Promise<void> {
+    this.isLoading = true;
+    this.resetFormArrays();
     try {
-      this.postulantService.getPostulantById(postulantId).subscribe(postulant => {
-        if (postulant && postulant.temporal) {
-          this.populateFormsWithData(postulant);
+      this.postulantService.getPostulantById(postulantId).subscribe({
+        next: (postulant) => {
+          if (postulant?.temporal) {
+            this.populateFormsWithData(postulant);
+          } else if (!postulant?.temporal) {
+            this.hasSent = true;
+          } else {
+            this.snackBar.open('Los datos ya no están disponibles', 'Cerrar', { duration: 3000 });
+          }
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading postulant data:', error);
+          this.snackBar.open('Error al cargar los datos guardados', 'Cerrar', { duration: 3000 });
+          this.isLoading = false;
         }
       });
     } catch (error) {
       console.error('Error loading postulant data:', error);
       this.snackBar.open('Error al cargar los datos guardados', 'Cerrar', { duration: 3000 });
+      this.isLoading = false;
     }
   }
 
@@ -293,9 +310,10 @@ export class TutorPostulationFormComponent implements OnInit {
 
   // Método para guardar y compartir
   async saveAndShare(): Promise<void> {
+    this.isLoading = true;
     try {
       const postulantData = this.getFormData();
-      
+      postulantData.temporal = true; // Marcar como temporal para guardar
       let postulantId: string;
       if (this.currentPostulantId) {
         await this.postulantService.updatePostulant(this.currentPostulantId, postulantData);
@@ -314,6 +332,8 @@ export class TutorPostulationFormComponent implements OnInit {
     } catch (error) {
       console.error('Error saving postulant:', error);
       this.snackBar.open('Error al guardar la postulación', 'Cerrar', { duration: 3000 });
+    } finally {
+      this.isLoading = false;
     }
   }
 
@@ -364,11 +384,12 @@ export class TutorPostulationFormComponent implements OnInit {
   }
 
   async completePostulation(): Promise<void> {
+    this.isLoading = true;
     try {
       const postulantData = this.getFormData();
       postulantData.temporal = false; // Marcar como no temporal al completar
       if (this.currentPostulantId) {
-        await this.postulantService.updatePostulant(this.currentPostulantId, postulantData);
+        await this.postulantService.updatePostulant(this.currentPostulantId, {temporal: false});
       }
       await this.postulantService.createPostulantFinished(postulantData);
 
@@ -377,6 +398,8 @@ export class TutorPostulationFormComponent implements OnInit {
     } catch (error) {
       console.error('Error saving postulant:', error);
       this.snackBar.open('Error al completar la postulación', 'Cerrar', { duration: 3000 });
+    } finally {
+      this.isLoading = false;
     }
   }
 
