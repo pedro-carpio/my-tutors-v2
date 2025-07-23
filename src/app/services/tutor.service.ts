@@ -40,11 +40,63 @@ export class TutorService {
     return docData(docRef) as Observable<Tutor | undefined>;
   }
 
-  // Get tutors by institution ID
+  // Get tutors by institution ID with different sorting options
   getTutorsByInstitution(institutionId: string): Observable<Tutor[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
       where('institution_id', '==', institutionId),
+      orderBy('full_name', 'asc')
+    );
+    return collectionData(q) as Observable<Tutor[]>;
+  }
+
+  // Get tutors by institution sorted by hourly rate
+  getTutorsByInstitutionSortedByRate(institutionId: string, direction: 'asc' | 'desc' = 'asc'): Observable<Tutor[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      orderBy('hourly_rate', direction)
+    );
+    return collectionData(q) as Observable<Tutor[]>;
+  }
+
+  // Get tutors by institution sorted by experience
+  getTutorsByInstitutionSortedByExperience(institutionId: string, direction: 'asc' | 'desc' = 'desc'): Observable<Tutor[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      orderBy('experience_level', direction)
+    );
+    return collectionData(q) as Observable<Tutor[]>;
+  }
+
+  // Get tutors by institution sorted by availability
+  getTutorsByInstitutionSortedByAvailability(institutionId: string, direction: 'asc' | 'desc' = 'desc'): Observable<Tutor[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      orderBy('max_hours_per_week', direction)
+    );
+    return collectionData(q) as Observable<Tutor[]>;
+  }
+
+  // Get tutors by institution and country
+  getTutorsByInstitutionAndCountry(institutionId: string, country: string): Observable<Tutor[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      where('country', '==', country),
+      orderBy('full_name', 'asc')
+    );
+    return collectionData(q) as Observable<Tutor[]>;
+  }
+
+  // Get tutors by institution and language
+  getTutorsByInstitutionAndLanguage(institutionId: string, language: string): Observable<Tutor[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      where('birth_language', '==', language),
       orderBy('full_name', 'asc')
     );
     return collectionData(q) as Observable<Tutor[]>;
@@ -59,12 +111,12 @@ export class TutorService {
     return collectionData(q) as Observable<Tutor[]>;
   }
 
-  // Get tutors by nationality
-  getTutorsByNationality(nationality: string): Observable<Tutor[]> {
+  // Get tutors by country
+  getTutorsByCountry(country: string): Observable<Tutor[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
-      where('nationality', '==', nationality),
-      orderBy('full_name', 'asc')
+      where('country', '==', country)
+      // orderBy removido temporalmente - usar índice de campo único
     );
     return collectionData(q) as Observable<Tutor[]>;
   }

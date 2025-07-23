@@ -70,9 +70,11 @@ export class I18nService {
         layout: {
           menu: 'Menú',
           appName: 'My Tutors',
+          title: '¡Inicia sesión con tus credenciales proporcionadas!',
           changeLanguage: 'Cambiar idioma',
           setTimezone: 'Configurar zona horaria',
-          noMenuItems: 'No hay elementos de menú disponibles'
+          noMenuItems: 'No hay elementos de menú disponibles',
+          lost: 'No sé cómo llegué aquí, pero estoy perdido',
         },
 
         // Navegación
@@ -310,9 +312,11 @@ export class I18nService {
         layout: {
           menu: 'Menu',
           appName: 'My Tutors',
+          title: 'Log in with your provided credentials!',
           changeLanguage: 'Change language',
           setTimezone: 'Set timezone',
-          noMenuItems: 'No menu items available'
+          noMenuItems: 'No menu items available',
+          lost: 'I don\'t know how i got here, but I\'m lost',
         },
 
         // Navigation

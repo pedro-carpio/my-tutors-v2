@@ -12,8 +12,9 @@ import {
   query,
   where,
   orderBy,
+  limit,
 } from '@angular/fire/firestore';
-import { Student, LevelCEFR } from '../types/firestore.types';
+import { Student, LevelCEFR, Goal } from '../types/firestore.types';
 
 @Injectable({
   providedIn: 'root',
@@ -25,7 +26,6 @@ export class StudentService {
   // Create or update student profile
   async createStudent(studentData: Student): Promise<void> {
     try {
-      console.log(studentData);
       const docRef = doc(this.firestore, this.collectionName, studentData.user_id);
       await setDoc(docRef, studentData);
     } catch (error) {
@@ -40,11 +40,74 @@ export class StudentService {
     return docData(docRef) as Observable<Student | undefined>;
   }
 
-  // Get students by institution ID
+  // Get students by institution ID with different sorting options
   getStudentsByInstitution(institutionId: string): Observable<Student[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
       where('institution_id', '==', institutionId),
+      orderBy('full_name', 'asc')
+    );
+    return collectionData(q) as Observable<Student[]>;
+  }
+
+  // Get students by institution sorted by enrollment date
+  getStudentsByInstitutionSortedByEnrollment(institutionId: string, direction: 'asc' | 'desc' = 'desc'): Observable<Student[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      orderBy('enrollment_date', direction)
+    );
+    return collectionData(q) as Observable<Student[]>;
+  }
+
+  // Get students by institution sorted by CEFR level
+  getStudentsByInstitutionSortedByLevel(institutionId: string, direction: 'asc' | 'desc' = 'asc'): Observable<Student[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      orderBy('level_cefr', direction)
+    );
+    return collectionData(q) as Observable<Student[]>;
+  }
+
+  // Get students by institution sorted by age (birth_date)
+  getStudentsByInstitutionSortedByAge(institutionId: string, direction: 'asc' | 'desc' = 'desc'): Observable<Student[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      orderBy('birth_date', direction)
+    );
+    return collectionData(q) as Observable<Student[]>;
+  }
+
+  // Get students by institution and target language
+  getStudentsByInstitutionAndTargetLanguage(institutionId: string, targetLanguage: string): Observable<Student[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      where('target_language', '==', targetLanguage),
+      orderBy('full_name', 'asc')
+    );
+    return collectionData(q) as Observable<Student[]>;
+  }
+
+  // Get students by institution and country
+  getStudentsByInstitutionAndCountry(institutionId: string, country: string): Observable<Student[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      where('country', '==', country),
+      orderBy('full_name', 'asc')
+    );
+    return collectionData(q) as Observable<Student[]>;
+  }
+
+  // Get students by institution and level
+  getStudentsByInstitutionAndLevel(institutionId: string, level: LevelCEFR): Observable<Student[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('institution_id', '==', institutionId),
+      where('level_cefr', '==', level),
       orderBy('full_name', 'asc')
     );
     return collectionData(q) as Observable<Student[]>;
@@ -59,12 +122,42 @@ export class StudentService {
     return collectionData(q) as Observable<Student[]>;
   }
 
-  // Get students by CEFR level
+  // Get students by CEFR level (global)
   getStudentsByLevel(level: LevelCEFR): Observable<Student[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
-      where('level_cefr', '==', level),
-      orderBy('full_name', 'asc')
+      where('level_cefr', '==', level)
+      // orderBy removido temporalmente - usar índice de campo único
+    );
+    return collectionData(q) as Observable<Student[]>;
+  }
+
+  // Get students by country (global)
+  getStudentsByCountry(country: string): Observable<Student[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('country', '==', country)
+      // orderBy removido temporalmente - usar índice de campo único
+    );
+    return collectionData(q) as Observable<Student[]>;
+  }
+
+  // Get students by target language (global)
+  getStudentsByTargetLanguage(targetLanguage: string): Observable<Student[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('target_language', '==', targetLanguage)
+      // orderBy removido temporalmente - usar índice de campo único
+    );
+    return collectionData(q) as Observable<Student[]>;
+  }
+
+  // Get newest students (by enrollment date)
+  getNewestStudents(count: number = 10): Observable<Student[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      orderBy('enrollment_date', 'desc'),
+      limit(count)
     );
     return collectionData(q) as Observable<Student[]>;
   }
@@ -114,7 +207,7 @@ export class StudentService {
   }
 
   // Update student goals
-  async updateStudentGoals(userId: string, goals: string): Promise<void> {
+  async updateStudentGoals(userId: string, goals: Goal[]): Promise<void> {
     try {
       const docRef = doc(this.firestore, this.collectionName, userId);
       await updateDoc(docRef, { goals });

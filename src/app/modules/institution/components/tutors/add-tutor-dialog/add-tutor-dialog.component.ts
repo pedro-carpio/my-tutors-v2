@@ -9,9 +9,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { TutorService, UserService, SessionService } from '../../../../../services';
+import { TutorService, UserService } from '../../../../../services';
 import { Tutor, User, UserRole } from '../../../../../types/firestore.types';
-import { serverTimestamp } from '@angular/fire/firestore';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -36,7 +35,6 @@ export class AddTutorDialogComponent {
   private fb = inject(FormBuilder);
   private tutorService = inject(TutorService);
   private userService = inject(UserService);
-  private sessionService = inject(SessionService);
   private snackBar = inject(MatSnackBar);
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: { institutionId: string }) {
@@ -102,15 +100,12 @@ export class AddTutorDialogComponent {
   }
 
   countries = [
-    'Argentina', 'Bolivia', 'Brasil', 'Chile', 'Colombia', 'Costa Rica',
-    'Cuba', 'Ecuador', 'El Salvador', 'España', 'Guatemala', 'Honduras',
-    'México', 'Nicaragua', 'Panamá', 'Paraguay', 'Perú', 'Puerto Rico',
-    'República Dominicana', 'Uruguay', 'Venezuela'
+    'Bolivia', 'Ecuador', 'Perú', 'España'
   ];
 
   languages = [
-    'Español', 'Inglés', 'Francés', 'Alemán', 'Italiano', 'Portugués',
-    'Chino', 'Japonés', 'Árabe', 'Ruso', 'Otro'
+    'Español', 'Inglés', 'Francés', 'Alemán', 'Chino',
+    'Japonés', 'Portugués', 'Otro(s)'
   ];
 
   onCancel(): void {
@@ -121,12 +116,9 @@ export class AddTutorDialogComponent {
     if (this.tutorForm.valid) {
       try {
         const formValue = this.tutorForm.value;
-        
-        // Crear usuario sin hacer sign-in automático
-        const userId = await this.sessionService.createUserForAdmin(
-          formValue.email,
-          'tutor'
-        );
+        console.log('Form Value:', formValue);
+        const userId = await this.userService.createEmptyUser(formValue.email, 'tutor' as UserRole);
+        console.log(userId);
 
         // Crear el perfil de tutor con el user_id generado
         const tutorData: Tutor = {

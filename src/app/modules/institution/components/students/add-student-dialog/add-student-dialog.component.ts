@@ -6,11 +6,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { StudentService, UserService, SessionService } from '../../../../../services';
-import { Student, Goal, User, UserRole } from '../../../../../types/firestore.types';
-import { serverTimestamp } from '@angular/fire/firestore';
+import { StudentService, UserService, InstitutionService } from '../../../../../services';
+import { Student, Goal, UserRole, LevelCEFR } from '../../../../../types/firestore.types';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -24,6 +25,8 @@ import { of } from 'rxjs';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatIconModule
   ],
   templateUrl: './add-student-dialog.component.html',
@@ -34,7 +37,6 @@ export class AddStudentDialogComponent {
   private fb = inject(FormBuilder);
   private studentService = inject(StudentService);
   private userService = inject(UserService);
-  private sessionService = inject(SessionService);
   private snackBar = inject(MatSnackBar);
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: { institutionId: string }) {
@@ -51,6 +53,11 @@ export class AddStudentDialogComponent {
     email: ['', [Validators.required, Validators.email], [this.emailExistsValidator.bind(this)]],
     full_name: ['', [Validators.required, Validators.minLength(2)]],
     institution_id: ['', Validators.required],
+    level_cefr: ['A1'],
+    target_language: [''],
+    country: [''],
+    birth_date: [''],
+    enrollment_date: [new Date()],
     goals: this.fb.array([])
   });
 
@@ -105,6 +112,17 @@ export class AddStudentDialogComponent {
     { code: 'ru', name: 'Ruso' }
   ];
 
+  cefrLevels = [
+    'A1', 'A2', 'B1', 'B2', 'C1', 'C2'
+  ];
+
+  countries = [
+    'Argentina', 'Bolivia', 'Brasil', 'Chile', 'Colombia', 'Costa Rica',
+    'Cuba', 'Ecuador', 'El Salvador', 'España', 'Guatemala', 'Honduras',
+    'México', 'Nicaragua', 'Panamá', 'Paraguay', 'Perú', 'Puerto Rico',
+    'República Dominicana', 'Uruguay', 'Venezuela'
+  ];
+
   get goalsFormArray(): FormArray {
     return this.studentForm.get('goals') as FormArray;
   }
@@ -133,21 +151,20 @@ export class AddStudentDialogComponent {
     if (this.studentForm.valid) {
       try {
         const formValue = this.studentForm.value;
-        
-        // Crear usuario sin hacer sign-in automático
-        const userId = await this.sessionService.createUserForAdmin(
-          formValue.email,
-          'student'
-        );
-
-        // Crear el perfil de estudiante con el user_id generado
+        const userId = await this.userService.createEmptyUser(formValue.email, 'student' as UserRole);
         const studentData: Student = {
           user_id: userId,
           full_name: formValue.full_name,
           institution_id: formValue.institution_id,
-          goals: formValue.goals.length > 0 ? formValue.goals as Goal[] : undefined
+          goals: formValue.goals.length > 0 ? formValue.goals as Goal[] : [],
+          level_cefr: formValue.level_cefr || 'A1',
+          target_language: formValue.target_language || '',
+          country: formValue.country || '',
+          birth_date: formValue.birth_date ? new Date(formValue.birth_date) : undefined,
+          enrollment_date: formValue.enrollment_date ? new Date(formValue.enrollment_date) : new Date()
         };
-
+        console.log(studentData)
+        
         await this.studentService.createStudent(studentData);
         
         this.snackBar.open(

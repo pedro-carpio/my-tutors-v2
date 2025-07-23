@@ -11,7 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { Observable, switchMap, of } from 'rxjs';
 import { Auth, user } from '@angular/fire/auth';
-import { SessionService, TutorService, UserService } from '../../../../services';
+import { SessionService, TutorService } from '../../../../services';
 import { LayoutComponent } from '../../../../SharedModule/layout/layout.component';
 import { ToolbarComponent } from '../../../../SharedModule/toolbar/toolbar.component';
 import { Tutor } from '../../../../types/firestore.types';
@@ -40,7 +40,6 @@ import { AddTutorDialogComponent } from './add-tutor-dialog/add-tutor-dialog.com
 export class TutorsComponent implements OnInit {
   private sessionService = inject(SessionService);
   private tutorService = inject(TutorService);
-  private userService = inject(UserService);
   private auth = inject(Auth);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
@@ -59,6 +58,12 @@ export class TutorsComponent implements OnInit {
         if (authUser) {
           this.currentUserId = authUser.uid;
           // Para instituciones, filtrar tutores por institution_id = userId
+          // Opciones de ordenamiento disponibles:
+          // - this.tutorService.getTutorsByInstitution(authUser.uid) // Orden alfabético
+          // - this.tutorService.getTutorsByInstitutionSortedByRate(authUser.uid, 'asc') // Por tarifa ascendente
+          // - this.tutorService.getTutorsByInstitutionSortedByRate(authUser.uid, 'desc') // Por tarifa descendente
+          // - this.tutorService.getTutorsByInstitutionSortedByExperience(authUser.uid, 'desc') // Por experiencia descendente
+          // - this.tutorService.getTutorsByInstitutionSortedByAvailability(authUser.uid, 'desc') // Por disponibilidad descendente
           return this.tutorService.getTutorsByInstitution(authUser.uid);
         }
         return of([]);

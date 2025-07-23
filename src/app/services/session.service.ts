@@ -257,25 +257,6 @@ export class SessionService {
     }
   }
 
-  // Create user for administrative purposes (without sign-in)
-  async createUserForAdmin(email: string, role: UserRole): Promise<string> {
-    try {
-      // First check if email already exists
-      const existingUsers = await this.userService.getUserByEmail(email).toPromise();
-      if (existingUsers && existingUsers.length > 0) {
-        throw new Error('Este email ya está registrado');
-      }
-
-      // Create user record in Firestore without Firebase Auth
-      const userId = await this.userService.createUserForAdmin(email, role);
-      
-      return userId;
-    } catch (error) {
-      console.error('Error creating user for admin:', error);
-      throw error;
-    }
-  }
-
   async registerTutor(email: string, password: string, fullName: string, tutorData: any): Promise<{success: boolean, error?: string}> {
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
@@ -340,14 +321,14 @@ export class SessionService {
     } catch (error: any) {
       console.error('Login error:', error);
       
-      // Check if user exists in Firestore but not in Firebase Auth (needs activation)
-      if (error.code === 'auth/user-not-found') {
-        const needsActivation = await this.userService.needsActivation(email);
-        if (needsActivation) {
-          // User exists in Firestore but needs Firebase Auth account
-          throw new Error('NEEDS_ACTIVATION');
-        }
-      }
+      // // Check if user exists in Firestore but not in Firebase Auth (needs activation)
+      // if (error.code === 'auth/user-not-found') {
+      //   const needsActivation = await this.userService.needsActivation(email);
+      //   if (needsActivation) {
+      //     // User exists in Firestore but needs Firebase Auth account
+      //     throw new Error('NEEDS_ACTIVATION');
+      //   }
+      // }
       
       throw error;
     }
@@ -537,10 +518,9 @@ export class SessionService {
       }
 
       // Verify this user needs activation
-      const needsActivation = await this.userService.needsActivation(email);
-      if (!needsActivation) {
-        return { success: false, error: 'Esta cuenta ya está activada' };
-      }
+      // if (!needsActivation) {
+      //   return { success: false, error: 'Esta cuenta ya está activada' };
+      // }
 
       // Create Firebase Auth account with the new password
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, newPassword);

@@ -12,6 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { RouterModule } from '@angular/router';
 
 // Services
 import { SessionService } from '../../../services/session.service';
@@ -31,7 +32,8 @@ import { ToolbarComponent } from '../../toolbar/toolbar.component';
     MatProgressSpinnerModule,
     MatDividerModule,
     MatSnackBarModule,
-    ToolbarComponent
+    ToolbarComponent,
+    RouterModule
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'

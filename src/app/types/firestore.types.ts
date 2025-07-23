@@ -31,6 +31,11 @@ export interface Student {
   full_name: string;
   goals?: Goal[];
   institution_id?: string; // Opcional para estudiantes independientes
+  level_cefr?: LevelCEFR; // Nivel actual del estudiante
+  target_language?: string; // Idioma que está aprendiendo
+  country?: string; // País de origen del estudiante
+  birth_date?: Date; // Fecha de nacimiento
+  enrollment_date?: Date; // Fecha de inscripción
 }
 
 export interface Goal {

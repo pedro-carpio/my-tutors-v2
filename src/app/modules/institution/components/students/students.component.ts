@@ -40,7 +40,6 @@ import { AddStudentDialogComponent } from './add-student-dialog/add-student-dial
 export class StudentsComponent implements OnInit {
   private sessionService = inject(SessionService);
   private studentService = inject(StudentService);
-  private userService = inject(UserService);
   private auth = inject(Auth);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
@@ -59,7 +58,14 @@ export class StudentsComponent implements OnInit {
         if (authUser) {
           this.currentUserId = authUser.uid;
           // Para instituciones, filtrar estudiantes por institution_id = userId
-          return this.studentService.getStudentsByInstitution(authUser.uid);
+          // Opciones de ordenamiento disponibles:
+          // - this.studentService.getStudentsByInstitution(authUser.uid) // Orden alfabético
+          // - this.studentService.getStudentsByInstitutionSortedByEnrollment(authUser.uid, 'desc') // Por fecha de inscripción descendente
+          // - this.studentService.getStudentsByInstitutionSortedByLevel(authUser.uid, 'asc') // Por nivel CEFR ascendente
+          // - this.studentService.getStudentsByInstitutionSortedByAge(authUser.uid, 'desc') // Por edad descendente
+          const students = this.studentService.getStudentsByInstitution(authUser.uid);
+          console.log(students)
+          return students
         }
         return of([]);
       })

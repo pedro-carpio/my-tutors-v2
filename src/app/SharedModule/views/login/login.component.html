@@ -7,20 +7,20 @@
     <mat-card-content class="login-content">
       
       <!-- Left side - Firebase illustration -->
-      <div class="illustration-section">
+      <!-- <div class="illustration-section">
         <img src="WithFirebase.png" 
              alt="Firebase illustration" 
              class="firebase-illustration" />
-      </div>
+      </div> -->
       
       <!-- Right side - Login form -->
       <div class="login-section">
         <!-- Logo and title -->
         <div class="brand-section">
-          <img src="FriendlyChatLogo.png" 
+          <!-- <img src="FriendlyChatLogo.png" 
                alt="Friendly Chat Logo" 
-               class="logo" />
-          <h1 class="app-title">{{ i18nService.translate('layout.appName') }}</h1>
+               class="logo" /> -->
+          <h1 class="app-title">{{ i18nService.translate('layout.title') }}</h1>
         </div>
         
         <!-- Login options -->
@@ -116,6 +116,7 @@
               </button>
             </form>
 
+
             <!-- Divider -->
             <!-- <div class="divider-section">
               <mat-divider></mat-divider>
@@ -137,7 +138,7 @@
         </div>
 
         <!-- Registration links -->
-        <div class="registration-section">
+        <!-- <div class="registration-section">
           <p class="register-text">{{ i18nService.translate('auth.login.noAccount') }}</p>
           <div class="register-buttons">
             <button mat-stroked-button
@@ -162,9 +163,13 @@
               {{ i18nService.translate('auth.login.institution') }}
             </button>
           </div>
-        </div>
+        </div> -->
       </div>
       
+      <a class="lost-link" 
+         [routerLink]="['/']">
+        {{ i18nService.translate('layout.lost') }}
+      </a>
     </mat-card-content>
   </mat-card>
 </div>
