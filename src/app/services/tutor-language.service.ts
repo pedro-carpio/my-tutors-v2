@@ -15,19 +15,19 @@ import {
   orderBy,
   getDocs,
 } from '@angular/fire/firestore';
-import { TutorLanguage, LevelCEFR } from '../types/firestore.types';
+import { UserLanguage, LevelCEFR } from '../types/firestore.types';
 
 @Injectable({
   providedIn: 'root',
 })
-export class TutorLanguageService {
+export class UserLanguageService {
   private firestore: Firestore = inject(Firestore);
   private collectionName = 'tutor_languages';
 
   // Create a new tutor-language relationship
-  async createTutorLanguage(tutorLanguageData: TutorLanguage): Promise<string> {
+  async createUserLanguage(userLanguageData: UserLanguage): Promise<string> {
     try {
-      const docRef = await addDoc(collection(this.firestore, this.collectionName), tutorLanguageData);
+      const docRef = await addDoc(collection(this.firestore, this.collectionName), userLanguageData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating tutor language:', error);
@@ -36,27 +36,27 @@ export class TutorLanguageService {
   }
 
   // Get all languages for a specific tutor
-  getLanguagesByTutor(tutorId: string): Observable<TutorLanguage[]> {
+  getLanguagesByTutor(tutorId: string): Observable<UserLanguage[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
       where('tutor_id', '==', tutorId),
       orderBy('level_cefr', 'desc')
     );
-    return collectionData(q, { idField: 'id' }) as Observable<TutorLanguage[]>;
+    return collectionData(q, { idField: 'id' }) as Observable<UserLanguage[]>;
   }
 
   // Get all tutors who teach a specific language
-  getTutorsByLanguage(languageId: string): Observable<TutorLanguage[]> {
+  getTutorsByLanguage(languageId: string): Observable<UserLanguage[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
       where('language_id', '==', languageId),
       orderBy('level_cefr', 'desc')
     );
-    return collectionData(q, { idField: 'id' }) as Observable<TutorLanguage[]>;
+    return collectionData(q, { idField: 'id' }) as Observable<UserLanguage[]>;
   }
 
   // Get tutors by language and minimum CEFR level
-  getTutorsByLanguageAndLevel(languageId: string, minLevel: LevelCEFR): Observable<TutorLanguage[]> {
+  getTutorsByLanguageAndLevel(languageId: string, minLevel: LevelCEFR): Observable<UserLanguage[]> {
     const levelOrder = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
     const minLevelIndex = levelOrder.indexOf(minLevel);
     const validLevels = levelOrder.slice(minLevelIndex);
@@ -67,23 +67,23 @@ export class TutorLanguageService {
       where('level_cefr', 'in', validLevels),
       orderBy('level_cefr', 'desc')
     );
-    return collectionData(q, { idField: 'id' }) as Observable<TutorLanguage[]>;
+    return collectionData(q, { idField: 'id' }) as Observable<UserLanguage[]>;
   }
 
   // Get specific tutor-language relationship
-  getTutorLanguage(tutorId: string, languageId: string): Observable<TutorLanguage[]> {
+  getUserLanguage(tutorId: string, languageId: string): Observable<UserLanguage[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
       where('tutor_id', '==', tutorId),
       where('language_id', '==', languageId)
     );
-    return collectionData(q, { idField: 'id' }) as Observable<TutorLanguage[]>;
+    return collectionData(q, { idField: 'id' }) as Observable<UserLanguage[]>;
   }
 
   // Update tutor language level
-  async updateTutorLanguageLevel(tutorLanguageId: string, newLevel: LevelCEFR): Promise<void> {
+  async updateUserLanguageLevel(userLanguageId: string, newLevel: LevelCEFR): Promise<void> {
     try {
-      const docRef = doc(this.firestore, this.collectionName, tutorLanguageId);
+      const docRef = doc(this.firestore, this.collectionName, userLanguageId);
       await updateDoc(docRef, { level_cefr: newLevel });
     } catch (error) {
       console.error('Error updating tutor language level:', error);
@@ -92,9 +92,9 @@ export class TutorLanguageService {
   }
 
   // Delete tutor-language relationship
-  async deleteTutorLanguage(tutorLanguageId: string): Promise<void> {
+  async deleteUserLanguage(userLanguageId: string): Promise<void> {
     try {
-      const docRef = doc(this.firestore, this.collectionName, tutorLanguageId);
+      const docRef = doc(this.firestore, this.collectionName, userLanguageId);
       await deleteDoc(docRef);
     } catch (error) {
       console.error('Error deleting tutor language:', error);
@@ -136,11 +136,11 @@ export class TutorLanguageService {
   }
 
   // Get all tutor-language relationships
-  getAllTutorLanguages(): Observable<TutorLanguage[]> {
+  getAllUserLanguages(): Observable<UserLanguage[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
       orderBy('tutor_id', 'asc')
     );
-    return collectionData(q, { idField: 'id' }) as Observable<TutorLanguage[]>;
+    return collectionData(q, { idField: 'id' }) as Observable<UserLanguage[]>;
   }
 }

@@ -88,8 +88,8 @@ export class I18nService {
           myStudents: 'Mis Estudiantes',
           availability: 'Disponibilidad',
           institution: 'Institución',
-          manageTutors: 'Gestionar Tutores',
-          manageStudents: 'Gestionar Estudiantes',
+          manageTutors: 'Mis tutores',
+          manageStudents: 'Mis estudiantes',
           admin: 'Administración',
           userManagement: 'Gestión de Usuarios',
           systemSettings: 'Configuración del Sistema'
@@ -330,8 +330,8 @@ export class I18nService {
           myStudents: 'My Students',
           availability: 'Availability',
           institution: 'Institution',
-          manageTutors: 'Manage Tutors',
-          manageStudents: 'Manage Students',
+          manageTutors: 'My tutors',
+          manageStudents: 'My students',
           admin: 'Administration',
           userManagement: 'User Management',
           systemSettings: 'System Settings'

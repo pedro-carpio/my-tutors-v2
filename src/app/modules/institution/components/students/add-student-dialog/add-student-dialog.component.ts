@@ -1,6 +1,6 @@
 import { Component, inject, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { MatDialogRef, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,10 +10,11 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { StudentService, UserService, InstitutionService } from '../../../../../services';
+import { StudentService, UserService, InstitutionService, GoalService } from '../../../../../services';
+import { I18nService, Language } from '../../../../../services/i18n.service';
 import { Student, Goal, UserRole, LevelCEFR } from '../../../../../types/firestore.types';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, map, startWith } from 'rxjs/operators';
+import { of, Observable, combineLatest } from 'rxjs';
 
 @Component({
   selector: 'app-add-student-dialog',
@@ -37,9 +38,23 @@ export class AddStudentDialogComponent {
   private fb = inject(FormBuilder);
   private studentService = inject(StudentService);
   private userService = inject(UserService);
+  private goalService = inject(GoalService);
+  public i18nService = inject(I18nService);
   private snackBar = inject(MatSnackBar);
 
+  availableGoals$: Observable<Goal[]>;
+
   constructor(@Inject(MAT_DIALOG_DATA) public data: { institutionId: string }) {
+    // Inicializar el observable de objetivos filtrados por idioma actual
+    this.availableGoals$ = this.i18nService.language$.pipe(
+      startWith(this.i18nService.getCurrentLanguage()),
+      switchMap((currentLanguage: Language) => 
+        this.goalService.getAllGoals().pipe(
+          map((goals: Goal[]) => goals.filter(goal => goal.lang === currentLanguage))
+        )
+      )
+    );
+    
     // Establecer el institution_id automáticamente
     this.studentForm.patchValue({
       institution_id: this.data.institutionId
@@ -58,7 +73,7 @@ export class AddStudentDialogComponent {
     country: [''],
     birth_date: [''],
     enrollment_date: [new Date()],
-    goals: this.fb.array([])
+    goals: [[]] // Array de IDs de objetivos seleccionados
   });
 
   private setupEmailValidation(): void {
@@ -123,24 +138,14 @@ export class AddStudentDialogComponent {
     'República Dominicana', 'Uruguay', 'Venezuela'
   ];
 
-  get goalsFormArray(): FormArray {
-    return this.studentForm.get('goals') as FormArray;
+  // Función para comparar objetivos en el mat-select multiple
+  compareGoals(goal1: Goal, goal2: Goal): boolean {
+    return goal1 && goal2 ? goal1.name === goal2.name && goal1.lang === goal2.lang : goal1 === goal2;
   }
 
-  createGoalFormGroup(): FormGroup {
-    return this.fb.group({
-      name: ['', Validators.required],
-      description: ['', Validators.required],
-      lang: ['', Validators.required]
-    });
-  }
-
-  addGoal(): void {
-    this.goalsFormArray.push(this.createGoalFormGroup());
-  }
-
-  removeGoal(index: number): void {
-    this.goalsFormArray.removeAt(index);
+  // Función trackBy para optimizar el rendering de la lista
+  trackByGoal(index: number, goal: Goal): string {
+    return `${goal.name}-${goal.lang}`;
   }
 
   onCancel(): void {
@@ -156,7 +161,7 @@ export class AddStudentDialogComponent {
           user_id: userId,
           full_name: formValue.full_name,
           institution_id: formValue.institution_id,
-          goals: formValue.goals.length > 0 ? formValue.goals as Goal[] : [],
+          goals: formValue.goals || [], // Los objetivos ya vienen como array desde el selector múltiple
           level_cefr: formValue.level_cefr || 'A1',
           target_language: formValue.target_language || '',
           country: formValue.country || '',
@@ -190,13 +195,6 @@ export class AddStudentDialogComponent {
       const control = this.studentForm.get(key);
       if (control) {
         control.markAsTouched();
-        if (control instanceof FormArray) {
-          control.controls.forEach(arrayControl => {
-            Object.keys((arrayControl as FormGroup).controls).forEach(arrayKey => {
-              arrayControl.get(arrayKey)?.markAsTouched();
-            });
-          });
-        }
       }
     });
   }
@@ -214,14 +212,6 @@ export class AddStudentDialogComponent {
     }
     if (control?.hasError('minlength')) {
       return `Mínimo ${control.getError('minlength')?.requiredLength} caracteres`;
-    }
-    return '';
-  }
-
-  getGoalErrorMessage(goalIndex: number, fieldName: string): string {
-    const control = this.goalsFormArray.at(goalIndex).get(fieldName);
-    if (control?.hasError('required')) {
-      return 'Este campo es requerido';
     }
     return '';
   }

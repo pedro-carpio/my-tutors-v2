@@ -10,7 +10,7 @@
   <span>{{ title || ('layout.appName' | translate) }}</span>
   <span class="spacer"></span>
   <button 
-    matIconButton 
+    mat-button 
     [attr.aria-label]="'layout.changeLanguage' | translate" 
     (click)="changeLanguage()"
     [matTooltip]="'layout.changeLanguage' | translate">

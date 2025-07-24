@@ -21,53 +21,22 @@
     <div class="goals-section">
       <div class="goals-header">
         <h3>Objetivos de Aprendizaje</h3>
-        <button mat-icon-button type="button" (click)="addGoal()" color="primary">
-          <mat-icon>add</mat-icon>
-        </button>
       </div>
-
-      <div formArrayName="goals" class="goals-array">
-        <div *ngFor="let goal of goalsFormArray.controls; let i = index" 
-             [formGroupName]="i" 
-             class="goal-group">
-          <mat-form-field appearance="outline">
-            <mat-label>Nombre del Objetivo</mat-label>
-            <input matInput formControlName="name" placeholder="Ej: Conversación fluida">
-            <mat-error *ngIf="goalsFormArray.at(i).get('name')?.invalid && goalsFormArray.at(i).get('name')?.touched">
-              {{ getGoalErrorMessage(i, 'name') }}
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Descripción</mat-label>
-            <textarea matInput formControlName="description" rows="2" 
-                      placeholder="Describe el objetivo específico"></textarea>
-            <mat-error *ngIf="goalsFormArray.at(i).get('description')?.invalid && goalsFormArray.at(i).get('description')?.touched">
-              {{ getGoalErrorMessage(i, 'description') }}
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Idioma</mat-label>
-            <mat-select formControlName="lang">
-              <mat-option *ngFor="let language of languages" [value]="language.code">
-                {{ language.name }}
-              </mat-option>
-            </mat-select>
-            <mat-error *ngIf="goalsFormArray.at(i).get('lang')?.invalid && goalsFormArray.at(i).get('lang')?.touched">
-              {{ getGoalErrorMessage(i, 'lang') }}
-            </mat-error>
-          </mat-form-field>
-
-          <button mat-icon-button type="button" (click)="removeGoal(i)" color="warn">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </div>
-
-        <div *ngIf="goalsFormArray.length === 0" class="no-goals">
-          <p>No hay objetivos agregados. Haz clic en + para agregar el primer objetivo.</p>
-        </div>
-      </div>
+      
+      <mat-form-field appearance="outline" class="goals-select">
+        <mat-label>Selecciona objetivos</mat-label>
+        <mat-select formControlName="goals" multiple [compareWith]="compareGoals">
+          <mat-option *ngFor="let goal of availableGoals$ | async; trackBy: trackByGoal" [value]="goal">
+            {{ goal.name }}
+            <span class="goal-description" *ngIf="goal.description">
+              - {{ goal.description }}
+            </span>
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="studentForm.get('goals')?.invalid && studentForm.get('goals')?.touched">
+          {{ getErrorMessage('goals') }}
+        </mat-error>
+      </mat-form-field>
     </div>
   </form>
 </mat-dialog-content>
