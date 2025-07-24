@@ -12,12 +12,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
 
 // Services
 import { SessionService } from '../../../services/session.service';
 import { I18nService } from '../../../services/i18n.service';
+import { UserService } from '../../../services/user.service';
 import { ToolbarComponent } from '../../toolbar/toolbar.component';
+import { PasswordSetupDialogComponent, PasswordSetupData, PasswordSetupResult } from './password-setup-dialog.component';
 
 @Component({
   selector: 'app-login',
@@ -32,6 +35,7 @@ import { ToolbarComponent } from '../../toolbar/toolbar.component';
     MatProgressSpinnerModule,
     MatDividerModule,
     MatSnackBarModule,
+    MatDialogModule,
     ToolbarComponent,
     RouterModule
   ],
@@ -43,27 +47,19 @@ export class LoginComponent {
   private router = inject(Router);
   private formBuilder = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+  private userService = inject(UserService);
   public i18nService = inject(I18nService);
 
   loginForm: FormGroup;
   isLoading = false;
   hidePassword = true;
-  showEmailLogin = false;
-  showFirstTimeSetup = false;
-  firstTimeEmail = '';
 
   constructor() {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
-  }
-
-  toggleLoginMethod(): void {
-    this.showEmailLogin = !this.showEmailLogin;
-    if (!this.showEmailLogin) {
-      this.loginForm.reset();
-    }
   }
 
   async onEmailLogin(): Promise<void> {
@@ -115,46 +111,47 @@ export class LoginComponent {
 
   private async handleFirstTimeUser(email: string, password: string): Promise<void> {
     try {
-      // Option 1: Simple confirmation (current implementation)
-      const useSimpleConfirm = true; // Toggle this for different UX
+      // Open password setup dialog
+      const dialogRef = this.dialog.open(PasswordSetupDialogComponent, {
+        data: { email } as PasswordSetupData,
+        disableClose: true,
+        width: '450px',
+        panelClass: 'password-setup-dialog'
+      });
+
+      const result = await dialogRef.afterClosed().toPromise() as PasswordSetupResult;
       
-      if (useSimpleConfirm) {
-        const confirmActivation = confirm(
-          `Parece que esta es tu primera vez iniciando sesión. ¿Quieres usar "${password}" como tu contraseña permanente?`
-        );
+      console.log('result', result);
+      if (result && result.confirmed && result.password) {
+        // User confirmed and provided a new password
+        const activationResult = await this.sessionService.firstTimeLogin(email, result.password);
         
-        if (confirmActivation) {
-          const result = await this.sessionService.firstTimeLogin(email, password);
-          
-          if (result.success) {
-            this.snackBar.open(
-              'Cuenta activada exitosamente. Bienvenido!',
-              'Cerrar',
-              {
-                duration: 5000,
-                panelClass: ['success-snackbar']
-              }
-            );
-          } else {
-            this.snackBar.open(
-              result.error || 'Error al activar la cuenta',
-              'Cerrar',
-              {
-                duration: 5000,
-                panelClass: ['error-snackbar']
-              }
-            );
-          }
+        if (activationResult.success) {
+          this.snackBar.open(
+            this.i18nService.translate('auth.passwordSetup.success'),
+            this.i18nService.translate('common.close'),
+            {
+              duration: 5000,
+              panelClass: ['success-snackbar']
+            }
+          );
+        } else {
+          this.snackBar.open(
+            activationResult.error || this.i18nService.translate('auth.passwordSetup.error'),
+            this.i18nService.translate('common.close'),
+            {
+              duration: 5000,
+              panelClass: ['error-snackbar']
+            }
+          );
         }
       } else {
-        // Option 2: Show inline form for better UX
-        this.showFirstTimeSetup = true;
-        this.firstTimeEmail = email;
+        // User cancelled the dialog
         this.snackBar.open(
-          'Esta es tu primera vez iniciando sesión. Por favor, configura tu contraseña.',
-          'Cerrar',
+          this.i18nService.translate('auth.passwordSetup.cancelled'),
+          this.i18nService.translate('common.close'),
           {
-            duration: 5000,
+            duration: 3000,
             panelClass: ['info-snackbar']
           }
         );
@@ -162,72 +159,14 @@ export class LoginComponent {
     } catch (error) {
       console.error('Error activating first time user:', error);
       this.snackBar.open(
-        'Error al activar la cuenta. Contacta al administrador.',
-        'Cerrar',
+        this.i18nService.translate('auth.passwordSetup.error'),
+        this.i18nService.translate('common.close'),
         {
           duration: 5000,
           panelClass: ['error-snackbar']
         }
       );
     }
-  }
-
-  async onFirstTimeSetup(newPassword: string): Promise<void> {
-    if (!newPassword || newPassword.length < 6) {
-      this.snackBar.open(
-        'La contraseña debe tener al menos 6 caracteres',
-        'Cerrar',
-        {
-          duration: 3000,
-          panelClass: ['error-snackbar']
-        }
-      );
-      return;
-    }
-
-    this.isLoading = true;
-    
-    try {
-      const result = await this.sessionService.firstTimeLogin(this.firstTimeEmail, newPassword);
-      
-      if (result.success) {
-        this.showFirstTimeSetup = false;
-        this.snackBar.open(
-          'Cuenta activada exitosamente. Bienvenido!',
-          'Cerrar',
-          {
-            duration: 5000,
-            panelClass: ['success-snackbar']
-          }
-        );
-      } else {
-        this.snackBar.open(
-          result.error || 'Error al activar la cuenta',
-          'Cerrar',
-          {
-            duration: 5000,
-            panelClass: ['error-snackbar']
-          }
-        );
-      }
-    } catch (error) {
-      console.error('Error in first time setup:', error);
-      this.snackBar.open(
-        'Error al configurar la cuenta',
-        'Cerrar',
-        {
-          duration: 5000,
-          panelClass: ['error-snackbar']
-        }
-      );
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
-  cancelFirstTimeSetup(): void {
-    this.showFirstTimeSetup = false;
-    this.firstTimeEmail = '';
   }
 
   private markFormGroupTouched(): void {
@@ -269,5 +208,38 @@ export class LoginComponent {
 
   navigateToForgotPassword(): void {
     this.router.navigate(['/forgot-password']);
+  }
+
+  // Debug methods - remove in production
+  async debugListAllUsers(): Promise<void> {
+    console.log('=== DEBUG: Listing all users ===');
+    await this.userService.debugListAllUsers();
+  }
+
+  async debugSearchUsers(email: string): Promise<void> {
+    console.log(`=== DEBUG: Searching for users with email containing "${email}" ===`);
+    await this.userService.debugSearchUsersByPartialEmail(email);
+  }
+
+  async debugTestEmailQuery(): Promise<void> {
+    const email = this.loginForm.get('email')?.value;
+    if (email) {
+      console.log(`=== DEBUG: Testing query for exact email "${email}" ===`);
+      
+      // Test the async method
+      const user = await this.userService.getUserByEmailAsync(email);
+      console.log('Async method result:', user);
+      
+      // Test the observable method
+      this.userService.getUserByEmail(email).subscribe(users => {
+        console.log('Observable method result:', users);
+      });
+      
+      // Test needs activation
+      const needsActivation = await this.userService.needsActivation(email);
+      console.log('Needs activation:', needsActivation);
+    } else {
+      console.log('Please enter an email to test');
+    }
   }
 }

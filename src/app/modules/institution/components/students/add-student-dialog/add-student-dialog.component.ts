@@ -148,6 +148,15 @@ export class AddStudentDialogComponent {
     return `${goal.name}-${goal.lang}`;
   }
 
+  // Función para alternar idioma y limpiar objetivos seleccionados
+  toggleLanguageAndClearGoals(): void {
+    // Limpiar objetivos seleccionados antes de cambiar idioma
+    this.studentForm.patchValue({ goals: [] });
+    
+    // Cambiar idioma
+    this.i18nService.toggleLanguage();
+  }
+
   onCancel(): void {
     this.dialogRef.close();
   }

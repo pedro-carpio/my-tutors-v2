@@ -81,12 +81,39 @@ export class UserService {
 
   // Get user by email
   getUserByEmail(email: string): Observable<User[]> {
+    console.log('Searching for user with email:', email);
     const q = query(
       collection(this.firestore, this.collectionName),
       where('email', '==', email),
       limit(1)
     );
     return collectionData(q, { idField: 'id' }) as Observable<User[]>;
+  }
+
+  // Get user by email (async version for better error handling)
+  async getUserByEmailAsync(email: string): Promise<User | null> {
+    try {
+      console.log('Searching for user with email (async):', email);
+      const q = query(
+        collection(this.firestore, this.collectionName),
+        where('email', '==', email),
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) {
+        console.log('No user found with email:', email);
+        return null;
+      }
+      
+      const userData = snapshot.docs[0].data() as User;
+      userData.id = snapshot.docs[0].id; // Ensure ID is set
+      console.log('User found:', userData);
+      return userData;
+    } catch (error) {
+      console.error('Error getting user by email:', error);
+      throw error;
+    }
   }
 
   // Check if email exists
@@ -101,6 +128,33 @@ export class UserService {
       return !snapshot.empty;
     } catch (error) {
       console.error('Error checking email existence:', error);
+      return false;
+    }
+  }
+
+  // Check if user needs activation (exists in Firestore but not in Firebase Auth)
+  async needsActivation(email: string): Promise<boolean> {
+    try {
+      console.log('Checking if user needs activation for email:', email);
+      
+      // Use the new async method for better error handling
+      const userData = await this.getUserByEmailAsync(email);
+      
+      if (!userData) {
+        console.log('User not found in Firestore, no activation needed');
+        return false; // User doesn't exist at all
+      }
+
+      console.log('User found in Firestore:', userData);
+      
+      // If user has a Firebase Auth UID format (28 characters), it's already activated
+      // Auto-generated Firestore IDs are 20 characters, Firebase Auth UIDs are 28
+      const needsActivation = userData.id.length === 20;
+      console.log(`User ID: ${userData.id}, length: ${userData.id.length}, needs activation: ${needsActivation}`);
+      
+      return needsActivation;
+    } catch (error) {
+      console.error('Error checking activation status:', error);
       return false;
     }
   }
@@ -166,4 +220,51 @@ export class UserService {
       throw error;
     }
   }
+  
+  // Debug method to list all users and their emails
+  async debugListAllUsers(): Promise<void> {
+    try {
+      const q = query(collection(this.firestore, this.collectionName));
+      const snapshot = await getDocs(q);
+      
+      console.log('=== DEBUG: All users in collection ===');
+      console.log(`Total users found: ${snapshot.size}`);
+      
+      snapshot.forEach((doc) => {
+        const userData = doc.data() as User;
+        console.log(`ID: ${doc.id}, Email: ${userData.email}, Role: ${userData.role}`);
+      });
+      console.log('=== End of user list ===');
+    } catch (error) {
+      console.error('Error listing all users:', error);
+    }
+  }
+
+  // Debug method to search for users by partial email match
+  async debugSearchUsersByPartialEmail(partialEmail: string): Promise<void> {
+    try {
+      const q = query(collection(this.firestore, this.collectionName));
+      const snapshot = await getDocs(q);
+      
+      console.log(`=== DEBUG: Searching for users containing "${partialEmail}" ===`);
+      
+      const matchingUsers: any[] = [];
+      snapshot.forEach((doc) => {
+        const userData = doc.data() as User;
+        if (userData.email && userData.email.toLowerCase().includes(partialEmail.toLowerCase())) {
+          matchingUsers.push({
+            id: doc.id,
+            email: userData.email,
+            role: userData.role
+          });
+        }
+      });
+      
+      console.log(`Found ${matchingUsers.length} matching users:`, matchingUsers);
+      console.log('=== End of search ===');
+    } catch (error) {
+      console.error('Error searching users:', error);
+    }
+  }
+  
 }

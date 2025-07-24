@@ -170,6 +170,31 @@
          [routerLink]="['/']">
         {{ i18nService.translate('layout.lost') }}
       </a>
+      
+      <!-- Debug buttons (remove in production) -->
+      <div class="debug-section" style="margin-top: 20px; padding: 10px; border: 1px dashed #ccc; border-radius: 4px;">
+        <h4>Debug Tools</h4>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button mat-stroked-button 
+                  color="warn" 
+                  (click)="debugListAllUsers()"
+                  style="font-size: 12px;">
+            List All Users
+          </button>
+          <button mat-stroked-button 
+                  color="warn" 
+                  (click)="debugTestEmailQuery()"
+                  style="font-size: 12px;">
+            Test Email Query
+          </button>
+          <button mat-stroked-button 
+                  color="warn" 
+                  (click)="debugSearchUsers('gmail')"
+                  style="font-size: 12px;">
+            Search Gmail Users
+          </button>
+        </div>
+      </div>
     </mat-card-content>
   </mat-card>
 </div>

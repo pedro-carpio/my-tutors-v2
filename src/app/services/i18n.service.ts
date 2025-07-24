@@ -137,6 +137,19 @@ export class I18nService {
             resendEmail: 'Reenviar email',
             emailError: 'Error al enviar el email de recuperación',
             unexpectedError: 'Error inesperado. Por favor, inténtalo de nuevo.'
+          },
+          passwordSetup: {
+            title: 'Configurar Contraseña',
+            message: 'Esta es tu primera vez iniciando sesión con {email}. Por favor, crea una contraseña segura para tu cuenta.',
+            newPassword: 'Nueva contraseña',
+            confirmPassword: 'Confirmar contraseña',
+            passwordPlaceholder: 'Mínimo 6 caracteres',
+            confirmPasswordPlaceholder: 'Repite tu contraseña',
+            confirm: 'Confirmar',
+            setting: 'Configurando...',
+            success: 'Cuenta activada exitosamente. ¡Bienvenido!',
+            error: 'Error al activar la cuenta. Contacta al administrador.',
+            cancelled: 'Configuración de contraseña cancelada.'
           }
         },
         
@@ -379,6 +392,19 @@ export class I18nService {
             resendEmail: 'Resend email',
             emailError: 'Error sending recovery email',
             unexpectedError: 'Unexpected error. Please try again.'
+          },
+          passwordSetup: {
+            title: 'Set Up Password',
+            message: 'This is your first time signing in with {email}. Please create a secure password for your account.',
+            newPassword: 'New password',
+            confirmPassword: 'Confirm password',
+            passwordPlaceholder: 'Minimum 6 characters',
+            confirmPasswordPlaceholder: 'Repeat your password',
+            confirm: 'Confirm',
+            setting: 'Setting up...',
+            success: 'Account activated successfully. Welcome!',
+            error: 'Error activating account. Please contact administrator.',
+            cancelled: 'Password setup cancelled.'
           }
         },
         

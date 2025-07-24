@@ -107,6 +107,10 @@ export const routes: Routes = [
         loadComponent: () => import('./SharedModule/views/calendar/calendar.component').then(m => m.LayoutCalendarComponent),
       },
       {
+        path: 'availability',
+        loadComponent: () => import('./modules/tutor/components/availability/availability.component').then(m => m.AvailabilityComponent)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

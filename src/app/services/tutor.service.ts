@@ -14,7 +14,7 @@ import {
   orderBy,
   limit,
 } from '@angular/fire/firestore';
-import { Tutor } from '../types/firestore.types';
+import { Tutor, Availability } from '../types/firestore.types';
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +38,17 @@ export class TutorService {
   getTutor(userId: string): Observable<Tutor | undefined> {
     const docRef = doc(this.firestore, this.collectionName, userId);
     return docData(docRef) as Observable<Tutor | undefined>;
+  }
+
+  // Update tutor availability
+  async updateTutorAvailability(userId: string, availability: Availability[]): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, this.collectionName, userId);
+      await updateDoc(docRef, { availability });
+    } catch (error) {
+      console.error('Error updating tutor availability:', error);
+      throw error;
+    }
   }
 
   // Get tutors by institution ID with different sorting options

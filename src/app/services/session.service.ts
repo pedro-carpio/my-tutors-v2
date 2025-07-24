@@ -305,11 +305,17 @@ export class SessionService {
   // Email/Password login
   async loginWithEmail(email: string, password: string): Promise<FirebaseUser> {
     try {
+      // First check if user needs activation before attempting login
+      const needsActivation = await this.userService.needsActivation(email);
+      if (needsActivation) {
+        // User exists in Firestore but needs Firebase Auth account
+        throw new Error('NEEDS_ACTIVATION');
+      }
+
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
       
       // Get user role from Firestore to navigate correctly
-      const users = await this.userService.getUserByEmail(email).toPromise();
-      const userData = users?.[0];
+      const userData = await this.userService.getUserByEmailAsync(email);
       
       if (userData) {
         this.navigateBasedOnRole(userData.role);
@@ -321,14 +327,19 @@ export class SessionService {
     } catch (error: any) {
       console.error('Login error:', error);
       
-      // // Check if user exists in Firestore but not in Firebase Auth (needs activation)
-      // if (error.code === 'auth/user-not-found') {
-      //   const needsActivation = await this.userService.needsActivation(email);
-      //   if (needsActivation) {
-      //     // User exists in Firestore but needs Firebase Auth account
-      //     throw new Error('NEEDS_ACTIVATION');
-      //   }
-      // }
+      // Re-throw the NEEDS_ACTIVATION error
+      if (error.message === 'NEEDS_ACTIVATION') {
+        throw error;
+      }
+      
+      // Check if user exists in Firestore but not in Firebase Auth (needs activation)
+      if (error.code === 'auth/user-not-found') {
+        const needsActivation = await this.userService.needsActivation(email);
+        if (needsActivation) {
+          // User exists in Firestore but needs Firebase Auth account
+          throw new Error('NEEDS_ACTIVATION');
+        }
+      }
       
       throw error;
     }
@@ -510,8 +521,8 @@ export class SessionService {
   async firstTimeLogin(email: string, newPassword: string): Promise<{success: boolean, error?: string}> {
     try {
       // Check if user exists in Firestore and needs activation
-      const users = await this.userService.getUserByEmail(email).toPromise();
-      const userData = users?.[0];
+      const userData = await this.userService.getUserByEmailAsync(email);
+      console.log("The user data: ", userData);
       
       if (!userData) {
         return { success: false, error: 'Usuario no encontrado' };
