@@ -28,3 +28,60 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   background-color: #f44336 !important;
   color: white !important;
 }
+
+// Mobile dialog styles
+.mobile-dialog {
+  .mat-dialog-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+  }
+}
+
+.tablet-dialog {
+  .mat-dialog-container {
+    padding: 8px !important;
+    border-radius: 8px !important;
+  }
+}
+
+// Responsive table styles
+@media (max-width: 768px) {
+  .mat-table {
+    font-size: 0.875rem;
+  }
+  
+  .mat-header-cell,
+  .mat-cell {
+    padding: 8px 4px;
+  }
+}
+
+// Touch-friendly button spacing
+@media (max-width: 768px) {
+  .mat-button,
+  .mat-raised-button,
+  .mat-flat-button {
+    min-height: 44px;
+    padding: 0 12px;
+  }
+  
+  .mat-icon-button {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+// Responsive form fields
+@media (max-width: 768px) {
+  .mat-form-field {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  
+  .mat-form-field-wrapper {
+    padding-bottom: 1em;
+  }
+}

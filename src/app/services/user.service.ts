@@ -204,7 +204,7 @@ export class UserService {
   // Migrate user from Firestore auto-generated ID to Firebase Auth UID
   async migrateUserToFirebaseAuth(oldId: string, newId: string, userData: User): Promise<void> {
     try {
-      // Create new document with Firebase Auth UID
+      // Create new document with Firebase Auth UID in users collection
       const newDocRef = doc(this.firestore, this.collectionName, newId);
       const newUserData: User = {
         ...userData,
@@ -212,11 +212,134 @@ export class UserService {
       };
       await setDoc(newDocRef, newUserData);
       
-      // Delete old document
+      // Migrate user data in role-specific collection based on user role
+      await this.migrateRoleSpecificData(oldId, newId, userData.role);
+      
+      // Delete old document from users collection
       const oldDocRef = doc(this.firestore, this.collectionName, oldId);
       await deleteDoc(oldDocRef);
+      
+      console.log(`Successfully migrated user ${userData.email} from ${oldId} to ${newId}`);
     } catch (error) {
       console.error('Error migrating user to Firebase Auth:', error);
+      throw error;
+    }
+  }
+
+  // Helper method to migrate role-specific data
+  private async migrateRoleSpecificData(oldId: string, newId: string, role: UserRole): Promise<void> {
+    try {
+      switch (role) {
+        case 'tutor':
+          await this.migrateTutorData(oldId, newId);
+          break;
+        case 'student':
+          await this.migrateStudentData(oldId, newId);
+          break;
+        case 'institution':
+          await this.migrateInstitutionData(oldId, newId);
+          break;
+        default:
+          console.log(`No role-specific migration needed for role: ${role}`);
+      }
+    } catch (error) {
+      console.error(`Error migrating role-specific data for ${role}:`, error);
+      throw error;
+    }
+  }
+
+  // Migrate tutor data
+  private async migrateTutorData(oldId: string, newId: string): Promise<void> {
+    try {
+      const oldTutorRef = doc(this.firestore, 'tutors', oldId);
+      const tutorSnapshot = await getDoc(oldTutorRef);
+      
+      if (tutorSnapshot.exists()) {
+        const tutorData = tutorSnapshot.data();
+        
+        // Update user_id in the tutor data
+        const updatedTutorData = {
+          ...tutorData,
+          user_id: newId
+        };
+        
+        // Create new tutor document with new ID
+        const newTutorRef = doc(this.firestore, 'tutors', newId);
+        await setDoc(newTutorRef, updatedTutorData);
+        
+        // Delete old tutor document
+        await deleteDoc(oldTutorRef);
+        
+        console.log(`Migrated tutor data from ${oldId} to ${newId}`);
+      } else {
+        console.log(`No tutor data found for user ${oldId}`);
+      }
+    } catch (error) {
+      console.error('Error migrating tutor data:', error);
+      throw error;
+    }
+  }
+
+  // Migrate student data
+  private async migrateStudentData(oldId: string, newId: string): Promise<void> {
+    try {
+      const oldStudentRef = doc(this.firestore, 'students', oldId);
+      const studentSnapshot = await getDoc(oldStudentRef);
+      
+      if (studentSnapshot.exists()) {
+        const studentData = studentSnapshot.data();
+        
+        // Update user_id in the student data
+        const updatedStudentData = {
+          ...studentData,
+          user_id: newId
+        };
+        
+        // Create new student document with new ID
+        const newStudentRef = doc(this.firestore, 'students', newId);
+        await setDoc(newStudentRef, updatedStudentData);
+        
+        // Delete old student document
+        await deleteDoc(oldStudentRef);
+        
+        console.log(`Migrated student data from ${oldId} to ${newId}`);
+      } else {
+        console.log(`No student data found for user ${oldId}`);
+      }
+    } catch (error) {
+      console.error('Error migrating student data:', error);
+      throw error;
+    }
+  }
+
+  // Migrate institution data
+  private async migrateInstitutionData(oldId: string, newId: string): Promise<void> {
+    try {
+      const oldInstitutionRef = doc(this.firestore, 'institutions', oldId);
+      const institutionSnapshot = await getDoc(oldInstitutionRef);
+      
+      if (institutionSnapshot.exists()) {
+        const institutionData = institutionSnapshot.data();
+        
+        // Update user_id in the institution data
+        const updatedInstitutionData = {
+          ...institutionData,
+          user_id: newId
+        };
+        
+        // Create new institution document with new ID
+        const newInstitutionRef = doc(this.firestore, 'institutions', newId);
+        await setDoc(newInstitutionRef, updatedInstitutionData);
+        
+        // Delete old institution document
+        await deleteDoc(oldInstitutionRef);
+        
+        console.log(`Migrated institution data from ${oldId} to ${newId}`);
+      } else {
+        console.log(`No institution data found for user ${oldId}`);
+      }
+    } catch (error) {
+      console.error('Error migrating institution data:', error);
       throw error;
     }
   }

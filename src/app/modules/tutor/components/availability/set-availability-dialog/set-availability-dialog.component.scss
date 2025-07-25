@@ -1,0 +1,521 @@
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  user-select: none;
+}
+
+.dialog-toolbar {
+  background-color: #f5f5f5;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  padding: 0 16px;
+
+  .dialog-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  .toolbar-spacer {
+    flex: 1 1 auto;
+  }
+
+  .reset-button {
+    .button-text {
+      margin-left: 4px;
+    }
+  }
+}
+
+.instructions {
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eee;
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #666;
+  }
+
+  strong {
+    color: #333;
+  }
+}
+
+.calendar-container {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.calendar-grid {
+  min-width: 600px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.calendar-header {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  background-color: #fafafa;
+  border-bottom: 2px solid #ddd;
+
+  .time-column-header {
+    padding: 12px 8px;
+    font-weight: 600;
+    text-align: center;
+    border-right: 1px solid #ddd;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .header-text {
+      display: block;
+    }
+  }
+
+  .day-header {
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 500;
+    border-right: 1px solid #ddd;
+    
+    &:last-child {
+      border-right: none;
+    }
+
+    .day-name-full {
+      display: block;
+    }
+
+    .day-name-short {
+      display: none;
+    }
+  }
+}
+
+.calendar-body {
+  .hour-row {
+    display: grid;
+    grid-template-columns: 80px repeat(7, 1fr);
+
+    &:hover .time-cell {
+      background-color: #f8f8f8;
+    }
+
+    .time-cell {
+      padding: 8px;
+      border-right: 1px solid #ddd;
+      border-bottom: 1px solid #eee;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fafafa;
+      font-weight: 500;
+    }
+
+    .hour-cell {
+      height: 40px;
+      border-right: 1px solid #ddd;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      position: relative;
+
+      &:last-child {
+        border-right: none;
+      }
+
+      &:hover:not(.dragging) {
+        background-color: #f0f0f0;
+      }
+
+      &.selected {
+        background-color: #4caf50;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          right: 2px;
+          bottom: 2px;
+          background-color: rgba(255, 255, 255, 0.2);
+          border-radius: 2px;
+        }
+      }
+
+      &.preview-select {
+        background-color: #81c784;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          right: 2px;
+          bottom: 2px;
+          background-color: rgba(255, 255, 255, 0.3);
+          border-radius: 2px;
+          border: 2px dashed rgba(255, 255, 255, 0.8);
+        }
+      }
+
+      &.preview-deselect {
+        background-color: #ffab91;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          right: 2px;
+          bottom: 2px;
+          background-color: rgba(255, 255, 255, 0.3);
+          border-radius: 2px;
+          border: 2px dashed rgba(255, 255, 255, 0.8);
+        }
+      }
+
+      &.dragging {
+        cursor: grabbing;
+      }
+
+      // Mejorar área táctil en móviles
+      @media (max-width: 768px) {
+        min-height: 30px;
+        
+        &:active {
+          background-color: #e0e0e0;
+          transform: scale(0.95);
+          transition: transform 0.1s ease;
+        }
+        
+        &.selected:active {
+          background-color: #388e3c;
+        }
+      }
+    }
+  }
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-top: 1px solid #eee;
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+
+      &.selected {
+        background-color: #4caf50;
+      }
+
+      &.preview-select {
+        background-color: #81c784;
+        border: 2px dashed #4caf50;
+      }
+
+      &.preview-deselect {
+        background-color: #ffab91;
+        border: 2px dashed #ff5722;
+      }
+    }
+  }
+}
+
+.dialog-actions {
+  padding: 16px 24px;
+  border-top: 1px solid #eee;
+  background-color: #fafafa;
+
+  button {
+    margin-left: 8px;
+
+    .button-text {
+      display: inline;
+    }
+
+    &.save-button {
+      order: 1;
+    }
+
+    &.cancel-button {
+      order: 2;
+    }
+  }
+}
+
+// Prevenir selección de texto durante drag
+.dialog-container {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+// Responsive design para tablet
+@media (max-width: 1024px) {
+  .calendar-grid {
+    min-width: 700px;
+  }
+
+  .calendar-header,
+  .hour-row {
+    grid-template-columns: 70px repeat(7, 1fr);
+  }
+
+  .dialog-toolbar {
+    .dialog-title {
+      font-size: 1.1rem;
+    }
+
+    .reset-button {
+      .button-text {
+        display: inline;
+      }
+    }
+  }
+
+  .time-cell {
+    font-size: 0.8rem;
+    padding: 6px;
+  }
+
+  .hour-cell {
+    height: 35px;
+  }
+}
+
+// Responsive design para móvil
+@media (max-width: 768px) {
+  .dialog-container {
+    height: 100vh;
+    max-height: 100vh;
+  }
+
+  .dialog-toolbar {
+    padding: 0 8px;
+
+    .dialog-title {
+      font-size: 1rem;
+    }
+
+    .reset-button {
+      .button-text {
+        display: inline;
+      }
+    }
+  }
+
+  .instructions {
+    padding: 12px;
+
+    p {
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+  }
+
+  .calendar-container {
+    padding: 8px;
+    overflow: auto;
+  }
+
+  .calendar-grid {
+    min-width: 100%;
+    overflow-x: auto;
+  }
+
+  .calendar-header,
+  .hour-row {
+    grid-template-columns: 50px repeat(7, minmax(40px, 1fr));
+  }
+
+  .calendar-header {
+    .time-column-header {
+      padding: 8px 4px;
+      font-size: 0.75rem;
+
+      .header-text {
+        display: none;
+      }
+    }
+
+    .day-header {
+      padding: 8px 2px;
+      font-size: 0.75rem;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .day-name-full {
+        display: none;
+      }
+
+      .day-name-short {
+        display: block;
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  .calendar-body {
+    .hour-row {
+      .time-cell {
+        font-size: 0.7rem;
+        padding: 2px;
+        height: 30px;
+      }
+
+      .hour-cell {
+        height: 30px;
+      }
+    }
+  }
+
+  .legend {
+    padding: 12px;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    .legend-item {
+      font-size: 0.8rem;
+      
+      .legend-color {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  .dialog-actions {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    button {
+      margin-left: 0;
+      flex: 1;
+      min-width: 0;
+
+      .button-text {
+        display: inline;
+      }
+
+      &.save-button {
+        order: 1;
+        width: 100%;
+      }
+
+      &.cancel-button {
+        order: 2;
+        width: 100%;
+      }
+    }
+  }
+}
+
+// Responsive design para móvil pequeño
+@media (max-width: 480px) {
+  .dialog-toolbar {
+    padding: 0 6px;
+
+    .dialog-title {
+      font-size: 0.9rem;
+    }
+
+    .reset-button {
+      .button-text {
+        display: inline;
+      }
+    }
+  }
+
+  .instructions {
+    padding: 8px;
+
+    p {
+      font-size: 0.75rem;
+    }
+  }
+
+  .calendar-container {
+    padding: 6px;
+  }
+
+  .calendar-header,
+  .hour-row {
+    grid-template-columns: 45px repeat(7, minmax(35px, 1fr));
+  }
+
+  .calendar-header {
+    .time-column-header {
+      padding: 6px 2px;
+      font-size: 0.7rem;
+    }
+
+    .day-header {
+      padding: 6px 1px;
+      font-size: 0.7rem;
+      min-height: 50px;
+    }
+  }
+
+  .calendar-body {
+    .hour-row {
+      .time-cell {
+        font-size: 0.65rem;
+        padding: 1px;
+        height: 25px;
+      }
+
+      .hour-cell {
+        height: 25px;
+      }
+    }
+  }
+
+  .legend {
+    padding: 8px;
+
+    .legend-item {
+      font-size: 0.75rem;
+
+      .legend-color {
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+
+  .dialog-actions {
+    padding: 8px 12px;
+
+    button {
+      font-size: 0.875rem;
+      padding: 8px 12px;
+
+      .button-text {
+        display: inline;
+      }
+    }
+  }
+}

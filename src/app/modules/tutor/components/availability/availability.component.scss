@@ -1,0 +1,410 @@
+.availability-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.availability-toolbar {
+  background-color: #f5f5f5;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+
+  .toolbar-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  .toolbar-spacer {
+    flex: 1 1 auto;
+  }
+
+  .edit-button {
+    .button-text {
+      margin-left: 4px;
+    }
+  }
+}
+
+.weekly-calendar {
+  flex: 1;
+  padding: 16px;
+  overflow: auto;
+}
+
+.calendar-card {
+  min-height: 100%;
+}
+
+.calendar-grid {
+  width: 100%;
+  min-width: 800px;
+}
+
+.calendar-header {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  background-color: #fafafa;
+  border-bottom: 2px solid #ddd;
+
+  .time-column-header {
+    border-right: 1px solid #ddd;
+    padding: 12px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+
+    .header-text {
+      display: block;
+    }
+  }
+
+  .day-header {
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 500;
+    border-right: 1px solid #ddd;
+    
+    &:last-child {
+      border-right: none;
+    }
+
+    .day-name-full {
+      display: block;
+    }
+
+    .day-name-short {
+      display: none;
+    }
+  }
+}
+
+.calendar-body {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  min-height: 600px;
+}
+
+.time-column {
+  border-right: 1px solid #ddd;
+  background-color: #fafafa;
+
+  .time-slot {
+    height: 40px;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.separator {
+      background-color: #f0f0f0;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      height: 30px;
+
+      .separator-text {
+        color: #666;
+        font-style: italic;
+        font-size: 0.75rem;
+      }
+    }
+  }
+}
+
+.day-column {
+  border-right: 1px solid #ddd;
+  
+  &:last-child {
+    border-right: none;
+  }
+
+  .hour-slot {
+    height: 40px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+
+    &.separator {
+      background-color: #f8f8f8;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      height: 30px;
+      cursor: default;
+    }
+
+    &.available {
+      background-color: #4caf50;
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        bottom: 2px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+      }
+    }
+
+    // Mejorar feedback táctil en móviles
+    @media (max-width: 768px) {
+      min-height: 35px;
+      
+      &:active {
+        background-color: #e0e0e0;
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+      }
+      
+      &.available:active {
+        background-color: #388e3c;
+      }
+    }
+  }
+}
+
+.availability-summary {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+
+  h3 {
+    margin: 0 0 16px 0;
+    color: #333;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+
+    .day-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      strong {
+        color: #666;
+        font-size: 0.875rem;
+      }
+
+      .hours-text {
+        font-size: 0.875rem;
+        color: #333;
+      }
+    }
+  }
+}
+
+// Responsive design para tablet
+@media (max-width: 1024px) {
+  .calendar-grid {
+    min-width: 700px;
+  }
+
+  .calendar-header,
+  .calendar-body {
+    grid-template-columns: 70px repeat(7, 1fr);
+  }
+
+  .day-header {
+    padding: 10px 6px;
+    font-size: 0.875rem;
+  }
+
+  .time-column .time-slot {
+    font-size: 0.8rem;
+    padding: 6px;
+    height: 35px;
+
+    &.separator {
+      height: 30px;
+    }
+  }
+
+  .day-column .hour-slot {
+    height: 35px;
+
+    &.separator {
+      height: 30px;
+    }
+  }
+}
+
+// Responsive design para móvil
+@media (max-width: 768px) {
+  .availability-container {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .availability-toolbar {
+    padding: 0 8px;
+    
+    .toolbar-title {
+      font-size: 1.1rem;
+    }
+
+    button {
+      padding: 0 12px;
+      
+      mat-icon {
+        margin-right: 4px;
+      }
+
+      .button-text {
+        display: inline;
+      }
+    }
+  }
+
+  .weekly-calendar {
+    padding: 8px;
+  }
+
+  .calendar-grid {
+    min-width: 100%;
+    overflow-x: auto;
+  }
+
+  .calendar-header,
+  .calendar-body {
+    grid-template-columns: 45px repeat(7, minmax(40px, 1fr));
+  }
+
+  .calendar-header {
+    .time-column-header {
+      .header-text {
+        display: none;
+      }
+    }
+
+    .day-header {
+      padding: 8px 2px;
+      font-size: 0.75rem;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .day-name-full {
+        display: none;
+      }
+
+      .day-name-short {
+        display: block;
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  .time-column .time-slot {
+    font-size: 0.7rem;
+    padding: 2px;
+    height: 30px;
+
+    &.separator {
+      height: 25px;
+      
+      .separator-text {
+        font-size: 0.65rem;
+      }
+    }
+  }
+
+  .day-column .hour-slot {
+    height: 30px;
+
+    &.separator {
+      height: 25px;
+    }
+  }
+
+  .availability-summary {
+    margin-top: 16px;
+    padding: 12px;
+
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+
+    .summary-grid {
+      grid-template-columns: 1fr;
+      gap: 8px;
+
+      .day-summary {
+        background-color: white;
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #eee;
+
+        strong {
+          font-size: 0.8rem;
+        }
+
+        .hours-text {
+          font-size: 0.75rem;
+          margin-top: 4px;
+          line-height: 1.3;
+        }
+      }
+    }
+  }
+}
+
+// Responsive design para móvil pequeño
+@media (max-width: 480px) {
+  .calendar-header,
+  .calendar-body {
+    grid-template-columns: 45px repeat(7, minmax(35px, 1fr));
+  }
+
+  .day-header {
+    font-size: 0.7rem;
+    padding: 6px 1px;
+  }
+
+  .time-column .time-slot {
+    font-size: 0.65rem;
+    padding: 1px;
+    height: 25px;
+
+    &.separator {
+      height: 20px;
+      
+      .separator-text {
+        font-size: 0.6rem;
+      }
+    }
+  }
+
+  .day-column .hour-slot {
+    height: 25px;
+
+    &.separator {
+      height: 20px;
+    }
+  }
+
+  .availability-summary {
+    .summary-grid {
+      .day-summary {
+        padding: 6px;
+
+        strong {
+          font-size: 0.75rem;
+        }
+
+        .hours-text {
+          font-size: 0.7rem;
+        }
+      }
+    }
+  }
+}

@@ -1,1 +1,73 @@
-<p>availability works!</p>
+<div class="availability-container">
+  <!-- Toolbar -->
+  <mat-toolbar class="availability-toolbar">
+    <span class="toolbar-title">Disponibilidad</span>
+    <span class="toolbar-spacer"></span>
+    <button 
+      *ngIf="canEditAvailability()"
+      mat-raised-button 
+      color="primary" 
+      (click)="openEditDialog()" 
+      class="edit-button">
+      <mat-icon>edit</mat-icon>
+      <span class="button-text">Modificar</span>
+    </button>
+  </mat-toolbar>
+
+  <!-- Calendario semanal -->
+  <div class="weekly-calendar">
+    <mat-card class="calendar-card">
+      <div class="calendar-grid">
+        <!-- Header con días de la semana -->
+        <div class="calendar-header">
+          <div class="time-column-header"><span class="header-text">Hora</span></div>
+          <div 
+            *ngFor="let day of weekDays" 
+            class="day-header">
+            <span class="day-name-full">{{ day.name }}</span>
+            <span class="day-name-short">{{ getDayShortName(day.name) }}</span>
+          </div>
+        </div>
+
+        <!-- Grid de horas -->
+        <div class="calendar-body">
+          <!-- Columna de horas -->
+          <div class="time-column">
+            <div 
+              *ngFor="let item of displayHours; trackBy: trackByDisplayItem" 
+              class="time-slot"
+              [class.separator]="isSeparator(item)">
+              <span *ngIf="isHour(item)">{{ formatHourForItem(item) }}</span>
+              <span *ngIf="isSeparator(item)" class="separator-text">{{ item }}</span>
+            </div>
+          </div>
+
+          <!-- Columnas de días -->
+          <div 
+            *ngFor="let day of weekDays" 
+            class="day-column">
+            <div 
+              *ngFor="let item of displayHours; trackBy: trackByDisplayItem" 
+              class="hour-slot"
+              [class.available]="isAvailableForItem(item, day.key)"
+              [class.separator]="isSeparator(item)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen de disponibilidad -->
+      <div class="availability-summary">
+        <h3>Resumen de Disponibilidad</h3>
+        <div class="summary-grid">
+          <div 
+            *ngFor="let day of weekDays" 
+            class="day-summary">
+            <strong>{{ day.name }}:</strong>
+            <span class="hours-text">{{ getAvailabilityText(day.key) }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>

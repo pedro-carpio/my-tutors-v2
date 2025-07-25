@@ -24,6 +24,11 @@ export interface Tutor {
   experience_level: number;
   hourly_rate: number;
   institution_id?: string; // Opcional para tutores independientes
+  availability?: Availability[]; // Horarios de disponibilidad
+  languages?: UserLanguage[]; // Idiomas que habla el tutor
+  certifications?: TeachingCertification[]; // Certificaciones de enseñanza
+  language_certifications?: LanguageCertification[]; // Certificaciones de idiomas
+  dialectal_variant?: string; // Variante dialectal del idioma
 }
 
 export interface Student {
@@ -68,11 +73,8 @@ export interface UserLanguage {
 }
 
 export interface Availability {
-  id: string;
-  tutor_id: string;
-  date: Date;
-  start_time: string; // Format: "HH:mm"
-  end_time: string;   // Format: "HH:mm"
+  week_day: string; // ISO 8601 format (e.g., "Monday")
+  hours: number[]; // Array of hours in 24-hour format (e.g., [9, 10, 13, 14]) for 9 AM, 10 AM, 1 PM, and 2 PM
 }
 
 export interface Course {

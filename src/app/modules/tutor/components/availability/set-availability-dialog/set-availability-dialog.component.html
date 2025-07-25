@@ -1,0 +1,93 @@
+<div class="dialog-container" (selectstart)="onSelectStart($event)">
+  <!-- Header -->
+  <mat-toolbar class="dialog-toolbar">
+    <span class="dialog-title">Configurar Disponibilidad</span>
+    <span class="toolbar-spacer"></span>
+    <button mat-raised-button color="warn" (click)="onReset()" class="reset-button">
+      <mat-icon>refresh</mat-icon>
+      <span class="button-text">Reiniciar</span>
+    </button>
+  </mat-toolbar>
+
+  <!-- Instructions -->
+  <div class="instructions">
+    <p>
+      <strong>Instrucciones:</strong> 
+      Haz clic y arrastra para seleccionar horas disponibles. 
+      Haz clic en una hora ya seleccionada y arrastra para deseleccionar.
+    </p>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="calendar-container">
+    <div class="calendar-grid">
+      <!-- Header con días de la semana -->
+      <div class="calendar-header">
+        <div class="time-column-header"><span class="header-text">Hora</span></div>
+        <div 
+          *ngFor="let day of weekDays" 
+          class="day-header">
+          <span class="day-name-full">{{ day.name }}</span>
+          <span class="day-name-short">{{ getDayShortName(day.name) }}</span>
+        </div>
+      </div>
+
+      <!-- Grid de horas -->
+      <div class="calendar-body">
+        <!-- Fila para cada hora -->
+        <div 
+          *ngFor="let hour of hours" 
+          class="hour-row">
+          
+          <!-- Columna de hora -->
+          <div class="time-cell">
+            {{ formatHour(hour) }}
+          </div>
+
+          <!-- Celdas para cada día -->
+          <div 
+            *ngFor="let day of weekDays" 
+            class="hour-cell"
+            [class.selected]="isHourSelected(day.key, hour)"
+            [class.preview-select]="isHourInPreview(day.key, hour) && dragMode === 'select'"
+            [class.preview-deselect]="isHourInPreview(day.key, hour) && dragMode === 'deselect'"
+            [class.dragging]="isDragging"
+            (mousedown)="onMouseDown($event, day.key, hour)"
+            (mouseenter)="onMouseEnter(day.key, hour)"
+            (touchstart)="onTouchStart($event, day.key, hour)"
+            (touchmove)="onTouchMove($event)"
+            (touchend)="onTouchEnd($event)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color selected"></div>
+      <span>Disponible</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color preview-select"></div>
+      <span>Seleccionando</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color preview-deselect"></div>
+      <span>Deseleccionando</span>
+    </div>
+  </div>
+
+  <!-- Dialog Actions -->
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-raised-button color="primary" (click)="onSave()" class="save-button">
+      <mat-icon>save</mat-icon>
+      <span class="button-text">Actualizar</span>
+    </button>
+    <button mat-button (click)="onCancel()" class="cancel-button">
+      <mat-icon>close</mat-icon>
+      <span class="button-text">Cancelar</span>
+    </button>
+  </mat-dialog-actions>
+</div>

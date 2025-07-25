@@ -4,16 +4,9 @@ import {
   doc,
   docData,
   Firestore,
-  addDoc,
   updateDoc,
-  deleteDoc,
-  collection,
-  collectionData,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  Timestamp,
+  setDoc,
+  getDoc,
 } from '@angular/fire/firestore';
 import { Availability } from '../types/firestore.types';
 
@@ -22,174 +15,227 @@ import { Availability } from '../types/firestore.types';
 })
 export class AvailabilityService {
   private firestore: Firestore = inject(Firestore);
-  private collectionName = 'availabilities';
 
-  // Create a new availability slot
-  async createAvailability(availabilityData: Omit<Availability, 'id'>): Promise<string> {
+  // Get tutor weekly availability
+  getTutorWeeklyAvailability(tutorId: string): Observable<{ availability?: Availability[] } | undefined> {
+    const docRef = doc(this.firestore, 'tutors', tutorId);
+    return docData(docRef) as Observable<{ availability?: Availability[] } | undefined>;
+  }
+
+  // Update tutor weekly availability
+  async updateTutorWeeklyAvailability(tutorId: string, availability: Availability[]): Promise<void> {
     try {
-      const docRef = await addDoc(collection(this.firestore, this.collectionName), availabilityData);
-      return docRef.id;
-    } catch (error) {
-      console.error('Error creating availability:', error);
-      throw error;
-    }
-  }
-
-  // Get availability by ID
-  getAvailability(availabilityId: string): Observable<Availability | undefined> {
-    const docRef = doc(this.firestore, this.collectionName, availabilityId);
-    return docData(docRef, { idField: 'id' }) as Observable<Availability | undefined>;
-  }
-
-  // Get all availabilities for a specific tutor
-  getAvailabilitiesByTutor(tutorId: string): Observable<Availability[]> {
-    const q = query(
-      collection(this.firestore, this.collectionName),
-      where('tutor_id', '==', tutorId),
-      orderBy('date', 'asc'),
-      orderBy('start_time', 'asc')
-    );
-    return collectionData(q, { idField: 'id' }) as Observable<Availability[]>;
-  }
-
-  // Get availabilities for a specific tutor on a specific date
-  getAvailabilitiesByTutorAndDate(tutorId: string, date: Date): Observable<Availability[]> {
-    const q = query(
-      collection(this.firestore, this.collectionName),
-      where('tutor_id', '==', tutorId),
-      where('date', '==', date),
-      orderBy('start_time', 'asc')
-    );
-    return collectionData(q, { idField: 'id' }) as Observable<Availability[]>;
-  }
-
-  // Get availabilities for a specific date (all tutors)
-  getAvailabilitiesByDate(date: Date): Observable<Availability[]> {
-    const q = query(
-      collection(this.firestore, this.collectionName),
-      where('date', '==', date),
-      orderBy('start_time', 'asc')
-    );
-    return collectionData(q, { idField: 'id' }) as Observable<Availability[]>;
-  }
-
-  // Get upcoming availabilities for a tutor
-  getUpcomingAvailabilitiesByTutor(tutorId: string): Observable<Availability[]> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today
-    
-    const q = query(
-      collection(this.firestore, this.collectionName),
-      where('tutor_id', '==', tutorId),
-      where('date', '>=', today),
-      orderBy('date', 'asc'),
-      orderBy('start_time', 'asc')
-    );
-    return collectionData(q, { idField: 'id' }) as Observable<Availability[]>;
-  }
-
-  // Get availabilities within a date range
-  getAvailabilitiesInRange(startDate: Date, endDate: Date): Observable<Availability[]> {
-    const q = query(
-      collection(this.firestore, this.collectionName),
-      where('date', '>=', startDate),
-      where('date', '<=', endDate),
-      orderBy('date', 'asc'),
-      orderBy('start_time', 'asc')
-    );
-    return collectionData(q, { idField: 'id' }) as Observable<Availability[]>;
-  }
-
-  // Get availabilities for a tutor within a date range
-  getTutorAvailabilitiesInRange(tutorId: string, startDate: Date, endDate: Date): Observable<Availability[]> {
-    const q = query(
-      collection(this.firestore, this.collectionName),
-      where('tutor_id', '==', tutorId),
-      where('date', '>=', startDate),
-      where('date', '<=', endDate),
-      orderBy('date', 'asc'),
-      orderBy('start_time', 'asc')
-    );
-    return collectionData(q, { idField: 'id' }) as Observable<Availability[]>;
-  }
-
-  // Update availability
-  async updateAvailability(availabilityId: string, availabilityData: Partial<Availability>): Promise<void> {
-    try {
-      const docRef = doc(this.firestore, this.collectionName, availabilityId);
-      await updateDoc(docRef, availabilityData);
-    } catch (error) {
-      console.error('Error updating availability:', error);
-      throw error;
-    }
-  }
-
-  // Delete availability
-  async deleteAvailability(availabilityId: string): Promise<void> {
-    try {
-      const docRef = doc(this.firestore, this.collectionName, availabilityId);
-      await deleteDoc(docRef);
-    } catch (error) {
-      console.error('Error deleting availability:', error);
-      throw error;
-    }
-  }
-
-  // Bulk create availabilities (useful for recurring schedules)
-  async createBulkAvailabilities(availabilities: Omit<Availability, 'id'>[]): Promise<string[]> {
-    try {
-      const promises = availabilities.map(availability => 
-        addDoc(collection(this.firestore, this.collectionName), availability)
-      );
-      
-      const docRefs = await Promise.all(promises);
-      return docRefs.map(docRef => docRef.id);
-    } catch (error) {
-      console.error('Error creating bulk availabilities:', error);
-      throw error;
-    }
-  }
-
-  // Delete all availabilities for a tutor on a specific date
-  async deleteAvailabilitiesByTutorAndDate(tutorId: string, date: Date): Promise<void> {
-    try {
-      const q = query(
-        collection(this.firestore, this.collectionName),
-        where('tutor_id', '==', tutorId),
-        where('date', '==', date)
-      );
-      
-      const snapshot = await getDocs(q);
-      const deletePromises = snapshot.docs.map(doc => 
-        deleteDoc(doc.ref)
-      );
-      
-      await Promise.all(deletePromises);
-    } catch (error) {
-      console.error('Error deleting availabilities by tutor and date:', error);
-      throw error;
-    }
-  }
-
-  // Check if a time slot conflicts with existing availability
-  async hasTimeConflict(tutorId: string, date: Date, startTime: string, endTime: string): Promise<boolean> {
-    try {
-      const q = query(
-        collection(this.firestore, this.collectionName),
-        where('tutor_id', '==', tutorId),
-        where('date', '==', date)
-      );
-      
-      const availabilities$ = collectionData(q) as Observable<Availability[]>;
-      const availabilities = await firstValueFrom(availabilities$);
-      
-      return availabilities.some((availability: Availability) => {
-        // Check for time overlap
-        return (startTime < availability.end_time && endTime > availability.start_time);
+      const docRef = doc(this.firestore, 'tutors', tutorId);
+      await updateDoc(docRef, {
+        availability: availability
       });
     } catch (error) {
-      console.error('Error checking time conflict:', error);
-      return false;
+      console.error('Error updating tutor weekly availability:', error);
+      throw error;
     }
+  }
+
+  // Set complete tutor weekly availability (replaces existing)
+  async setTutorWeeklyAvailability(tutorId: string, availability: Availability[]): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'tutors', tutorId);
+      await setDoc(docRef, {
+        availability: availability
+      }, { merge: true });
+    } catch (error) {
+      console.error('Error setting tutor weekly availability:', error);
+      throw error;
+    }
+  }
+
+  // Add hour to specific day
+  async addAvailabilityHour(tutorId: string, dayKey: string, hour: number): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'tutors', tutorId);
+      
+      // Get current data
+      const docSnap = await getDoc(docRef);
+      const currentData = docSnap.data();
+      const currentAvailability: Availability[] = currentData?.['availability'] || [];
+      
+      // Find or create day
+      let dayAvailability = currentAvailability.find(a => a.week_day === dayKey);
+      if (!dayAvailability) {
+        dayAvailability = { week_day: dayKey, hours: [] };
+        currentAvailability.push(dayAvailability);
+      }
+      
+      // Add hour if not exists
+      if (!dayAvailability.hours.includes(hour)) {
+        dayAvailability.hours.push(hour);
+        dayAvailability.hours.sort((a, b) => a - b);
+      }
+      
+      await updateDoc(docRef, {
+        availability: currentAvailability
+      });
+    } catch (error) {
+      console.error('Error adding availability hour:', error);
+      throw error;
+    }
+  }
+
+  // Remove hour from specific day
+  async removeAvailabilityHour(tutorId: string, dayKey: string, hour: number): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'tutors', tutorId);
+      
+      // Get current data
+      const docSnap = await getDoc(docRef);
+      const currentData = docSnap.data();
+      const currentAvailability: Availability[] = currentData?.['availability'] || [];
+      
+      // Find day
+      const dayAvailability = currentAvailability.find(a => a.week_day === dayKey);
+      if (dayAvailability) {
+        const hourIndex = dayAvailability.hours.indexOf(hour);
+        if (hourIndex > -1) {
+          dayAvailability.hours.splice(hourIndex, 1);
+        }
+      }
+      
+      await updateDoc(docRef, {
+        availability: currentAvailability
+      });
+    } catch (error) {
+      console.error('Error removing availability hour:', error);
+      throw error;
+    }
+  }
+
+  // Clear all tutor availability
+  async clearTutorAvailability(tutorId: string): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'tutors', tutorId);
+      const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const emptyAvailability: Availability[] = weekDays.map(day => ({
+        week_day: day,
+        hours: []
+      }));
+      
+      await updateDoc(docRef, {
+        availability: emptyAvailability
+      });
+    } catch (error) {
+      console.error('Error clearing tutor availability:', error);
+      throw error;
+    }
+  }
+
+  // Get hours for specific day
+  getDayAvailability(availability: Availability[], dayKey: string): number[] {
+    const dayAvailability = availability.find(a => a.week_day === dayKey);
+    return dayAvailability ? dayAvailability.hours : [];
+  }
+
+  // Check if specific hour is available
+  isHourAvailable(availability: Availability[], dayKey: string, hour: number): boolean {
+    return this.getDayAvailability(availability, dayKey).includes(hour);
+  }
+
+  // Get earliest and latest hours across all days
+  getAvailabilityRange(availability: Availability[]): { earliest: number, latest: number } | null {
+    const allHours: number[] = [];
+    availability.forEach(day => {
+      allHours.push(...day.hours);
+    });
+    
+    if (allHours.length === 0) return null;
+    
+    return {
+      earliest: Math.min(...allHours),
+      latest: Math.max(...allHours)
+    };
+  }
+
+  // Format hour for display
+  formatHour(hour: number): string {
+    return `${hour.toString().padStart(2, '0')}:00`;
+  }
+
+  // Get availability summary for each day
+  getAvailabilitySummary(availability: Availability[]): Record<string, string> {
+    const summary: Record<string, string> = {};
+    
+    availability.forEach(day => {
+      if (day.hours.length === 0) {
+        summary[day.week_day] = 'No disponible';
+      } else {
+        const sortedHours = [...day.hours].sort((a, b) => a - b);
+        const ranges: string[] = [];
+        let start = sortedHours[0];
+        let end = sortedHours[0];
+
+        for (let i = 1; i < sortedHours.length; i++) {
+          if (sortedHours[i] === end + 1) {
+            end = sortedHours[i];
+          } else {
+            ranges.push(start === end ? 
+              this.formatHour(start) : 
+              `${this.formatHour(start)} - ${this.formatHour(end + 1)}`
+            );
+            start = sortedHours[i];
+            end = sortedHours[i];
+          }
+        }
+        
+        ranges.push(start === end ? 
+          this.formatHour(start) : 
+          `${this.formatHour(start)} - ${this.formatHour(end + 1)}`
+        );
+
+        summary[day.week_day] = ranges.join(', ');
+      }
+    });
+
+    return summary;
+  }
+
+  // Create default weekly availability structure
+  createDefaultWeeklyAvailability(): Availability[] {
+    const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return weekDays.map(day => ({
+      week_day: day,
+      hours: []
+    }));
+  }
+
+  // Validate availability data
+  validateAvailabilityData(availability: Availability[]): boolean {
+    const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    
+    return availability.every(day => {
+      // Check if day is valid
+      if (!validDays.includes(day.week_day)) {
+        return false;
+      }
+      
+      // Check if hours are valid (0-23)
+      return day.hours.every(hour => 
+        Number.isInteger(hour) && hour >= 0 && hour <= 23
+      );
+    });
+  }
+
+  // Get total available hours per week
+  getTotalWeeklyHours(availability: Availability[]): number {
+    return availability.reduce((total, day) => total + day.hours.length, 0);
+  }
+
+  // Check if tutor has availability on specific day
+  hasAvailabilityOnDay(availability: Availability[], dayKey: string): boolean {
+    return this.getDayAvailability(availability, dayKey).length > 0;
+  }
+
+  // Get days with availability
+  getAvailableDays(availability: Availability[]): string[] {
+    return availability
+      .filter(day => day.hours.length > 0)
+      .map(day => day.week_day);
   }
 }
