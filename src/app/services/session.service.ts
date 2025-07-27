@@ -287,7 +287,8 @@ export class SessionService {
           bio: tutorData.bio || '',
           birth_language: tutorData.birth_language || '',
           experience_level: tutorData.experience_level || 0,
-          hourly_rate: tutorData.hourly_rate || 0
+          hourly_rate: tutorData.hourly_rate || 0,
+          institution_id: tutorData.institution_id || null
         };
 
         await this.tutorService.createTutor(tutorProfile);
@@ -308,8 +309,18 @@ export class SessionService {
       // First check if user needs activation before attempting login
       const needsActivation = await this.userService.needsActivation(email);
       if (needsActivation) {
-        // User exists in Firestore but needs Firebase Auth account
-        throw new Error('NEEDS_ACTIVATION');
+        // Check if the provided password is the temporary password
+        const userData = await this.userService.getUserByEmailAsync(email);
+        if (userData && userData.temporary_password === password) {
+          // User provided correct temporary password, needs activation
+          throw new Error('NEEDS_ACTIVATION');
+        } else if (userData && userData.temporary_password) {
+          // User provided wrong temporary password
+          throw new Error('Contraseña temporal incorrecta');
+        } else {
+          // User exists in Firestore but needs Firebase Auth account
+          throw new Error('NEEDS_ACTIVATION');
+        }
       }
 
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
@@ -328,7 +339,7 @@ export class SessionService {
       console.error('Login error:', error);
       
       // Re-throw the NEEDS_ACTIVATION error
-      if (error.message === 'NEEDS_ACTIVATION') {
+      if (error.message === 'NEEDS_ACTIVATION' || error.message === 'Contraseña temporal incorrecta') {
         throw error;
       }
       
@@ -537,8 +548,15 @@ export class SessionService {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, newPassword);
       
       if (userCredential.user) {
+        // Clean temporary password data before migration
+        const cleanUserData = {
+          ...userData,
+          temporary_password: undefined,
+          needs_password_change: false
+        };
+        
         // Migrate user document from Firestore auto-ID to Firebase Auth UID
-        await this.userService.migrateUserToFirebaseAuth(userData.id, userCredential.user.uid, userData);
+        await this.userService.migrateUserToFirebaseAuth(userData.id, userCredential.user.uid, cleanUserData);
         
         // Update display name if available
         if (userCredential.user) {

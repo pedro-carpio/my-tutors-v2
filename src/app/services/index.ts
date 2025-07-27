@@ -13,6 +13,8 @@ export * from './chat.service';
 export * from './session.service';
 export * from './postulant.service';
 export * from './goal.service';
+export * from './email.service';
+export * from './password-generator.service';
 
 // Export types
 export * from '../types/firestore.types';

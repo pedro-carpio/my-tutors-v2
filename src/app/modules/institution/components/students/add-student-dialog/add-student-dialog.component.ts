@@ -11,6 +11,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { StudentService, UserService, InstitutionService, GoalService } from '../../../../../services';
+import { EmailService, StudentWelcomeEmailData } from '../../../../../services/email.service';
+import { PasswordGeneratorService } from '../../../../../services/password-generator.service';
 import { I18nService, Language } from '../../../../../services/i18n.service';
 import { Student, Goal, UserRole, LevelCEFR } from '../../../../../types/firestore.types';
 import { debounceTime, distinctUntilChanged, switchMap, map, startWith } from 'rxjs/operators';
@@ -39,6 +41,8 @@ export class AddStudentDialogComponent {
   private studentService = inject(StudentService);
   private userService = inject(UserService);
   private goalService = inject(GoalService);
+  private emailService = inject(EmailService);
+  private passwordGenerator = inject(PasswordGeneratorService);
   public i18nService = inject(I18nService);
   private snackBar = inject(MatSnackBar);
 
@@ -165,7 +169,18 @@ export class AddStudentDialogComponent {
     if (this.studentForm.valid) {
       try {
         const formValue = this.studentForm.value;
-        const userId = await this.userService.createEmptyUser(formValue.email, 'student' as UserRole);
+        
+        // Generar contraseña temporal
+        const temporaryPassword = this.passwordGenerator.generateTemporaryPassword();
+        console.log('Generated temporary password:', temporaryPassword);
+        
+        // Crear usuario con contraseña temporal
+        const userId = await this.userService.createEmptyUser(
+          formValue.email, 
+          'student' as UserRole, 
+          temporaryPassword
+        );
+        
         const studentData: Student = {
           user_id: userId,
           full_name: formValue.full_name,
@@ -181,8 +196,25 @@ export class AddStudentDialogComponent {
         
         await this.studentService.createStudent(studentData);
         
+        // Enviar email de bienvenida con credenciales
+        try {
+          const emailData: StudentWelcomeEmailData = {
+            studentName: formValue.full_name,
+            email: formValue.email,
+            temporaryPassword: temporaryPassword,
+            institutionName: 'My Tutors', // TODO: Obtener nombre real de la institución
+            loginUrl: `${window.location.origin}/login`
+          };
+          
+          await this.emailService.sendStudentWelcomeEmail(emailData);
+          console.log('Welcome email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending welcome email:', emailError);
+          // No fallar la creación del estudiante si el email falla
+        }
+        
         this.snackBar.open(
-          `Estudiante creado exitosamente. El usuario podrá iniciar sesión con su email y configurar su contraseña en el primer acceso.`, 
+          `Estudiante creado exitosamente. Se ha enviado un email a ${formValue.email} con las credenciales de acceso.`, 
           'Cerrar', 
           { duration: 6000 }
         );

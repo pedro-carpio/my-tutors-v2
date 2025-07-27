@@ -57,7 +57,7 @@ export class TutorsComponent implements OnInit {
       switchMap(authUser => {
         if (authUser) {
           this.currentUserId = authUser.uid;
-          // Para instituciones, filtrar tutores por institution_id = userId
+          // TODO: Para instituciones, filtrar tutores por institution_id = userId
           // Opciones de ordenamiento disponibles:
           // - this.tutorService.getTutorsByInstitution(authUser.uid) // Orden alfabético
           // - this.tutorService.getTutorsByInstitutionSortedByRate(authUser.uid, 'asc') // Por tarifa ascendente
@@ -81,8 +81,8 @@ export class TutorsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadTutors();
-        this.snackBar.open('Tutor agregado exitosamente', 'Cerrar', {
-          duration: 3000
+        this.snackBar.open('Tutor agregado exitosamente. Se ha enviado un email con las credenciales de acceso.', 'Cerrar', {
+          duration: 5000
         });
       }
     });

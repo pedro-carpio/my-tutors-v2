@@ -82,8 +82,8 @@ export class StudentsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadStudents();
-        this.snackBar.open('Estudiante agregado exitosamente', 'Cerrar', {
-          duration: 3000
+        this.snackBar.open('Estudiante agregado exitosamente. Se ha enviado un email con las credenciales de acceso.', 'Cerrar', {
+          duration: 5000
         });
       }
     });

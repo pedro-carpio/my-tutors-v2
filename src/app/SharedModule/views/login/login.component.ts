@@ -95,6 +95,8 @@ export class LoginComponent {
           errorMessage = this.i18nService.translate('auth.login.userDisabled');
         } else if (error.code === 'auth/too-many-requests') {
           errorMessage = this.i18nService.translate('auth.login.tooManyRequests');
+        } else if (error.message === 'Contraseña temporal incorrecta') {
+          errorMessage = 'La contraseña temporal proporcionada es incorrecta. Verifica el email que recibiste con tus credenciales.';
         }
         
         this.snackBar.open(errorMessage, this.i18nService.translate('common.close'), {

@@ -10,6 +10,8 @@ export interface User {
   password_hash?: string;
   role: UserRole;
   created_at: FieldValue | Timestamp;
+  temporary_password?: string; // Contraseña temporal para primer acceso
+  needs_password_change?: boolean; // Indica si debe cambiar contraseña en próximo login
 }
 
 export interface Tutor {
@@ -23,7 +25,7 @@ export interface Tutor {
   birth_language: string;
   experience_level: number;
   hourly_rate: number;
-  institution_id?: string; // Opcional para tutores independientes
+  institution_id: string; // Opcional para tutores independientes
   availability?: Availability[]; // Horarios de disponibilidad
   languages?: UserLanguage[]; // Idiomas que habla el tutor
   certifications?: TeachingCertification[]; // Certificaciones de enseñanza

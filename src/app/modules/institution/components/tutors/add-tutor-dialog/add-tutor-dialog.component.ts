@@ -10,6 +10,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TutorService, UserService } from '../../../../../services';
+import { EmailService, WelcomeEmailData } from '../../../../../services/email.service';
+import { PasswordGeneratorService } from '../../../../../services/password-generator.service';
 import { Tutor, User, UserRole } from '../../../../../types/firestore.types';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -35,6 +37,8 @@ export class AddTutorDialogComponent {
   private fb = inject(FormBuilder);
   private tutorService = inject(TutorService);
   private userService = inject(UserService);
+  private emailService = inject(EmailService);
+  private passwordGenerator = inject(PasswordGeneratorService);
   private snackBar = inject(MatSnackBar);
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: { institutionId: string }) {
@@ -117,8 +121,18 @@ export class AddTutorDialogComponent {
       try {
         const formValue = this.tutorForm.value;
         console.log('Form Value:', formValue);
-        const userId = await this.userService.createEmptyUser(formValue.email, 'tutor' as UserRole);
-        console.log(userId);
+        
+        // Generar contraseña temporal
+        const temporaryPassword = this.passwordGenerator.generateTemporaryPassword();
+        console.log('Generated temporary password:', temporaryPassword);
+        
+        // Crear usuario con contraseña temporal
+        const userId = await this.userService.createEmptyUser(
+          formValue.email, 
+          'tutor' as UserRole, 
+          temporaryPassword
+        );
+        console.log('Created user ID:', userId);
 
         // Crear el perfil de tutor con el user_id generado
         const tutorData: Tutor = {
@@ -137,8 +151,25 @@ export class AddTutorDialogComponent {
 
         await this.tutorService.createTutor(tutorData);
         
+        // Enviar email de bienvenida con credenciales
+        try {
+          const emailData: WelcomeEmailData = {
+            tutorName: formValue.full_name,
+            email: formValue.email,
+            temporaryPassword: temporaryPassword,
+            institutionName: 'My Tutors', // TODO: Obtener nombre real de la institución
+            loginUrl: `${window.location.origin}/login`
+          };
+          
+          await this.emailService.sendTutorWelcomeEmail(emailData);
+          console.log('Welcome email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending welcome email:', emailError);
+          // No fallar la creación del tutor si el email falla
+        }
+        
         this.snackBar.open(
-          `Tutor creado exitosamente. El usuario podrá iniciar sesión con su email y configurar su contraseña en el primer acceso.`, 
+          `Tutor creado exitosamente. Se ha enviado un email a ${formValue.email} con las credenciales de acceso.`, 
           'Cerrar', 
           { duration: 6000 }
         );
