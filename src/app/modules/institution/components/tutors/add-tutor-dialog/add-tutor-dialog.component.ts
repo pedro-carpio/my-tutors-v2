@@ -12,9 +12,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TutorService, UserService } from '../../../../../services';
 import { EmailService, WelcomeEmailData } from '../../../../../services/email.service';
 import { PasswordGeneratorService } from '../../../../../services/password-generator.service';
-import { Tutor, User, UserRole } from '../../../../../types/firestore.types';
+import { Tutor, User, UserRole, UserStatus } from '../../../../../types/firestore.types';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
+
+interface StatusOption {
+  value: UserStatus;
+  label: string;
+}
 
 @Component({
   selector: 'app-add-tutor-dialog',
@@ -41,6 +46,14 @@ export class AddTutorDialogComponent {
   private passwordGenerator = inject(PasswordGeneratorService);
   private snackBar = inject(MatSnackBar);
 
+  statusOptions: StatusOption[] = [
+    { value: 'active', label: 'Activo' },
+    { value: 'pending', label: 'Pendiente de verificación' },
+    { value: 'verified', label: 'Verificado' },
+    { value: 'inactive', label: 'Inactivo' },
+    { value: 'suspended', label: 'Suspendido' }
+  ];
+
   constructor(@Inject(MAT_DIALOG_DATA) public data: { institutionId: string }) {
     // Establecer el institution_id automáticamente
     this.tutorForm.patchValue({
@@ -62,7 +75,9 @@ export class AddTutorDialogComponent {
     birth_language: ['', Validators.required],
     experience_level: [1, [Validators.required, Validators.min(0)]],
     hourly_rate: [15, [Validators.required, Validators.min(1)]],
-    institution_id: ['', Validators.required]
+    institution_id: ['', Validators.required],
+    status: ['verified', [Validators.required]], // Estado por defecto: verificado (institución lo crea)
+    rating: [0, [Validators.min(0), Validators.max(5)]] // Calificación inicial: 0
   });
 
   private setupEmailValidation(): void {
@@ -146,7 +161,9 @@ export class AddTutorDialogComponent {
           birth_language: formValue.birth_language,
           experience_level: formValue.experience_level,
           hourly_rate: formValue.hourly_rate,
-          institution_id: formValue.institution_id
+          institution_id: formValue.institution_id,
+          status: formValue.status,
+          rating: formValue.rating
         };
 
         await this.tutorService.createTutor(tutorData);

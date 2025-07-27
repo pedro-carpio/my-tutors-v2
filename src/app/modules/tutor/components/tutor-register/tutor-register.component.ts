@@ -18,6 +18,7 @@ import { SessionService } from '../../../../services/session.service';
 import { I18nService } from '../../../../services/i18n.service';
 import { ToolbarComponent } from '../../../../SharedModule/toolbar/toolbar.component';
 import { TranslatePipe } from "../../../../pipes/translate.pipe";
+import { UserStatus } from '../../../../types/firestore.types';
 
 interface LanguageOption {
   value: string;
@@ -26,6 +27,11 @@ interface LanguageOption {
 
 interface ExperienceLevel {
   value: string;
+  label: string;
+}
+
+interface StatusOption {
+  value: UserStatus;
   label: string;
 }
 
@@ -86,6 +92,14 @@ export class TutorRegisterComponent implements OnInit {
     { value: 'expert', label: 'Experto (10+ años)' }
   ];
 
+  statusOptions: StatusOption[] = [
+    { value: 'active', label: 'Activo' },
+    { value: 'pending', label: 'Pendiente de verificación' },
+    { value: 'verified', label: 'Verificado' },
+    { value: 'inactive', label: 'Inactivo' },
+    { value: 'suspended', label: 'Suspendido' }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private sessionService: SessionService,
@@ -105,7 +119,9 @@ export class TutorRegisterComponent implements OnInit {
       birthDate: ['', [Validators.required]],
       country: ['', [Validators.required]],
       photoUrl: ['', [Validators.pattern(/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))$/)]],
-      maxHoursPerWeek: ['', [Validators.required, Validators.min(1), Validators.max(40)]]
+      maxHoursPerWeek: ['', [Validators.required, Validators.min(1), Validators.max(40)]],
+      status: ['pending', [Validators.required]], // Estado por defecto: pendiente
+      rating: [0, [Validators.min(0), Validators.max(5)]] // Calificación inicial: 0
     });
 
     this.professionalInfoForm = this.fb.group({
@@ -190,7 +206,14 @@ export class TutorRegisterComponent implements OnInit {
               languages: formValue.languages,
               experienceLevel: formValue.experienceLevel,
               bio: formValue.bio,
-              hourlyRate: formValue.hourlyRate
+              hourlyRate: formValue.hourlyRate,
+              status: formValue.status,
+              rating: formValue.rating,
+              birthDate: formValue.birthDate,
+              country: formValue.country,
+              photoUrl: formValue.photoUrl,
+              maxHoursPerWeek: formValue.maxHoursPerWeek,
+              birthLanguage: formValue.birthLanguage
             }
           );
 
