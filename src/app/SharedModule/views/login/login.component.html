@@ -102,9 +102,7 @@
                       type="submit"
                       class="login-submit-button"
                       [disabled]="loginForm.invalid || isLoading">
-                <mat-spinner *ngIf="isLoading" diameter="20" class="spinner"></mat-spinner>
-                <span *ngIf="!isLoading">{{ i18nService.translate('auth.login.loginButton') }}</span>
-                <span *ngIf="isLoading">{{ i18nService.translate('auth.login.loggingIn') }}</span>
+                <span>{{ i18nService.translate('auth.login.loginButton') }}</span>
               </button>
 
               <!-- Forgot password link -->

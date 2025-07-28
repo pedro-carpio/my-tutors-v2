@@ -9,7 +9,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -22,6 +21,9 @@ import { UserService } from '../../../services/user.service';
 import { ToolbarComponent } from '../../toolbar/toolbar.component';
 import { PasswordSetupDialogComponent, PasswordSetupData, PasswordSetupResult } from './password-setup-dialog.component';
 
+// Loading hook
+import { useLoading } from '../../../hooks/useLoading';
+
 @Component({
   selector: 'app-login',
   imports: [
@@ -32,7 +34,6 @@ import { PasswordSetupDialogComponent, PasswordSetupData, PasswordSetupResult } 
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
-    MatProgressSpinnerModule,
     MatDividerModule,
     MatSnackBarModule,
     MatDialogModule,
@@ -51,8 +52,15 @@ export class LoginComponent {
   private userService = inject(UserService);
   public i18nService = inject(I18nService);
 
+  // Usar el hook de loading
+  private loading = useLoading();
+  
+  // Exponer isLoading para el template
+  get isLoading() {
+    return this.loading.isLoading();
+  }
+
   loginForm: FormGroup;
-  isLoading = false;
   hidePassword = true;
 
   constructor() {
@@ -64,15 +72,15 @@ export class LoginComponent {
 
   async onEmailLogin(): Promise<void> {
     if (this.loginForm.valid && !this.isLoading) {
-      this.isLoading = true;
-      
       try {
-        const { email, password } = this.loginForm.value;
-        await this.sessionService.loginWithEmail(email, password);
-        
-        this.snackBar.open(this.i18nService.translate('auth.login.loginSuccess'), this.i18nService.translate('common.close'), {
-          duration: 3000,
-          panelClass: ['success-snackbar']
+        await this.loading.execute(async () => {
+          const { email, password } = this.loginForm.value;
+          await this.sessionService.loginWithEmail(email, password);
+          
+          this.snackBar.open(this.i18nService.translate('auth.login.loginSuccess'), this.i18nService.translate('common.close'), {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
         });
       } catch (error: any) {
         console.error('Login error:', error);
@@ -103,8 +111,6 @@ export class LoginComponent {
           duration: 5000,
           panelClass: ['error-snackbar']
         });
-      } finally {
-        this.isLoading = false;
       }
     } else {
       this.markFormGroupTouched();
@@ -125,28 +131,30 @@ export class LoginComponent {
       
       console.log('result', result);
       if (result && result.confirmed && result.password) {
-        // User confirmed and provided a new password
-        const activationResult = await this.sessionService.firstTimeLogin(email, result.password);
-        
-        if (activationResult.success) {
-          this.snackBar.open(
-            this.i18nService.translate('auth.passwordSetup.success'),
-            this.i18nService.translate('common.close'),
-            {
-              duration: 5000,
-              panelClass: ['success-snackbar']
-            }
-          );
-        } else {
-          this.snackBar.open(
-            activationResult.error || this.i18nService.translate('auth.passwordSetup.error'),
-            this.i18nService.translate('common.close'),
-            {
-              duration: 5000,
-              panelClass: ['error-snackbar']
-            }
-          );
-        }
+        // User confirmed and provided a new password - use loading service
+        await this.loading.execute(async () => {
+          const activationResult = await this.sessionService.firstTimeLogin(email, result.password);
+          
+          if (activationResult.success) {
+            this.snackBar.open(
+              this.i18nService.translate('auth.passwordSetup.success'),
+              this.i18nService.translate('common.close'),
+              {
+                duration: 5000,
+                panelClass: ['success-snackbar']
+              }
+            );
+          } else {
+            this.snackBar.open(
+              activationResult.error || this.i18nService.translate('auth.passwordSetup.error'),
+              this.i18nService.translate('common.close'),
+              {
+                duration: 5000,
+                panelClass: ['error-snackbar']
+              }
+            );
+          }
+        });
       } else {
         // User cancelled the dialog
         this.snackBar.open(
@@ -200,8 +208,10 @@ export class LoginComponent {
     return '';
   }
 
-  login() {
-    this.sessionService.login();
+  async login(): Promise<void> {
+    await this.loading.execute(async () => {
+      await this.sessionService.login();
+    });
   }
 
   navigateToRegister(role: string): void {

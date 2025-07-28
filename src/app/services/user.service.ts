@@ -22,12 +22,15 @@ import {
   Timestamp,
 } from '@angular/fire/firestore';
 import { User, UserRole } from '../types/firestore.types';
+import { LoadingService } from './loading.service';
+import { AutoLoading } from '../decorators/loading.decorator';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
   private firestore: Firestore = inject(Firestore);
+  public loadingService: LoadingService = inject(LoadingService);
   private collectionName = 'users';
 
   // Create a new user with specific ID (from Firebase Auth)

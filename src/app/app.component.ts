@@ -1,10 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SessionService } from './services/session.service';
+import { GlobalLoadingComponent } from './SharedModule/components/global-loading/global-loading.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, GlobalLoadingComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

@@ -27,6 +27,7 @@ import { UserService } from './user.service';
 import { TutorService } from './tutor.service';
 import { StudentService } from './student.service';
 import { InstitutionService } from './institution.service';
+import { LoadingService } from './loading.service';
 import { 
   User, 
   UserRole, 
@@ -53,6 +54,7 @@ export class SessionService {
   tutorService: TutorService = inject(TutorService);
   studentService: StudentService = inject(StudentService);
   institutionService: InstitutionService = inject(InstitutionService);
+  loadingService: LoadingService = inject(LoadingService);
   private provider = new GoogleAuthProvider();
 
   // observable that is updated when the auth state changes
@@ -551,7 +553,7 @@ export class SessionService {
         // Clean temporary password data before migration
         const cleanUserData = {
           ...userData,
-          temporary_password: undefined,
+          temporary_password: "",
           needs_password_change: false
         };
         
