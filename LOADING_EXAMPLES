@@ -1,0 +1,217 @@
+// Ejemplo de uso del sistema de loading en diferentes componentes
+
+// ==========================================
+// 1. EJEMPLO EN COMPONENTE DE REGISTRO
+// ==========================================
+
+import { Component, inject } from '@angular/core';
+import { useLoading } from '../../../hooks/useLoading';
+import { SessionService } from '../../../services/session.service';
+
+@Component({
+  selector: 'app-user-register',
+  template: `
+    <form (ngSubmit)="onRegister()">
+      <!-- campos del formulario -->
+      <button 
+        mat-raised-button 
+        type="submit"
+        [disabled]="form.invalid || isLoading">
+        {{ isLoading ? 'Registrando...' : 'Registrarse' }}
+      </button>
+    </form>
+  `
+})
+export class UserRegisterComponent {
+  private sessionService = inject(SessionService);
+  private loading = useLoading();
+  
+  get isLoading() {
+    return this.loading.isLoading();
+  }
+
+  async onRegister() {
+    await this.loading.execute(async () => {
+      const userData = this.form.value;
+      await this.sessionService.register(userData);
+      this.router.navigate(['/dashboard']);
+    });
+  }
+}
+
+// ==========================================
+// 2. EJEMPLO EN SERVICIO CON DECORADOR
+// ==========================================
+
+import { Injectable, inject } from '@angular/core';
+import { LoadingService } from './loading.service';
+import { AutoLoading } from '../decorators/loading.decorator';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DataService {
+  public loadingService = inject(LoadingService);
+
+  @AutoLoading()
+  async saveUserProfile(profileData: any): Promise<void> {
+    // Este método automáticamente mostrará loading
+    await this.firestore.collection('profiles').doc(userId).set(profileData);
+    await this.updateUserStats(userId);
+  }
+
+  @AutoLoading()
+  async loadDashboardData(): Promise<any> {
+    // Este método también tendrá loading automático
+    const [profile, stats, notifications] = await Promise.all([
+      this.getUserProfile(),
+      this.getUserStats(),
+      this.getNotifications()
+    ]);
+    
+    return { profile, stats, notifications };
+  }
+}
+
+// ==========================================
+// 3. EJEMPLO CON MÚLTIPLES OPERACIONES
+// ==========================================
+
+@Component({
+  selector: 'app-bulk-operations',
+  template: `
+    <div class="operations">
+      <button (click)="processAll()" [disabled]="isLoading">
+        {{ isLoading ? 'Procesando...' : 'Procesar Todo' }}
+      </button>
+      
+      <button (click)="loadData()" [disabled]="isLoading">
+        Cargar Datos
+      </button>
+    </div>
+  `
+})
+export class BulkOperationsComponent {
+  private loading = useLoading();
+  
+  get isLoading() {
+    return this.loading.isLoading();
+  }
+
+  async processAll() {
+    await this.loading.execute(async () => {
+      // Estas operaciones se ejecutarán secuencialmente con un solo loading
+      await this.step1();
+      await this.step2();
+      await this.step3();
+    });
+  }
+
+  async loadData() {
+    // Usando el composable para casos específicos
+    const asyncOps = useAsyncOperation();
+    
+    const data = await asyncOps.load(async () => {
+      return await this.dataService.fetchAllData();
+    });
+    
+    this.processData(data);
+  }
+}
+
+// ==========================================
+// 4. EJEMPLO CON MANEJO DE ERRORES
+// ==========================================
+
+@Component({
+  selector: 'app-error-handling',
+})
+export class ErrorHandlingComponent {
+  private loading = useLoading();
+  private snackBar = inject(MatSnackBar);
+
+  async complexOperation() {
+    try {
+      await this.loading.withMessage(
+        async () => {
+          await this.step1();
+          await this.step2();
+          await this.step3();
+        },
+        'Iniciando proceso complejo...',
+        'Proceso completado exitosamente'
+      );
+      
+      this.snackBar.open('¡Operación exitosa!', 'Cerrar');
+    } catch (error) {
+      this.snackBar.open('Error en la operación', 'Cerrar');
+    }
+  }
+}
+
+// ==========================================
+// 5. EJEMPLO EN INTERCEPTOR PERSONALIZADO
+// ==========================================
+
+import { Injectable, inject } from '@angular/core';
+import { HttpInterceptor, HttpRequest, HttpHandler } from '@angular/common/http';
+import { LoadingService } from '../services/loading.service';
+import { finalize } from 'rxjs/operators';
+
+@Injectable()
+export class CustomLoadingInterceptor implements HttpInterceptor {
+  private loadingService = inject(LoadingService);
+
+  intercept(req: HttpRequest<any>, next: HttpHandler) {
+    // Solo mostrar loading para ciertas URLs
+    const shouldShowLoading = this.shouldShowLoadingForUrl(req.url);
+    
+    if (shouldShowLoading) {
+      this.loadingService.show();
+    }
+
+    return next.handle(req).pipe(
+      finalize(() => {
+        if (shouldShowLoading) {
+          this.loadingService.hide();
+        }
+      })
+    );
+  }
+
+  private shouldShowLoadingForUrl(url: string): boolean {
+    // No mostrar loading para APIs muy rápidas
+    const skipUrls = ['/api/quick-check', '/api/ping'];
+    return !skipUrls.some(skipUrl => url.includes(skipUrl));
+  }
+}
+
+// ==========================================
+// 6. EJEMPLO EN GUARDS
+// ==========================================
+
+import { Injectable, inject } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
+import { LoadingService } from '../services/loading.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate {
+  private authService = inject(AuthService);
+  private loadingService = inject(LoadingService);
+  private router = inject(Router);
+
+  async canActivate(): Promise<boolean> {
+    return this.loadingService.executeWithLoading(async () => {
+      const isAuthenticated = await this.authService.checkAuth();
+      
+      if (!isAuthenticated) {
+        this.router.navigate(['/login']);
+        return false;
+      }
+      
+      return true;
+    });
+  }
+}
