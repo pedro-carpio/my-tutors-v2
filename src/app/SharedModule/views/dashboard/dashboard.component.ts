@@ -1,37 +1,62 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
+import { Breakpoints, BreakpointObserver } from '@angular/cdk/layout';
+import { map } from 'rxjs/operators';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
-import { SessionService, UserService, UserRole } from '../../../services';
-import { LayoutComponent } from '../../layout/layout.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { Router } from '@angular/router';
+import { SessionService, UserService } from '../../../services';
 import { ToolbarComponent } from '../../toolbar/toolbar.component';
-import { AsyncPipe } from '@angular/common';
-
-
-
+import { LayoutComponent } from '../../layout/layout.component';
+import { PendingConfigurationsComponent } from '../../components/pending-configurations/pending-configurations.component';
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.scss',
   imports: [
-    CommonModule,
-    MatCardModule,
-    MatButtonModule,
+    AsyncPipe,
+    MatGridListModule,
+    MatMenuModule,
     MatIconModule,
+    MatButtonModule,
+    MatCardModule,
+    CommonModule,
     LayoutComponent,
     ToolbarComponent,
-    AsyncPipe
-  ],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+    PendingConfigurationsComponent
+  ]
 })
 export class DashboardComponent {
   private sessionService = inject(SessionService);
-  private userService = inject(UserService);
-  private router = inject(Router);
+    private userService = inject(UserService);
+    private router = inject(Router);
+  
+    logout(): void {
+      this.sessionService.logout();
+    }
+  private breakpointObserver = inject(BreakpointObserver);
 
-  logout(): void {
-    this.sessionService.logout();
-  }
+  /** Based on the screen size, switch from standard to one column per row */
+  cards = this.breakpointObserver.observe(Breakpoints.Handset).pipe(
+    map(({ matches }) => {
+      if (matches) {
+        return [
+          { title: 'Configuraciones Pendientes', cols: 1, rows: 2, component: 'pending-configurations' },
+          { title: 'Card 2', cols: 1, rows: 1, component: 'default' },
+          { title: 'Card 3', cols: 1, rows: 1, component: 'default' },
+          { title: 'Card 4', cols: 1, rows: 1, component: 'default' }
+        ];
+      }
+
+      return [
+        { title: 'Configuraciones Pendientes', cols: 1, rows: 2, component: 'pending-configurations' },
+        { title: 'Card 2', cols: 1, rows: 1, component: 'default' },
+        { title: 'Card 3', cols: 1, rows: 1, component: 'default' },
+        { title: 'Card 4', cols: 1, rows: 1, component: 'default' }
+      ];
+    })
+  );
 }

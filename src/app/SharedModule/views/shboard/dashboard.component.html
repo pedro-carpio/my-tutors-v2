@@ -1,0 +1,25 @@
+<app-layout #layout>
+  <app-toolbar 
+    slot="toolbar"
+    title="Dashboard" 
+    [showLogout]="true"
+    [showMenuButton]="(layout.isHandset$ | async) || false"
+    (logout)="logout()"
+    (menuToggle)="layout.toggleDrawer()">
+  </app-toolbar>
+
+  <div class="dashboard-container">
+    <div class="dashboard-content">
+      <mat-card class="welcome-card">
+        <mat-card-header>
+          <mat-card-title>¡Hola!</mat-card-title>
+          <mat-card-subtitle></mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          Holis
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</app-layout>

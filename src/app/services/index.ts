@@ -16,6 +16,7 @@ export * from './goal.service';
 export * from './email.service';
 export * from './password-generator.service';
 export * from './loading.service';
+export * from './pending-configurations.service';
 
 // Export types
 export * from '../types/firestore.types';

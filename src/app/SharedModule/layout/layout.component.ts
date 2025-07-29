@@ -228,11 +228,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // Getter para el idioma actual
-  get currentLanguage() {
-    return this.i18nService.getCurrentLanguage();
-  }
-
   // Filtrar menú basado en el rol del usuario
   private filterMenuByRole(): void {
     console.log('Filtering menu for role:', this.currentUserRole);
@@ -279,5 +274,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
   // Método para cerrar el drawer
   closeDrawer(): void {
     this.drawer.close();
+  }
+
+  // Método para cambiar idioma
+  toggleLanguage(): void {
+    this.i18nService.toggleLanguage();
+  }
+
+  // Getter para el idioma actual
+  get currentLanguage(): string {
+    return this.i18nService.getCurrentLanguage();
   }
 }

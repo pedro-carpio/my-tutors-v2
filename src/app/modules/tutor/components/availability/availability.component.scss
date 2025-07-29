@@ -91,7 +91,6 @@
 
   .time-slot {
     height: 40px;
-    padding: 8px;
     border-bottom: 1px solid #eee;
     font-size: 0.875rem;
     display: flex;
@@ -218,7 +217,6 @@
 
   .time-column .time-slot {
     font-size: 0.8rem;
-    padding: 6px;
     height: 35px;
 
     &.separator {
@@ -303,9 +301,12 @@
     }
   }
 
+  .time-slot {
+    margin: 1px;
+  }
   .time-column .time-slot {
     font-size: 0.7rem;
-    padding: 2px;
+    padding: 2px;;
     height: 30px;
 
     &.separator {
@@ -372,8 +373,6 @@
 
   .time-column .time-slot {
     font-size: 0.65rem;
-    padding: 1px;
-    height: 25px;
 
     &.separator {
       height: 20px;

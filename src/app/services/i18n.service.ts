@@ -73,6 +73,7 @@ export class I18nService {
           title: '¡Inicia sesión con tus credenciales proporcionadas!',
           changeLanguage: 'Cambiar idioma',
           setTimezone: 'Configurar zona horaria',
+          logout: 'Cerrar sesión',
           noMenuItems: 'No hay elementos de menú disponibles',
           lost: 'No sé cómo llegué aquí, pero estoy perdido',
         },
@@ -299,6 +300,87 @@ export class I18nService {
           advanced: 'Avanzado (5-9 años)',
           expert: 'Experto (10+ años)'
         },
+
+        // Dashboard y configuraciones pendientes
+        dashboard: {
+          pendingConfig: {
+            title: 'Configuraciones Pendientes',
+            subtitle: 'Completa estas tareas para mejorar tu experiencia',
+            progress: 'Progreso',
+            pending: 'Pendientes',
+            completed: 'Completadas',
+            noConfigurations: 'No hay configuraciones pendientes',
+            priority: {
+              high: 'Alta',
+              medium: 'Media',
+              low: 'Baja'
+            },
+            completeProfile: {
+              title: 'Completar perfil',
+              description: 'Completa tu información personal para una mejor experiencia'
+            },
+            setLearningGoals: {
+              title: 'Establecer objetivos de aprendizaje',
+              description: 'Define tus metas y objetivos de aprendizaje'
+            },
+            findTutors: {
+              title: 'Buscar tutores',
+              description: 'Explora y encuentra tutores que se adapten a tus necesidades'
+            },
+            scheduleFirstClass: {
+              title: 'Programar primera clase',
+              description: 'Agenda tu primera clase con un tutor'
+            },
+            setAvailability: {
+              title: 'Configurar disponibilidad',
+              description: 'Establece tu horario de disponibilidad para clases'
+            },
+            setHourlyRate: {
+              title: 'Establecer tarifa horaria',
+              description: 'Define tu precio por hora de enseñanza'
+            },
+            viewJobPostings: {
+              title: 'Ver convocatorias',
+              description: 'Revisa las convocatorias de clases disponibles'
+            },
+            uploadCertifications: {
+              title: 'Subir certificaciones',
+              description: 'Agrega tus certificaciones y títulos académicos'
+            },
+            completeInstitutionProfile: {
+              title: 'Completar perfil institucional',
+              description: 'Completa la información de tu institución'
+            },
+            addTutors: {
+              title: 'Agregar tutores',
+              description: 'Invita y gestiona tutores para tu institución'
+            },
+            addStudents: {
+              title: 'Agregar estudiantes',
+              description: 'Registra estudiantes en tu institución'
+            },
+            createJobPosting: {
+              title: 'Publicar convocatoria',
+              description: 'Crea convocatorias para clases y cursos'
+            },
+            configureLanguages: {
+              title: 'Configurar idiomas',
+              description: 'Establece los idiomas que ofrece tu institución'
+            },
+            systemOverview: {
+              title: 'Revisar estado del sistema',
+              description: 'Revisa métricas y estado general del sistema'
+            },
+            userManagement: {
+              title: 'Gestión de usuarios',
+              description: 'Administra usuarios y permisos del sistema'
+            },
+            systemSettings: {
+              title: 'Configuración del sistema',
+              description: 'Ajusta configuraciones globales del sistema'
+            }
+          }
+        },
         
         // Errores comunes
         errors: {
@@ -328,6 +410,7 @@ export class I18nService {
           title: 'Log in with your provided credentials!',
           changeLanguage: 'Change language',
           setTimezone: 'Set timezone',
+          logout: 'Logout',
           noMenuItems: 'No menu items available',
           lost: 'I don\'t know how i got here, but I\'m lost',
         },
@@ -553,6 +636,87 @@ export class I18nService {
           intermediate: 'Intermediate (2-4 years)',
           advanced: 'Advanced (5-9 years)',
           expert: 'Expert (10+ years)'
+        },
+
+        // Dashboard and pending configurations
+        dashboard: {
+          pendingConfig: {
+            title: 'Pending Configurations',
+            subtitle: 'Complete these tasks to improve your experience',
+            progress: 'Progress',
+            pending: 'Pending',
+            completed: 'Completed',
+            noConfigurations: 'No pending configurations',
+            priority: {
+              high: 'High',
+              medium: 'Medium',
+              low: 'Low'
+            },
+            completeProfile: {
+              title: 'Complete profile',
+              description: 'Complete your personal information for a better experience'
+            },
+            setLearningGoals: {
+              title: 'Set learning goals',
+              description: 'Define your learning goals and objectives'
+            },
+            findTutors: {
+              title: 'Find tutors',
+              description: 'Explore and find tutors that suit your needs'
+            },
+            scheduleFirstClass: {
+              title: 'Schedule first class',
+              description: 'Schedule your first class with a tutor'
+            },
+            setAvailability: {
+              title: 'Set availability',
+              description: 'Set your availability schedule for classes'
+            },
+            setHourlyRate: {
+              title: 'Set hourly rate',
+              description: 'Define your price per teaching hour'
+            },
+            viewJobPostings: {
+              title: 'View job postings',
+              description: 'Review available class job postings'
+            },
+            uploadCertifications: {
+              title: 'Upload certifications',
+              description: 'Add your certifications and academic degrees'
+            },
+            completeInstitutionProfile: {
+              title: 'Complete institutional profile',
+              description: 'Complete your institution information'
+            },
+            addTutors: {
+              title: 'Add tutors',
+              description: 'Invite and manage tutors for your institution'
+            },
+            addStudents: {
+              title: 'Add students',
+              description: 'Register students in your institution'
+            },
+            createJobPosting: {
+              title: 'Create job posting',
+              description: 'Create job postings for classes and courses'
+            },
+            configureLanguages: {
+              title: 'Configure languages',
+              description: 'Set the languages offered by your institution'
+            },
+            systemOverview: {
+              title: 'Review system status',
+              description: 'Review metrics and general system status'
+            },
+            userManagement: {
+              title: 'User management',
+              description: 'Manage users and system permissions'
+            },
+            systemSettings: {
+              title: 'System settings',
+              description: 'Adjust global system settings'
+            }
+          }
         },
         
         // Common errors
