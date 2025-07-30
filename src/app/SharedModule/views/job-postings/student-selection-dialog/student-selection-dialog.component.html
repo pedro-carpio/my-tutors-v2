@@ -1,0 +1,301 @@
+<div class="student-selection-dialog">
+  <div mat-dialog-title class="dialog-header">
+    <h2>Buscar o Crear Estudiante</h2>
+    <button mat-icon-button (click)="onCancel()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <!-- Sección de búsqueda -->
+    <mat-card class="search-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>search</mat-icon>
+          Buscar Estudiante Existente
+        </mat-card-title>
+        <mat-card-subtitle>
+          Ingresa el email del estudiante para verificar si ya está registrado
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="searchForm" class="search-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email del estudiante</mat-label>
+            <mat-icon matPrefix>email</mat-icon>
+            <input matInput formControlName="email" type="email" 
+                   placeholder="ejemplo@correo.com">
+            <mat-error *ngIf="searchForm.get('email')?.hasError('required')">
+              El email es requerido
+            </mat-error>
+            <mat-error *ngIf="searchForm.get('email')?.hasError('email')">
+              El email no tiene un formato válido
+            </mat-error>
+          </mat-form-field>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Loading spinner -->
+    <div *ngIf="isSearching" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Buscando estudiantes...</p>
+    </div>
+
+    <!-- Sugerencias de estudiantes -->
+    <mat-card *ngIf="showSuggestions && suggestedStudents.length > 0" class="result-card suggestions">
+      <mat-card-header>
+        <mat-card-title class="success-title">
+          <mat-icon color="primary">people</mat-icon>
+          Estudiantes Encontrados
+        </mat-card-title>
+        <mat-card-subtitle>
+          {{ suggestedStudents.length }} estudiante(s) encontrado(s)
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="suggestions-list">
+          <div *ngFor="let student of suggestedStudents" 
+               class="suggestion-item" 
+               (click)="selectSuggestedStudent(student)">
+            <div class="student-info">
+              <div class="student-name">
+                <strong>{{ student.full_name }}</strong>
+              </div>
+              <div class="student-details">
+                <span class="detail-item" *ngIf="student.level_cefr">
+                  <mat-icon class="detail-icon">school</mat-icon>
+                  {{ student.level_cefr }}
+                </span>
+                <span class="detail-item" *ngIf="student.target_language">
+                  <mat-icon class="detail-icon">language</mat-icon>
+                  {{ student.target_language }}
+                </span>
+                <span class="detail-item" *ngIf="student.age">
+                  <mat-icon class="detail-icon">cake</mat-icon>
+                  {{ student.age }} años
+                </span>
+              </div>
+            </div>
+            <mat-icon class="select-icon">arrow_forward</mat-icon>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- No se encontraron resultados -->
+    <mat-card *ngIf="noResultsFound && !isSearching" class="result-card not-found">
+      <mat-card-header>
+        <mat-card-title class="warning-title">
+          <mat-icon color="warn">info</mat-icon>
+          No se encontraron estudiantes
+        </mat-card-title>
+        <mat-card-subtitle>
+          No hay estudiantes registrados con este email
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>¿Deseas registrar un nuevo estudiante con este email?</p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-raised-button color="primary" (click)="showCreateStudentForm()">
+          <mat-icon>person_add</mat-icon>
+          Registrar Nuevo Estudiante
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Estudiante seleccionado para confirmar -->
+    <mat-card *ngIf="foundStudent && !showSuggestions" class="result-card found">
+      <mat-card-header>
+        <mat-card-title class="success-title">
+          <mat-icon color="primary">check_circle</mat-icon>
+          Estudiante Seleccionado
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="student-info">
+          <div class="info-grid">
+            <div class="info-item">
+              <strong>Nombre:</strong>
+              <span>{{ foundStudent.full_name }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Edad:</strong>
+              <span>{{ foundStudent.age }} años</span>
+            </div>
+            <div class="info-item">
+              <strong>Nivel:</strong>
+              <span>{{ foundStudent.level_cefr }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Grupo:</strong>
+              <span>{{ foundStudent.level_group }}</span>
+            </div>
+            <div class="info-item" *ngIf="foundStudent.target_language">
+              <strong>Idioma objetivo:</strong>
+              <span>{{ foundStudent.target_language }}</span>
+            </div>
+            <div class="info-item" *ngIf="foundStudent.country">
+              <strong>País:</strong>
+              <span>{{ foundStudent.country }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button (click)="foundStudent = null; showSuggestions = suggestedStudents.length > 0">
+          <mat-icon>arrow_back</mat-icon>
+          Cambiar Selección
+        </button>
+        <button mat-raised-button color="primary" (click)="useExistingStudent()">
+          <mat-icon>person_add</mat-icon>
+          Usar Este Estudiante
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Formulario de creación de estudiante -->
+      <mat-card class="create-card" *ngIf="showCreateForm">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>person_add</mat-icon>
+            Crear Nuevo Estudiante
+          </mat-card-title>
+          <mat-card-subtitle>
+            Complete la información del estudiante
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="studentForm" class="student-form">
+            <!-- Información básica -->
+            <div class="form-section">
+              <h4>Información Básica</h4>
+              <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Email</mat-label>
+                  <input matInput formControlName="email" type="email" readonly>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Nombre completo</mat-label>
+                  <input matInput formControlName="full_name">
+                  <mat-error>{{ getErrorMessage('full_name') }}</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Edad</mat-label>
+                  <input matInput formControlName="age" type="number" min="3" max="100">
+                  <mat-error>{{ getErrorMessage('age') }}</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Nivel CEFR</mat-label>
+                  <mat-select formControlName="level_cefr">
+                    <mat-option *ngFor="let level of cefrLevels" [value]="level">
+                      {{ level }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Grupo/Nivel</mat-label>
+                  <input matInput formControlName="level_group" 
+                         placeholder="Ej: Madrid Musketeers (7–9 años)">
+                  <mat-error>{{ getErrorMessage('level_group') }}</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Idioma objetivo</mat-label>
+                  <mat-select formControlName="target_language">
+                    <mat-option value="">Seleccionar idioma</mat-option>
+                    <mat-option *ngFor="let lang of languages" [value]="lang.code">
+                      {{ lang.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>País</mat-label>
+                  <mat-select formControlName="country">
+                    <mat-option value="">Seleccionar país</mat-option>
+                    <mat-option *ngFor="let country of countries" [value]="country">
+                      {{ country }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Fecha de nacimiento</mat-label>
+                  <input matInput [matDatepicker]="birthPicker" formControlName="birth_date">
+                  <mat-datepicker-toggle matSuffix [for]="birthPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #birthPicker></mat-datepicker>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Información de contacto -->
+            <div class="form-section">
+              <h4>Información de Contacto</h4>
+              <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Persona responsable</mat-label>
+                  <input matInput formControlName="responsible_person">
+                  <mat-error>{{ getErrorMessage('responsible_person') }}</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Teléfono de contacto</mat-label>
+                  <input matInput formControlName="contact_phone" type="tel">
+                  <mat-error>{{ getErrorMessage('contact_phone') }}</mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="form-section">
+              <h4>Información Adicional</h4>
+              <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Duración individual (minutos)</mat-label>
+                  <input matInput formControlName="individual_duration_minutes" 
+                         type="number" min="15">
+                  <mat-hint>Tiempo específico para este estudiante (opcional)</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Alergias / Condiciones</mat-label>
+                  <textarea matInput formControlName="allergies_conditions" 
+                            rows="2" placeholder="Alergias, condiciones médicas, etc."></textarea>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Notas adicionales</mat-label>
+                  <textarea matInput formControlName="additional_notes" 
+                            rows="3" placeholder="Información adicional relevante"></textarea>
+                </mat-form-field>
+              </div>
+            </div>
+          </form>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-button (click)="onCancel()">
+            Cancelar
+          </button>
+          <button mat-raised-button color="primary" 
+                  (click)="createNewStudent()" 
+                  [disabled]="studentForm.invalid || isLoading">
+            <mat-icon>save</mat-icon>
+            <span *ngIf="!isLoading">Crear Estudiante</span>
+            <span *ngIf="isLoading">Creando...</span>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+    <!-- Loading general del diálogo -->
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Procesando...</p>
+    </div>
+  </mat-dialog-content>
+</div>

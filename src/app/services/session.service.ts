@@ -413,7 +413,12 @@ export class SessionService {
         const studentProfile: Student = {
           user_id: userCredential.user.uid,
           full_name: fullName,
-          goals: studentData.goals || []
+          goals: studentData.goals || [],
+          // Campos básicos requeridos
+          age: 0,
+          level_group: '',
+          responsible_person: '',
+          contact_phone: ''
         };
 
         await this.studentService.createStudent(studentProfile);

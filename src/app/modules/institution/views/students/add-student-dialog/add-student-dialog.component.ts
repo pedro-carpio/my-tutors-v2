@@ -14,7 +14,7 @@ import { StudentService, UserService, InstitutionService, GoalService } from '..
 import { EmailService, StudentWelcomeEmailData } from '../../../../../services/email.service';
 import { PasswordGeneratorService } from '../../../../../services/password-generator.service';
 import { I18nService, Language } from '../../../../../services/i18n.service';
-import { Student, Goal, UserRole, LevelCEFR } from '../../../../../types/firestore.types';
+import { Student, StudentDetails, Goal, UserRole, LevelCEFR } from '../../../../../types/firestore.types';
 import { debounceTime, distinctUntilChanged, switchMap, map, startWith } from 'rxjs/operators';
 import { of, Observable, combineLatest } from 'rxjs';
 
@@ -190,7 +190,12 @@ export class AddStudentDialogComponent {
           target_language: formValue.target_language || '',
           country: formValue.country || '',
           birth_date: formValue.birth_date ? new Date(formValue.birth_date) : new Date(),
-          enrollment_date: formValue.enrollment_date ? new Date(formValue.enrollment_date) : new Date()
+          enrollment_date: formValue.enrollment_date ? new Date(formValue.enrollment_date) : new Date(),
+          // Campos básicos requeridos por Student
+          age: 0, // Se calculará desde birth_date
+          level_group: '',
+          responsible_person: '',
+          contact_phone: ''
         };
         console.log(studentData)
         

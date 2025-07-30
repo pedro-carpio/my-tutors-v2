@@ -20,11 +20,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 
 // Componentes internos
 import { ToolbarComponent } from '../../../toolbar/toolbar.component';
 import { LayoutComponent } from '../../../layout/layout.component';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
+import { StudentSelectionDialogComponent, StudentSearchResult } from '../student-selection-dialog/student-selection-dialog.component';
 
 // Servicios y tipos
 import { SessionService, JobPostingService } from '../../../../services';
@@ -57,6 +59,7 @@ import { Timestamp } from 'firebase/firestore';
     MatCheckboxModule,
     MatChipsModule,
     MatAutocompleteModule,
+    MatDialogModule,
     ToolbarComponent,
     LayoutComponent,
     TranslatePipe
@@ -70,6 +73,7 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private sessionService = inject(SessionService);
   private jobPostingService = inject(JobPostingService);
+  private dialog = inject(MatDialog);
   private destroy$ = new Subject<void>();
 
   // Estado del componente
@@ -277,10 +281,51 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
       allergies_conditions: [''],
       responsible_person: ['', [Validators.required]],
       contact_phone: ['', [Validators.required]],
-      additional_notes: ['']
+      additional_notes: [''],
+      // Campos para gestión de estudiantes registrados
+      is_registered: [false],
+      user_id: [''],
+      created_during_job_posting: [false]
     });
 
     this.studentsArray.push(studentGroup);
+  }
+
+  addRegisteredStudent(): void {
+    const dialogRef = this.dialog.open(StudentSelectionDialogComponent, {
+      data: { institutionId: this.currentUser?.uid || '' },
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      autoFocus: false,
+      restoreFocus: false
+    });
+
+    dialogRef.afterClosed().subscribe((result: StudentSearchResult) => {
+      if (result) {
+        const studentGroup = this.fb.group({
+          name: [result.studentDetails.name, [Validators.required]],
+          age: [result.studentDetails.age, [Validators.required, Validators.min(3), Validators.max(100)]],
+          level_group: [result.studentDetails.level_group, [Validators.required]],
+          individual_duration_minutes: [result.studentDetails.individual_duration_minutes || null, [Validators.min(15)]],
+          allergies_conditions: [result.studentDetails.allergies_conditions || ''],
+          responsible_person: [result.studentDetails.responsible_person, [Validators.required]],
+          contact_phone: [result.studentDetails.contact_phone, [Validators.required]],
+          additional_notes: [result.studentDetails.additional_notes || ''],
+          // Campos para gestión de estudiantes registrados
+          is_registered: [result.studentDetails.is_registered || false],
+          user_id: [result.studentDetails.user_id || ''],
+          created_during_job_posting: [result.studentDetails.created_during_job_posting || false]
+        });
+
+        this.studentsArray.push(studentGroup);
+
+        // Mostrar mensaje de resultado
+        if (result.message) {
+          console.log(result.message);
+        }
+      }
+    });
   }
 
   removeStudent(index: number): void {
@@ -297,7 +342,11 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
         allergies_conditions: [student.allergies_conditions || ''],
         responsible_person: [student.responsible_person, [Validators.required]],
         contact_phone: [student.contact_phone, [Validators.required]],
-        additional_notes: [student.additional_notes || '']
+        additional_notes: [student.additional_notes || ''],
+        // Campos para gestión de estudiantes registrados
+        is_registered: [student.is_registered || false],
+        user_id: [student.user_id || ''],
+        created_during_job_posting: [student.created_during_job_posting || false]
       })
     );
 

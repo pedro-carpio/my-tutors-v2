@@ -516,13 +516,6 @@ export class I18nService {
               saveAsDraft: 'Guardar como borrador'
             },
             
-            hints: {
-              duration: 'Duración total de la clase en minutos',
-              hourlyRate: 'Tarifa que se pagará al tutor',
-              isDividedByStudents: 'Si se marca, el tiempo se dividirá entre los estudiantes',
-              saveAsDraft: 'Los borradores no serán visibles para los tutores'
-            },
-            
             student: {
               title: 'Estudiante {number}',
               name: 'Nombre',
@@ -552,7 +545,16 @@ export class I18nService {
               create: 'Crear Convocatoria',
               update: 'Actualizar Convocatoria',
               addStudent: 'Agregar Estudiante',
+              addRegisteredStudent: 'Usar Estudiante Registrado',
               createFirst: 'Crear Primera Convocatoria'
+            },
+
+            hints: {
+              duration: 'Duración total de la clase en minutos',
+              hourlyRate: 'Tarifa que se pagará al tutor',
+              isDividedByStudents: 'Si se marca, el tiempo se dividirá entre los estudiantes',
+              saveAsDraft: 'Los borradores no serán visibles para los tutores',
+              addStudentOptions: 'Puedes agregar estudiantes manualmente o buscar estudiantes ya registrados en el sistema'
             },
             
             errors: {
@@ -1116,13 +1118,6 @@ export class I18nService {
               saveAsDraft: 'Save as draft'
             },
             
-            hints: {
-              duration: 'Total class duration in minutes',
-              hourlyRate: 'Rate to be paid to the tutor',
-              isDividedByStudents: 'If checked, time will be divided among students',
-              saveAsDraft: 'Drafts will not be visible to tutors'
-            },
-            
             student: {
               title: 'Student {number}',
               name: 'Name',
@@ -1152,7 +1147,16 @@ export class I18nService {
               create: 'Create Job Posting',
               update: 'Update Job Posting',
               addStudent: 'Add Student',
+              addRegisteredStudent: 'Use Registered Student',
               createFirst: 'Create First Job Posting'
+            },
+
+            hints: {
+              duration: 'Total class duration in minutes',
+              hourlyRate: 'Rate to be paid to the tutor',
+              isDividedByStudents: 'If checked, time will be divided among students',
+              saveAsDraft: 'Drafts will not be visible to tutors',
+              addStudentOptions: 'You can add students manually or search for students already registered in the system'
             },
             
             errors: {

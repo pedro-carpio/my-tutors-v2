@@ -350,12 +350,24 @@
                   </div>
                 </div>
 
-                <!-- Botón para agregar estudiante -->
+                <!-- Botones para agregar estudiante -->
                 <div class="add-student-section">
-                  <button mat-raised-button color="accent" (click)="addStudent()" type="button">
-                    <mat-icon>add</mat-icon>
-                    {{ 'jobPostings.form.buttons.addStudent' | translate }}
-                  </button>
+                  <div class="add-student-options">
+                    <button mat-raised-button color="accent" (click)="addStudent()" type="button">
+                      <mat-icon>person_add</mat-icon>
+                      {{ 'jobPostings.form.buttons.addStudent' | translate }}
+                    </button>
+                    
+                    <span class="separator">o</span>
+                    
+                    <button mat-raised-button color="primary" (click)="addRegisteredStudent()" type="button">
+                      <mat-icon>search</mat-icon>
+                      {{ 'jobPostings.form.buttons.addRegisteredStudent' | translate }}
+                    </button>
+                  </div>
+                  <p class="add-student-hint">
+                    {{ 'jobPostings.form.hints.addStudentOptions' | translate }}
+                  </p>
                 </div>
 
                 <div class="step-actions">

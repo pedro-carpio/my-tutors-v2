@@ -1,0 +1,273 @@
+.student-selection-dialog {
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 16px;
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .close-button {
+      color: #666;
+    }
+  }
+
+  .dialog-content {
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 0 4px;
+
+    .search-card {
+      margin-bottom: 16px;
+
+      mat-card-header {
+        mat-card-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #1976d2;
+        }
+      }
+
+      .search-form {
+        .full-width {
+          width: 100%;
+        }
+
+        .search-actions {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 16px;
+        }
+      }
+    }
+
+    .result-card {
+      margin-bottom: 16px;
+
+      &.found {
+        border-left: 4px solid #4caf50;
+
+        .success-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #4caf50;
+        }
+      }
+
+      &.suggestions {
+        border-left: 4px solid #2196f3;
+
+        .success-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #2196f3;
+        }
+
+        .suggestions-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+
+          .suggestion-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background-color: #f5f5f5;
+              border-color: #2196f3;
+              transform: translateX(4px);
+            }
+
+            .student-info {
+              flex: 1;
+
+              .student-name {
+                margin-bottom: 8px;
+
+                strong {
+                  font-size: 16px;
+                  color: #1976d2;
+                }
+              }
+
+              .student-details {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 16px;
+
+                .detail-item {
+                  display: flex;
+                  align-items: center;
+                  gap: 4px;
+                  font-size: 14px;
+                  color: #666;
+
+                  .detail-icon {
+                    font-size: 16px;
+                    width: 16px;
+                    height: 16px;
+                    color: #999;
+                  }
+                }
+              }
+            }
+
+            .select-icon {
+              color: #2196f3;
+              transition: transform 0.2s ease;
+            }
+
+            &:hover .select-icon {
+              transform: translateX(4px);
+            }
+          }
+        }
+      }
+
+      &.not-found {
+        border-left: 4px solid #ff9800;
+
+        .warning-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #ff9800;
+        }
+      }
+
+      .student-info {
+        .info-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 12px;
+          margin-top: 16px;
+        }
+
+        .info-item {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+
+          strong {
+            color: #424242;
+            font-size: 13px;
+            font-weight: 500;
+          }
+
+          span {
+            color: #666;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+
+    .section-divider {
+      margin: 24px 0;
+    }
+
+    .create-card {
+      mat-card-header {
+        mat-card-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #1976d2;
+        }
+      }
+
+      .student-form {
+        .form-section {
+          margin-bottom: 24px;
+
+          h4 {
+            margin: 0 0 16px 0;
+            color: #424242;
+            font-size: 16px;
+            font-weight: 500;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 8px;
+          }
+
+          .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+
+            .full-width {
+              grid-column: 1 / -1;
+            }
+          }
+        }
+      }
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      gap: 16px;
+
+      p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .student-selection-dialog {
+    .dialog-content {
+      .create-card {
+        .student-form {
+          .form-section {
+            .form-grid {
+              grid-template-columns: 1fr;
+              gap: 12px;
+            }
+          }
+        }
+      }
+
+      .result-card {
+        .student-info {
+          .info-grid {
+            grid-template-columns: 1fr;
+            gap: 8px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dialog overlay adjustments
+::ng-deep {
+  .mat-mdc-dialog-container {
+    .mdc-dialog__surface {
+      max-width: 900px;
+      width: 95vw;
+      max-height: 90vh;
+    }
+  }
+}

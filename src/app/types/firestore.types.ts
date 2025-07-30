@@ -66,6 +66,13 @@ export interface Student {
   total_classes?: number; // TODO: Implementar contador de clases tomadas
   created_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
   updated_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
+  age: number;
+  level_group: string; // e.g., "Madrid Musketeers (7–9 años)"
+  individual_duration_minutes?: number;
+  allergies_conditions?: string;
+  responsible_person: string;
+  contact_phone: string;
+  additional_notes?: string;
 }
 
 export interface Goal {
@@ -125,17 +132,18 @@ export interface Course {
   institution_id: string;
   title: string;
   description: string;
-  language_code: string;
-  level_cefr: LevelCEFR;
-  capacity: number;
+  language_code: string; // TODO: default es 'es' (español)
+  level_cefr?: LevelCEFR;
+  capacity: number; //TODO: 0 is unlimited
   current_enrollment?: number; // TODO: Implementar contador automático de inscritos
   start_date: Date;
-  end_date: Date;
+  end_date?: Date;
   price?: number; // TODO: Sistema de precios para cursos
   currency?: string; // TODO: Soporte multi-moneda
   status?: 'draft' | 'published' | 'ongoing' | 'completed' | 'cancelled'; // TODO: Estados de cursos
   tutor_id?: string; // TODO: Asignación de tutores principales
   students?: string[]; // ✅ SERVICIO IMPLEMENTADO - course.service.ts
+  non_registered_students?: string[]; // TODO: Implementar gestión de estudiantes no registrados
   created_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
   updated_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
 }
@@ -143,8 +151,6 @@ export interface Course {
 export interface Class {
   id: string;
   course_id?: string; // ✅ IMPLEMENTADO - Soporta clases individuales y de curso
-  tutor_id: string;
-  student_id: string;
   scheduled_at: FieldValue | Timestamp;
   duration_minutes: number;
   price_per_hour: number;
@@ -155,6 +161,7 @@ export interface Class {
   completed_at?: FieldValue | Timestamp; // TODO: Tracking de finalización
   created_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
   updated_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
+  // TODO: Check if job posting covers the criteria
 }
 
 export interface Feedback {
@@ -343,12 +350,18 @@ export type FrequencyType = 'unica' | 'semanal' | 'diario' | 'otro';
 export interface StudentDetails {
   name: string;
   age: number;
+  email?: string;
   level_group: string; // e.g., "Madrid Musketeers (7–9 años)"
   individual_duration_minutes?: number;
   allergies_conditions?: string;
   responsible_person: string;
   contact_phone: string;
   additional_notes?: string;
+  
+  // Campos para gestión de estudiantes registrados
+  is_registered?: boolean; // Si el estudiante está registrado en el sistema
+  user_id?: string; // ID del usuario estudiante si está registrado
+  created_during_job_posting?: boolean; // Si se creó durante el proceso de job posting
 }
 
 export interface JobPosting {

@@ -406,6 +406,30 @@ export class UserService {
     }
   }
 
+  // Search users by partial email match (production method)
+  async searchUsersByPartialEmail(partialEmail: string): Promise<User[]> {
+    try {
+      const q = query(collection(this.firestore, this.collectionName));
+      const snapshot = await getDocs(q);
+      
+      const matchingUsers: User[] = [];
+      snapshot.forEach((doc) => {
+        const userData = doc.data() as User;
+        if (userData.email && userData.email.toLowerCase().includes(partialEmail.toLowerCase())) {
+          matchingUsers.push({
+            ...userData,
+            id: doc.id
+          });
+        }
+      });
+      
+      return matchingUsers;
+    } catch (error) {
+      console.error('Error searching users by partial email:', error);
+      return [];
+    }
+  }
+
   // ========== MÉTODOS PARA MÚLTIPLES ROLES ==========
 
   // Método para agregar rol a un usuario
