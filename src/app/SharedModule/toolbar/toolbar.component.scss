@@ -2,8 +2,137 @@
   flex: 1 1 auto;
 }
 
-.language-indicator {
-  margin-left: 4px;
-  font-size: 12px;
+.app-title {
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  @media (max-width: 600px) {
+    display: none;
+  }
+}
+
+.role-selector {
+  margin-left: 16px;
+  margin-right: 8px;
+  
+  .role-select {
+    min-width: 140px; // Increased to accommodate "Administrador/Administrator"
+    max-width: 200px;
+    
+    ::ng-deep {
+      .mat-mdc-select-trigger {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        padding: 8px 12px;
+        min-height: auto;
+        transition: background-color 0.2s ease;
+        
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .mat-mdc-select-value {
+          color: inherit;
+          font-size: 14px;
+          font-weight: 500;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .mat-mdc-select-arrow-wrapper {
+          .mat-mdc-select-arrow {
+            color: inherit;
+          }
+        }
+      }
+      
+      .mat-mdc-select-placeholder {
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+  }
+  
+  @media (max-width: 768px) {
+    margin-left: 8px;
+    margin-right: 4px;
+    
+    .role-select {
+      min-width: 120px;
+      max-width: 160px;
+      
+      ::ng-deep {
+        .mat-mdc-select-trigger {
+          padding: 6px 10px;
+          
+          .mat-mdc-select-value {
+            font-size: 13px;
+          }
+        }
+      }
+    }
+  }
+  
+  @media (max-width: 480px) {
+    margin-left: 4px;
+    margin-right: 2px;
+    
+    .role-select {
+      min-width: 100px;
+      max-width: 120px;
+      
+      ::ng-deep {
+        .mat-mdc-select-trigger {
+          padding: 4px 8px;
+          
+          .mat-mdc-select-value {
+            font-size: 12px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  
+  .language-button {
+    .language-indicator {
+      margin-left: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    @media (max-width: 480px) {
+      .language-indicator {
+        display: none;
+      }
+    }
+  }
+  
+  .logout-button {
+    @media (max-width: 480px) {
+      margin-left: 4px;
+    }
+  }
+}
+
+// General responsive improvements
+@media (max-width: 600px) {
+  ::ng-deep mat-toolbar {
+    padding: 0 8px;
+    min-height: 56px;
+  }
+}
+
+@media (max-width: 480px) {
+  ::ng-deep mat-toolbar {
+    padding: 0 4px;
+    min-height: 48px;
+  }
 }

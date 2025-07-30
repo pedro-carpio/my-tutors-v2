@@ -7,7 +7,7 @@
     [matTooltip]="'layout.menu' | translate">
     <mat-icon>menu</mat-icon>
   </button>
-  <span>{{ title || ('layout.appName' | translate) }}</span>
+  <span class="app-title">{{ title || ('layout.appName' | translate) }}</span>
   
   <!-- Selector de roles si el usuario tiene múltiples roles -->
   <div class="role-selector" *ngIf="showRoleSelector && hasMultipleRoles">
@@ -15,7 +15,8 @@
       [value]="activeRole" 
       (selectionChange)="switchRole($event.value)"
       [placeholder]="'common.switchRole' | translate"
-      [matTooltip]="'common.currentRole' | translate">
+      [matTooltip]="'common.currentRole' | translate"
+      class="role-select">
       <mat-option *ngFor="let role of currentUserRoles" [value]="role">
         {{ ('roles.' + role) | translate }}
       </mat-option>
@@ -23,26 +24,30 @@
   </div>
 
   <span class="spacer"></span>
-  <button 
-    mat-button 
-    [attr.aria-label]="'layout.changeLanguage' | translate" 
-    (click)="changeLanguage()"
-    [matTooltip]="'layout.changeLanguage' | translate">
-    <mat-icon>language</mat-icon>
-    <span class="language-indicator">{{ currentLanguage.toUpperCase() }}</span>
-  </button>
-  <!-- <button 
-    matIconButton 
-    [attr.aria-label]="'layout.setTimezone' | translate"
-    [matTooltip]="'layout.setTimezone' | translate">
-    <mat-icon>schedule</mat-icon>
-  </button> -->
-  <button 
-    *ngIf="showLogout"
-    mat-icon-button 
-    (click)="onLogout()"
-    [attr.aria-label]="'layout.logout' | translate"
-    [matTooltip]="'layout.logout' | translate">
-    <mat-icon>logout</mat-icon>
-  </button>
+  <div class="toolbar-actions">
+    <button 
+      mat-button 
+      [attr.aria-label]="'layout.changeLanguage' | translate" 
+      (click)="changeLanguage()"
+      [matTooltip]="'layout.changeLanguage' | translate"
+      class="language-button">
+      <mat-icon>language</mat-icon>
+      <span class="language-indicator">{{ currentLanguage.toUpperCase() }}</span>
+    </button>
+    <!-- <button 
+      matIconButton 
+      [attr.aria-label]="'layout.setTimezone' | translate"
+      [matTooltip]="'layout.setTimezone' | translate">
+      <mat-icon>schedule</mat-icon>
+    </button> -->
+    <button 
+      *ngIf="showLogout"
+      mat-icon-button 
+      (click)="onLogout()"
+      [attr.aria-label]="'layout.logout' | translate"
+      [matTooltip]="'layout.logout' | translate"
+      class="logout-button">
+      <mat-icon>logout</mat-icon>
+    </button>
+  </div>
 </mat-toolbar>
