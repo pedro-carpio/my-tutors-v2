@@ -8,18 +8,21 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { StudentService, UserService, InstitutionService, GoalService } from '../../../../../services';
-import { EmailService, StudentWelcomeEmailData } from '../../../../../services/email.service';
+import { TutorService, UserService } from '../../../../../services';
+import { EmailService, WelcomeEmailData } from '../../../../../services/email.service';
 import { PasswordGeneratorService } from '../../../../../services/password-generator.service';
-import { I18nService, Language } from '../../../../../services/i18n.service';
-import { Student, Goal, UserRole, LevelCEFR } from '../../../../../types/firestore.types';
-import { debounceTime, distinctUntilChanged, switchMap, map, startWith } from 'rxjs/operators';
-import { of, Observable, combineLatest } from 'rxjs';
+import { Tutor, User, UserRole, UserStatus } from '../../../../../types/firestore.types';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
+
+interface StatusOption {
+  value: UserStatus;
+  label: string;
+}
 
 @Component({
-  selector: 'app-add-student-dialog',
+  selector: 'app-add-tutor-dialog',
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -29,38 +32,31 @@ import { of, Observable, combineLatest } from 'rxjs';
     MatInputModule,
     MatSelectModule,
     MatDatepickerModule,
-    MatNativeDateModule,
-    MatIconModule
+    MatNativeDateModule
   ],
-  templateUrl: './add-student-dialog.component.html',
-  styleUrls: ['./add-student-dialog.component.scss']
+  templateUrl: './add-tutor-dialog.component.html',
+  styleUrls: ['./add-tutor-dialog.component.scss']
 })
-export class AddStudentDialogComponent {
-  private dialogRef = inject(MatDialogRef<AddStudentDialogComponent>);
+export class AddTutorDialogComponent {
+  private dialogRef = inject(MatDialogRef<AddTutorDialogComponent>);
   private fb = inject(FormBuilder);
-  private studentService = inject(StudentService);
+  private tutorService = inject(TutorService);
   private userService = inject(UserService);
-  private goalService = inject(GoalService);
   private emailService = inject(EmailService);
   private passwordGenerator = inject(PasswordGeneratorService);
-  public i18nService = inject(I18nService);
   private snackBar = inject(MatSnackBar);
 
-  availableGoals$: Observable<Goal[]>;
+  statusOptions: StatusOption[] = [
+    { value: 'active', label: 'Activo' },
+    { value: 'pending', label: 'Pendiente de verificación' },
+    { value: 'verified', label: 'Verificado' },
+    { value: 'inactive', label: 'Inactivo' },
+    { value: 'suspended', label: 'Suspendido' }
+  ];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: { institutionId: string }) {
-    // Inicializar el observable de objetivos filtrados por idioma actual
-    this.availableGoals$ = this.i18nService.language$.pipe(
-      startWith(this.i18nService.getCurrentLanguage()),
-      switchMap((currentLanguage: Language) => 
-        this.goalService.getAllGoals().pipe(
-          map((goals: Goal[]) => goals.filter(goal => goal.lang === currentLanguage))
-        )
-      )
-    );
-    
     // Establecer el institution_id automáticamente
-    this.studentForm.patchValue({
+    this.tutorForm.patchValue({
       institution_id: this.data.institutionId
     });
 
@@ -68,20 +64,24 @@ export class AddStudentDialogComponent {
     this.setupEmailValidation();
   }
 
-  studentForm: FormGroup = this.fb.group({
+  tutorForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email], [this.emailExistsValidator.bind(this)]],
     full_name: ['', [Validators.required, Validators.minLength(2)]],
+    birth_date: ['', Validators.required],
+    country: ['', Validators.required],
+    photo_url: [''],
+    max_hours_per_week: [20, [Validators.required, Validators.min(1), Validators.max(168)]],
+    bio: ['', [Validators.required, Validators.minLength(10)]],
+    birth_language: ['', Validators.required],
+    experience_level: [1, [Validators.required, Validators.min(0)]],
+    hourly_rate: [15, [Validators.required, Validators.min(1)]],
     institution_id: ['', Validators.required],
-    level_cefr: ['A1'],
-    target_language: [''],
-    country: [''],
-    birth_date: [''],
-    enrollment_date: [new Date()],
-    goals: [[]] // Array de IDs de objetivos seleccionados
+    status: ['verified', [Validators.required]], // Estado por defecto: verificado (institución lo crea)
+    rating: [0, [Validators.min(0), Validators.max(5)]] // Calificación inicial: 0
   });
 
   private setupEmailValidation(): void {
-    const emailControl = this.studentForm.get('email');
+    const emailControl = this.tutorForm.get('email');
     if (emailControl) {
       emailControl.valueChanges.pipe(
         debounceTime(500),
@@ -118,57 +118,24 @@ export class AddStudentDialogComponent {
     return emailRegex.test(email);
   }
 
-  languages = [
-    { code: 'es', name: 'Español' },
-    { code: 'en', name: 'Inglés' },
-    { code: 'fr', name: 'Francés' },
-    { code: 'de', name: 'Alemán' },
-    { code: 'it', name: 'Italiano' },
-    { code: 'pt', name: 'Portugués' },
-    { code: 'zh', name: 'Chino' },
-    { code: 'ja', name: 'Japonés' },
-    { code: 'ar', name: 'Árabe' },
-    { code: 'ru', name: 'Ruso' }
-  ];
-
-  cefrLevels = [
-    'A1', 'A2', 'B1', 'B2', 'C1', 'C2'
-  ];
-
   countries = [
-    'Argentina', 'Bolivia', 'Brasil', 'Chile', 'Colombia', 'Costa Rica',
-    'Cuba', 'Ecuador', 'El Salvador', 'España', 'Guatemala', 'Honduras',
-    'México', 'Nicaragua', 'Panamá', 'Paraguay', 'Perú', 'Puerto Rico',
-    'República Dominicana', 'Uruguay', 'Venezuela'
+    'Bolivia', 'Ecuador', 'Perú', 'España'
   ];
 
-  // Función para comparar objetivos en el mat-select multiple
-  compareGoals(goal1: Goal, goal2: Goal): boolean {
-    return goal1 && goal2 ? goal1.name === goal2.name && goal1.lang === goal2.lang : goal1 === goal2;
-  }
-
-  // Función trackBy para optimizar el rendering de la lista
-  trackByGoal(index: number, goal: Goal): string {
-    return `${goal.name}-${goal.lang}`;
-  }
-
-  // Función para alternar idioma y limpiar objetivos seleccionados
-  toggleLanguageAndClearGoals(): void {
-    // Limpiar objetivos seleccionados antes de cambiar idioma
-    this.studentForm.patchValue({ goals: [] });
-    
-    // Cambiar idioma
-    this.i18nService.toggleLanguage();
-  }
+  languages = [
+    'Español', 'Inglés', 'Francés', 'Alemán', 'Chino',
+    'Japonés', 'Portugués', 'Otro(s)'
+  ];
 
   onCancel(): void {
     this.dialogRef.close();
   }
 
   async onSubmit(): Promise<void> {
-    if (this.studentForm.valid) {
+    if (this.tutorForm.valid) {
       try {
-        const formValue = this.studentForm.value;
+        const formValue = this.tutorForm.value;
+        console.log('Form Value:', formValue);
         
         // Generar contraseña temporal
         const temporaryPassword = this.passwordGenerator.generateTemporaryPassword();
@@ -177,52 +144,57 @@ export class AddStudentDialogComponent {
         // Crear usuario con contraseña temporal
         const userId = await this.userService.createEmptyUser(
           formValue.email, 
-          'student' as UserRole, 
+          ['tutor' as UserRole], 
           temporaryPassword
         );
-        
-        const studentData: Student = {
+        console.log('Created user ID:', userId);
+
+        // Crear el perfil de tutor con el user_id generado
+        const tutorData: Tutor = {
           user_id: userId,
           full_name: formValue.full_name,
+          birth_date: new Date(formValue.birth_date),
+          country: formValue.country,
+          photo_url: formValue.photo_url,
+          max_hours_per_week: formValue.max_hours_per_week,
+          bio: formValue.bio,
+          birth_language: formValue.birth_language,
+          experience_level: formValue.experience_level,
+          hourly_rate: formValue.hourly_rate,
           institution_id: formValue.institution_id,
-          goals: formValue.goals || [], // Los objetivos ya vienen como array desde el selector múltiple
-          level_cefr: formValue.level_cefr || 'A1',
-          target_language: formValue.target_language || '',
-          country: formValue.country || '',
-          birth_date: formValue.birth_date ? new Date(formValue.birth_date) : undefined,
-          enrollment_date: formValue.enrollment_date ? new Date(formValue.enrollment_date) : new Date()
+          status: formValue.status,
+          rating: formValue.rating
         };
-        console.log(studentData)
-        
-        await this.studentService.createStudent(studentData);
+
+        await this.tutorService.createTutor(tutorData);
         
         // Enviar email de bienvenida con credenciales
         try {
-          const emailData: StudentWelcomeEmailData = {
-            studentName: formValue.full_name,
+          const emailData: WelcomeEmailData = {
+            tutorName: formValue.full_name,
             email: formValue.email,
             temporaryPassword: temporaryPassword,
             institutionName: 'My Tutors', // TODO: Obtener nombre real de la institución
             loginUrl: `${window.location.origin}/login`
           };
           
-          await this.emailService.sendStudentWelcomeEmail(emailData);
+          await this.emailService.sendTutorWelcomeEmail(emailData);
           console.log('Welcome email sent successfully');
         } catch (emailError) {
           console.error('Error sending welcome email:', emailError);
-          // No fallar la creación del estudiante si el email falla
+          // No fallar la creación del tutor si el email falla
         }
         
         this.snackBar.open(
-          `Estudiante creado exitosamente. Se ha enviado un email a ${formValue.email} con las credenciales de acceso.`, 
+          `Tutor creado exitosamente. Se ha enviado un email a ${formValue.email} con las credenciales de acceso.`, 
           'Cerrar', 
           { duration: 6000 }
         );
         
         this.dialogRef.close(true);
       } catch (error) {
-        console.error('Error creating student:', error);
-        this.snackBar.open('Error al crear el estudiante. Intenta de nuevo.', 'Cerrar', {
+        console.error('Error creating tutor:', error);
+        this.snackBar.open('Error al crear el tutor. Intenta de nuevo.', 'Cerrar', {
           duration: 3000
         });
       }
@@ -232,8 +204,8 @@ export class AddStudentDialogComponent {
   }
 
   private markFormGroupTouched(): void {
-    Object.keys(this.studentForm.controls).forEach(key => {
-      const control = this.studentForm.get(key);
+    Object.keys(this.tutorForm.controls).forEach(key => {
+      const control = this.tutorForm.get(key);
       if (control) {
         control.markAsTouched();
       }
@@ -241,7 +213,7 @@ export class AddStudentDialogComponent {
   }
 
   getErrorMessage(fieldName: string): string {
-    const control = this.studentForm.get(fieldName);
+    const control = this.tutorForm.get(fieldName);
     if (control?.hasError('required')) {
       return 'Este campo es requerido';
     }
@@ -249,10 +221,16 @@ export class AddStudentDialogComponent {
       return 'El email no tiene un formato válido';
     }
     if (control?.hasError('emailExists')) {
-      return 'Este email ya está registrado. El estudiante ya existe.';
+      return 'Este email ya está registrado. El tutor ya existe.';
     }
     if (control?.hasError('minlength')) {
       return `Mínimo ${control.getError('minlength')?.requiredLength} caracteres`;
+    }
+    if (control?.hasError('min')) {
+      return `Valor mínimo: ${control.getError('min')?.min}`;
+    }
+    if (control?.hasError('max')) {
+      return `Valor máximo: ${control.getError('max')?.max}`;
     }
     return '';
   }

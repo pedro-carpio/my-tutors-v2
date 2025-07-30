@@ -1,5 +1,6 @@
 // Export all services for easy importing
 export * from './user.service';
+export * from './multi-role.service'; // Nuevo servicio de múltiples roles
 export * from './tutor.service';
 export * from './student.service';
 export * from './institution.service';

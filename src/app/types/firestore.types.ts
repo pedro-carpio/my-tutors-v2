@@ -10,7 +10,8 @@ export interface User {
   id: string;
   email: string;
   password_hash?: string;
-  role: UserRole;
+  roles: UserRole[]; // OBLIGATORIO: múltiples roles del usuario (al menos uno)
+  primary_role?: UserRole; // Rol principal para navegación por defecto
   status?: UserStatus; // Estado del usuario - ✅ Útil para admin panel y gestión
   created_at: FieldValue | Timestamp;
   updated_at?: FieldValue | Timestamp; // ✅ Implementado en servicios para auditoría

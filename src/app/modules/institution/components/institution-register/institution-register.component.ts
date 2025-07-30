@@ -177,7 +177,7 @@ export class InstitutionRegisterComponent implements OnInit {
               panelClass: ['success-snackbar']
             }
           );
-          
+          // TODO: Navigate to pending verification page
           this.router.navigate(['/institution/pending-verification']);
         } else {
           // Regular email/password registration
@@ -210,7 +210,7 @@ export class InstitutionRegisterComponent implements OnInit {
                 panelClass: ['success-snackbar']
               }
             );
-            
+            // TODO: Navigate to pending verification page
             this.router.navigate(['/institution/pending-verification']);
           } else {
             this.snackBar.open(

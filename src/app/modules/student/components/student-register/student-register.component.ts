@@ -229,7 +229,7 @@ export class StudentRegisterComponent {
             });
             
             // Navigate based on role
-            this.router.navigate(['/student/dashboard']);
+            this.router.navigate(['/dashboard']);
           } else {
             throw new Error(result.error);
           }
@@ -254,7 +254,7 @@ export class StudentRegisterComponent {
             });
             
             // Navigate to student dashboard
-            this.router.navigate(['/student/dashboard']);
+            this.router.navigate(['/dashboard']);
           } else {
             throw new Error(result.error);
           }

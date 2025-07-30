@@ -80,7 +80,7 @@ export class I18nService {
 
         // Navegación
         navigation: {
-          dashboard: 'Panel Principal',
+          dashboard: 'General',
           home: 'Inicio',
           student: 'Estudiante',
           myClasses: 'Mis Clases',
@@ -93,6 +93,7 @@ export class I18nService {
           manageStudents: 'Mis estudiantes',
           admin: 'Administración',
           userManagement: 'Gestión de Usuarios',
+          roleManagement: 'Gestión de Roles',
           systemSettings: 'Configuración del Sistema'
         },
         
@@ -398,7 +399,17 @@ export class I18nService {
           edit: 'Editar',
           close: 'Cerrar',
           confirm: 'Confirmar',
-          loading: 'Cargando...'
+          loading: 'Cargando...',
+          switchRole: 'Cambiar rol',
+          currentRole: 'Rol actual'
+        },
+
+        // Roles
+        roles: {
+          student: 'Estudiante',
+          tutor: 'Tutor',
+          institution: 'Institución',
+          admin: 'Administrador'
         }
       },
       
@@ -430,6 +441,7 @@ export class I18nService {
           manageStudents: 'My students',
           admin: 'Administration',
           userManagement: 'User Management',
+          roleManagement: 'Role Management',
           systemSettings: 'System Settings'
         },
         
@@ -735,7 +747,17 @@ export class I18nService {
           edit: 'Edit',
           close: 'Close',
           confirm: 'Confirm',
-          loading: 'Loading...'
+          loading: 'Loading...',
+          switchRole: 'Switch role',
+          currentRole: 'Current role'
+        },
+
+        // Roles
+        roles: {
+          student: 'Student',
+          tutor: 'Tutor',
+          institution: 'Institution',
+          admin: 'Administrator'
         }
       }
     };

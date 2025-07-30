@@ -7,6 +7,7 @@ import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSelectModule } from '@angular/material/select';
 import { Observable, Subject, combineLatest } from 'rxjs';
 import { map, shareReplay, takeUntil } from 'rxjs/operators';
 import { Navigation } from '../types/navigation';
@@ -14,6 +15,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { I18nService } from '../../services/i18n.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { UserService } from '../../services/user.service';
+import { MultiRoleService } from '../../services/multi-role.service';
 import { Auth, user } from '@angular/fire/auth';
 import { UserRole } from '../../types/firestore.types';
 
@@ -28,6 +30,7 @@ import { UserRole } from '../../types/firestore.types';
     MatListModule,
     MatIconModule,
     MatTooltipModule,
+    MatSelectModule,
     AsyncPipe,
     RouterLink,
     RouterLinkActive,
@@ -39,11 +42,13 @@ export class LayoutComponent implements OnInit, OnDestroy {
   private breakpointObserver = inject(BreakpointObserver);
   private i18nService = inject(I18nService);
   private userService = inject(UserService);
+  private multiRoleService = inject(MultiRoleService);
   private auth = inject(Auth);
 
   @ViewChild('drawer') drawer!: MatSidenav;
 
-  currentUserRole: UserRole | null = null;
+  currentUserRoles: UserRole[] = [];
+  activeRole: UserRole | null = null;
   filteredMenu: Navigation[] = [];
   
   // Flag para desarrollo - mostrar menú incluso sin autenticación
@@ -105,6 +110,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
           matIcon: 'people',
           roles: ['tutor']
         },
+        // TODO: Remove this in the languages service
         {
           title: 'navigation.availability',
           translationKey: 'navigation.availability',
@@ -154,6 +160,14 @@ export class LayoutComponent implements OnInit, OnDestroy {
           roles: ['admin']
         },
         {
+          title: 'navigation.roleManagement',
+          translationKey: 'navigation.roleManagement',
+          type: 'item',
+          url: '/admin/roles',
+          matIcon: 'supervisor_account',
+          roles: ['admin']
+        },
+        {
           title: 'navigation.systemSettings',
           translationKey: 'navigation.systemSettings',
           type: 'item',
@@ -172,47 +186,23 @@ export class LayoutComponent implements OnInit, OnDestroy {
     );
 
   ngOnInit(): void {
-    // Obtener el rol del usuario actual y filtrar el menú
-    user(this.auth).pipe(
+    // Inicializar el servicio de múltiples roles
+    this.multiRoleService.initializeFromStorage();
+
+    // Suscribirse a los roles del usuario
+    this.multiRoleService.userRoles$.pipe(
       takeUntil(this.destroy$)
-    ).subscribe(authUser => {
-      console.log('Auth user:', authUser);
-      if (authUser) {
-        console.log('Fetching user data for UID:', authUser.uid);
-        this.userService.getUser(authUser.uid).pipe(
-          takeUntil(this.destroy$)
-        ).subscribe({
-          next: (userData) => {
-            console.log('User data from Firestore:', userData);
-            if (userData) {
-              this.currentUserRole = userData.role;
-              console.log('User role set to:', this.currentUserRole);
-            } else {
-              console.warn('User document not found in Firestore for UID:', authUser.uid);
-              // Crear usuario con rol por defecto si no existe
-              return;
-            }
-            this.filterMenuByRole();
-          },
-          error: (error) => {
-            console.error('Error fetching user data:', error);
-            // En caso de error, asignar rol por defecto
-            this.currentUserRole = 'student';
-            this.filterMenuByRole();
-          }
-        });
-      } else {
-        console.log('No authenticated user found');
-        this.currentUserRole = null;
-        this.filteredMenu = [];
-        
-        // Para desarrollo: mostrar menú con rol de estudiante si no hay autenticación
-        if (this.showMenuForDevelopment) {
-          console.log('Development mode: showing menu without authentication');
-          this.currentUserRole = 'student';
-          this.filterMenuByRole();
-        }
-      }
+    ).subscribe(roles => {
+      this.currentUserRoles = roles;
+      this.filterMenuByRoles();
+    });
+
+    // Suscribirse al rol activo
+    this.multiRoleService.activeRole$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(activeRole => {
+      this.activeRole = activeRole;
+      this.filterMenuByRoles();
     });
 
     // Reaccionar a cambios de idioma
@@ -228,21 +218,22 @@ export class LayoutComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // Filtrar menú basado en el rol del usuario
-  private filterMenuByRole(): void {
-    console.log('Filtering menu for role:', this.currentUserRole);
+  // Filtrar menú basado en los roles del usuario
+  private filterMenuByRoles(): void {
+    console.log('Filtering menu for roles:', this.currentUserRoles, 'Active role:', this.activeRole);
     
-    if (!this.currentUserRole) {
-      console.log('No user role found, hiding menu');
+    if (!this.currentUserRoles.length) {
+      console.log('No user roles found, hiding menu');
       this.filteredMenu = [];
       return;
     }
 
+    // Mostrar elementos basados en TODOS los roles del usuario, no solo el activo
     this.filteredMenu = this.fullMenu
-      .filter(item => this.hasAccess(item, this.currentUserRole))
+      .filter(item => this.hasAccessToAnyRole(item, this.currentUserRoles))
       .map(item => ({
         ...item,
-        children: item.children?.filter(child => this.hasAccess(child, this.currentUserRole))
+        children: item.children?.filter(child => this.hasAccessToAnyRole(child, this.currentUserRoles))
       }))
       .filter(item => item.type === 'item' || (item.children && item.children.length > 0));
     
@@ -250,12 +241,22 @@ export class LayoutComponent implements OnInit, OnDestroy {
     console.log('Number of menu items:', this.filteredMenu.length);
   }
 
-  // Verificar si el usuario tiene acceso al item
-  private hasAccess(item: Navigation, userRole: UserRole | null): boolean {
-    if (!userRole || !item.roles) {
-      return true; // Si no hay roles definidos, permitir acceso
+  // Verificar si el usuario tiene acceso basado en cualquiera de sus roles
+  private hasAccessToAnyRole(item: Navigation, userRoles: UserRole[]): boolean {
+    if (!userRoles.length || !item.roles) {
+      return true;
     }
-    return item.roles.includes(userRole);
+    return item.roles.some(role => userRoles.includes(role));
+  }
+
+  // Método para cambiar de rol activo
+  switchRole(role: UserRole): void {
+    this.multiRoleService.switchRole(role);
+  }
+
+  // Getter para verificar si el usuario tiene múltiples roles
+  get hasMultipleRoles(): boolean {
+    return this.currentUserRoles.length > 1;
   }
 
   // Obtener el título traducido del item

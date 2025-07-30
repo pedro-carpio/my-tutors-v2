@@ -65,6 +65,38 @@ export const routes: Routes = [
     loadComponent: () => import('./SharedModule/views/dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [AuthGuard]
   },
+  {
+    path: 'configuration',
+    loadComponent: () => import('./SharedModule/views/configuration/configuration.component').then(m => m.ConfigurationComponent),
+    canActivate: [AuthGuard]
+  },
+  // TODO: Implementar componente de búsqueda de tutores
+  {
+    path: 'tutors',
+    loadComponent: () => import('./SharedModule/views/tutors/tutors.component').then(m => m.TutorsComponent),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['student', 'institution'] } // Múltiples roles permitidos
+  },
+  // Perfil - permitido para todos los roles autenticados
+  {
+    path: 'profile',
+    loadComponent: () => import('./SharedModule/views/profile/profile.component').then(m => m.ProfileComponent),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['student', 'tutor', 'institution', 'admin'] } // Todos los roles
+  },
+  {
+    path: 'calendar',
+    loadComponent: () => import('./SharedModule/views/calendar/calendar.component').then(m => m.LayoutCalendarComponent),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['student', 'tutor', 'institution', 'admin'] } // Todos los roles
+  },
+  // Convocatorias de trabajo - permitido para tutores y estudiantes
+  {
+    path: 'job-postings',
+    loadComponent: () => import('./SharedModule/views/job-postings/job-postings.component').then(m => m.JobPostingsComponent),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['tutor', 'institution'] } // Múltiples roles
+  },
 
   // Rutas específicas por rol - Estudiantes
   {
@@ -72,19 +104,12 @@ export const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: { role: 'student' },
     children: [
+      // TODO: Implementar componente para agregar tutores
       {
-        path: 'dashboard',
-        loadComponent: () => import('./SharedModule/views/chat/chat.component').then(m => m.ChatComponent)
+        path: 'tutors',
+        loadComponent: () => import('./modules/student/views/tutors/tutors.component').then(m => m.TutorsComponent)
       },
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      },
-      {
-        path: 'calendar',
-        loadComponent: () => import('./SharedModule/views/calendar/calendar.component').then(m => m.LayoutCalendarComponent),
-      },
+      
     ]
   },
 
@@ -94,27 +119,12 @@ export const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: { role: 'tutor' },
     children: [
+      // TODO: Implementar componente para agregar tutores
       {
-        path: 'dashboard',
-        loadComponent: () => import('./SharedModule/views/chat/chat.component').then(m => m.ChatComponent)
+        path: 'students',
+        loadComponent: () => import('./modules/student/views/tutors/tutors.component').then(m => m.TutorsComponent)
       },
-      {
-        path: 'pending-verification',
-        loadComponent: () => import('./SharedModule/views/chat/chat.component').then(m => m.ChatComponent)
-      },
-      {
-        path: 'calendar',
-        loadComponent: () => import('./SharedModule/views/calendar/calendar.component').then(m => m.LayoutCalendarComponent),
-      },
-      {
-        path: 'availability',
-        loadComponent: () => import('./modules/tutor/components/availability/availability.component').then(m => m.AvailabilityComponent)
-      },
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      }
+      
     ]
   },
 
@@ -124,29 +134,54 @@ export const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: { role: 'institution' },
     children: [
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./SharedModule/views/chat/chat.component').then(m => m.ChatComponent)
-      },
-      {
-        path: 'pending-verification',
-        loadComponent: () => import('./SharedModule/views/chat/chat.component').then(m => m.ChatComponent)
-      },
-      {
-        path: 'calendar',
-        loadComponent: () => import('./SharedModule/views/calendar/calendar.component').then(m => m.LayoutCalendarComponent),
-      },
-      {
-        path: 'students',
-        loadComponent: () => import('./modules/institution/components/students/students.component').then(m => m.StudentsComponent)
-      },
+      // TODO: Implementar componente para agregar tutores
       {
         path: 'tutors',
-        loadComponent: () => import('./modules/institution/components/tutors/tutors.component').then(m => m.TutorsComponent)
+        loadComponent: () => import('./modules/institution/views/tutors/tutors.component').then(m => m.TutorsComponent)
+      },
+      // TODO: Implementar componente para agregar estudiantes
+      {
+        path: 'students',
+        loadComponent: () => import('./modules/institution/views/students/students.component').then(m => m.StudentsComponent)
       },
       {
         path: '',
         redirectTo: 'dashboard',
+        pathMatch: 'full'
+      }
+    ]
+  },
+
+  // Rutas específicas por rol - Administradores
+  // TODO: Implementar módulo completo de administración
+  {
+    path: 'admin',
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: 'admin' },
+    children: [
+      // TODO: Implementar componente de overview del sistema
+      {
+        path: 'overview',
+        loadComponent: () => import('./modules/admin/views/system-overview/system-overview.component').then(m => m.SystemOverviewComponent)
+      },
+      // TODO: Implementar componente de gestión de usuarios
+      {
+        path: 'users',
+        loadComponent: () => import('./modules/admin/views/user-management/user-management.component').then(m => m.UserManagementComponent)
+      },
+      // Nuevo: Gestión de roles múltiples
+      {
+        path: 'roles',
+        loadComponent: () => import('./SharedModule/components/role-management/role-management.component').then(m => m.RoleManagementComponent)
+      },
+      // TODO: Implementar componente de configuración del sistema
+      {
+        path: 'settings',
+        loadComponent: () => import('./modules/admin/views/system-settings/system-settings.component').then(m => m.SystemSettingsComponent)
+      },
+      {
+        path: '',
+        redirectTo: 'overview',
         pathMatch: 'full'
       }
     ]

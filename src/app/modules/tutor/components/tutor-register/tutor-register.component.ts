@@ -188,7 +188,7 @@ export class TutorRegisterComponent implements OnInit {
               panelClass: ['success-snackbar']
             }
           );
-          
+          //TODO: Redirect to pending verification page
           this.router.navigate(['/tutor/pending-verification']);
         } else {
           // Regular email/password registration
@@ -226,7 +226,7 @@ export class TutorRegisterComponent implements OnInit {
                 panelClass: ['success-snackbar']
               }
             );
-            
+            //TODO: Redirect to pending verification page
             this.router.navigate(['/tutor/pending-verification']);
           } else {
             this.snackBar.open(

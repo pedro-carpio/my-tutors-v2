@@ -85,18 +85,19 @@ export class SessionService {
           
           if (userData) {
             // Navigate based on role
-            this.navigateBasedOnRole(userData.role);
+            //TODO: Remove this
+            this.router.navigate(['/dashboard']);
           } else {
             // New Google user - create basic profile and redirect to role selection
             const newUser: User = {
               id: result.user.uid,
               email: result.user.email!,
-              role: 'student' as UserRole,
+              roles: ['student' as UserRole],
               created_at: serverTimestamp()
             };
             
             await this.userService.createUser(newUser);
-            this.router.navigate(['/student/dashboard']);
+            this.router.navigate(['/dashboard']);
           }
         }
         
@@ -135,19 +136,18 @@ export class SessionService {
           const userData = users?.[0];
           
           if (userData) {
-            // Navigate based on role
-            this.navigateBasedOnRole(userData.role);
+            this.router.navigate(['/dashboard']);
           } else {
             // New Google user - create basic profile and redirect to role selection
             const newUser: User = {
               id: result.user.uid,
               email: result.user.email!,
-              role: 'student' as UserRole,
+              roles: ['student' as UserRole],
               created_at: serverTimestamp()
             };
             
             await this.userService.createUser(newUser);
-            this.router.navigate(['/student/dashboard']);
+            this.router.navigate(['/dashboard']);
           }
         }
         
@@ -179,7 +179,7 @@ export class SessionService {
         const userProfile: User = {
           id: result.user.uid,
           email: result.user.email!,
-          role: role,
+          roles: [role],
           created_at: serverTimestamp()
         };
 
@@ -217,6 +217,7 @@ export class SessionService {
   }
 
   private navigateBasedOnRole(role: UserRole): void {
+    // TODO: Remove this
     switch (role) {
       case 'student':
         this.router.navigate(['/student/dashboard']);
@@ -248,7 +249,8 @@ export class SessionService {
       });
 
       // Navigate to onboarding
-      this.router.navigate(['/user/onboarding'], {
+      // TODO: Implement Onboarding component
+      this.router.navigate(['/onboarding'], {
         queryParams: { role: registrationData.role }
       });
 
@@ -272,7 +274,7 @@ export class SessionService {
         const userProfile: User = {
           id: userCredential.user.uid,
           email: email,
-          role: 'tutor' as UserRole,
+          roles: ['tutor' as UserRole],
           created_at: serverTimestamp()
         };
 
@@ -330,11 +332,7 @@ export class SessionService {
       // Get user role from Firestore to navigate correctly
       const userData = await this.userService.getUserByEmailAsync(email);
       
-      if (userData) {
-        this.navigateBasedOnRole(userData.role);
-      } else {
-        this.router.navigate(['/home']);
-      }
+      this.router.navigate(['/dashboard']);
 
       return userCredential.user;
     } catch (error: any) {
@@ -405,7 +403,7 @@ export class SessionService {
         const userProfile: User = {
           id: userCredential.user.uid,
           email: email,
-          role: 'student' as UserRole,
+          roles: ['student' as UserRole],
           created_at: serverTimestamp()
         };
 
@@ -452,7 +450,7 @@ export class SessionService {
         const userProfile: User = {
           id: userCredential.user.uid,
           email: email,
-          role: 'institution' as UserRole,
+          roles: ['institution' as UserRole],
           created_at: serverTimestamp()
         };
 
@@ -500,8 +498,7 @@ export class SessionService {
           id: userCredential.user.uid
         });
 
-        // Navigate based on role
-        this.navigateBasedOnRole(userData.role);
+        this.router.navigate(['/dashboard']);
         
         return { success: true };
       } else {
@@ -518,7 +515,7 @@ export class SessionService {
           const userData = users?.[0];
           
           if (userData) {
-            this.navigateBasedOnRole(userData.role);
+            this.router.navigate(['/dashboard']);
             return { success: true };
           }
         } catch (signInError) {
@@ -567,8 +564,7 @@ export class SessionService {
           });
         }
 
-        // Navigate based on role
-        this.navigateBasedOnRole(userData.role);
+        this.router.navigate(['/dashboard']);
         
         return { success: true };
       } else {

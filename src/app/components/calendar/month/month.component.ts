@@ -95,7 +95,7 @@ export class MonthComponent {
   
   dayClicked(day: DayCell) {
     if (day.date && day.active) {
-      this.router.navigate(['/tutor/calendar', day.date.toISOString().slice(0, 10)]);
+      this.router.navigate(['/calendar', day.date.toISOString().slice(0, 10)]);
     }
   }
 }

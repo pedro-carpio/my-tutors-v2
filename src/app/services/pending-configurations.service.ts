@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, combineLatest, map, switchMap, of } from 'rxjs';
 import { UserRole, User } from '../types/firestore.types';
-import { UserService, TutorService, StudentService, InstitutionService } from './index';
+import { UserService, TutorService, StudentService, InstitutionService, MultiRoleService } from './index';
 import { Auth, user, User as FirebaseUser } from '@angular/fire/auth';
 
 export interface PendingConfiguration {
@@ -21,6 +21,7 @@ export interface PendingConfiguration {
 export class PendingConfigurationsService {
   private auth = inject(Auth);
   private userService = inject(UserService);
+  private multiRoleService = inject(MultiRoleService);
   private tutorService = inject(TutorService);
   private studentService = inject(StudentService);
   private institutionService = inject(InstitutionService);
@@ -34,7 +35,7 @@ export class PendingConfigurationsService {
         description: 'Completa tu información personal para una mejor experiencia',
         icon: 'account_circle',
         priority: 'high',
-        action: '/student/profile',
+        action: '/profile',
         completed: false,
         translationKey: 'dashboard.pendingConfig.completeProfile'
       },
@@ -44,7 +45,7 @@ export class PendingConfigurationsService {
         description: 'Define tus metas y objetivos de aprendizaje',
         icon: 'flag',
         priority: 'medium',
-        action: '/student/goals',
+        action: '/configuration',
         completed: false,
         translationKey: 'dashboard.pendingConfig.setLearningGoals'
       },
@@ -64,7 +65,7 @@ export class PendingConfigurationsService {
         description: 'Agenda tu primera clase con un tutor',
         icon: 'event',
         priority: 'high',
-        action: '/student/schedule',
+        action: '/calendar',
         completed: false,
         translationKey: 'dashboard.pendingConfig.scheduleFirstClass'
       }
@@ -76,7 +77,7 @@ export class PendingConfigurationsService {
         description: 'Completa tu información profesional y experiencia',
         icon: 'account_circle',
         priority: 'high',
-        action: '/tutor/profile',
+        action: '/profile',
         completed: false,
         translationKey: 'dashboard.pendingConfig.completeProfile'
       },
@@ -86,7 +87,7 @@ export class PendingConfigurationsService {
         description: 'Establece tu horario de disponibilidad para clases',
         icon: 'schedule',
         priority: 'high',
-        action: '/tutor/availability',
+        action: '/configuration',
         completed: false,
         translationKey: 'dashboard.pendingConfig.setAvailability'
       },
@@ -96,7 +97,7 @@ export class PendingConfigurationsService {
         description: 'Define tu precio por hora de enseñanza',
         icon: 'attach_money',
         priority: 'high',
-        action: '/tutor/rates',
+        action: '/configuration',
         completed: false,
         translationKey: 'dashboard.pendingConfig.setHourlyRate'
       },
@@ -106,7 +107,7 @@ export class PendingConfigurationsService {
         description: 'Revisa las convocatorias de clases disponibles',
         icon: 'work',
         priority: 'medium',
-        action: '/tutor/job-postings',
+        action: '/job-postings',
         completed: false,
         translationKey: 'dashboard.pendingConfig.viewJobPostings'
       },
@@ -116,7 +117,7 @@ export class PendingConfigurationsService {
         description: 'Agrega tus certificaciones y títulos académicos',
         icon: 'school',
         priority: 'medium',
-        action: '/tutor/certifications',
+        action: '/profile',
         completed: false,
         translationKey: 'dashboard.pendingConfig.uploadCertifications'
       }
@@ -128,7 +129,7 @@ export class PendingConfigurationsService {
         description: 'Completa la información de tu institución',
         icon: 'business',
         priority: 'high',
-        action: '/institution/profile',
+        action: '/profile',
         completed: false,
         translationKey: 'dashboard.pendingConfig.completeInstitutionProfile'
       },
@@ -138,7 +139,7 @@ export class PendingConfigurationsService {
         description: 'Invita y gestiona tutores para tu institución',
         icon: 'person_add',
         priority: 'high',
-        action: '/institution/tutors/add',
+        action: '/institution/tutors',
         completed: false,
         translationKey: 'dashboard.pendingConfig.addTutors'
       },
@@ -148,7 +149,7 @@ export class PendingConfigurationsService {
         description: 'Registra estudiantes en tu institución',
         icon: 'group_add',
         priority: 'high',
-        action: '/institution/students/add',
+        action: '/institution/students',
         completed: false,
         translationKey: 'dashboard.pendingConfig.addStudents'
       },
@@ -158,7 +159,7 @@ export class PendingConfigurationsService {
         description: 'Crea convocatorias para clases y cursos',
         icon: 'campaign',
         priority: 'medium',
-        action: '/institution/job-postings/create',
+        action: '/job-postings',
         completed: false,
         translationKey: 'dashboard.pendingConfig.createJobPosting'
       },
@@ -168,7 +169,7 @@ export class PendingConfigurationsService {
         description: 'Establece los idiomas que ofrece tu institución',
         icon: 'language',
         priority: 'medium',
-        action: '/institution/languages',
+        action: '/configuration',
         completed: false,
         translationKey: 'dashboard.pendingConfig.configureLanguages'
       }
@@ -209,21 +210,59 @@ export class PendingConfigurationsService {
 
   /**
    * Obtiene las configuraciones pendientes para el usuario actual
+   * Ahora considera todos los roles del usuario, no solo uno
    */
   getPendingConfigurations(): Observable<PendingConfiguration[]> {
     return user(this.auth).pipe(
       switchMap((authUser: FirebaseUser | null) => {
         if (!authUser) return of([]);
         
-        return this.userService.getUser(authUser.uid).pipe(
-          switchMap((userData: User | undefined) => {
-            if (!userData) return of([]);
+        return this.multiRoleService.userRoles$.pipe(
+          switchMap((roles: UserRole[]) => {
+            if (roles.length === 0) return of([]);
             
-            const configurations = this.baseConfigurations[userData.role] || [];
+            // Combinar configuraciones de todos los roles
+            const allConfigurations: PendingConfiguration[] = [];
             
-            // Evaluar el estado de cada configuración basado en los datos del usuario
-            return this.evaluateConfigurations(configurations, userData.role, authUser.uid);
+            roles.forEach(role => {
+              const roleConfigurations = this.baseConfigurations[role] || [];
+              allConfigurations.push(...roleConfigurations);
+            });
+
+            // Eliminar duplicados por ID
+            const uniqueConfigurations = allConfigurations.filter((config, index, self) => 
+              index === self.findIndex(c => c.id === config.id)
+            );
+
+            return this.evaluateMultiRoleConfigurations(uniqueConfigurations, roles, authUser.uid);
           })
+        );
+      })
+    );
+  }
+
+  /**
+   * Evalúa configuraciones para múltiples roles
+   */
+  private evaluateMultiRoleConfigurations(
+    configurations: PendingConfiguration[], 
+    roles: UserRole[], 
+    userId: string
+  ): Observable<PendingConfiguration[]> {
+    // Crear observables para cada rol
+    const roleEvaluations = roles.map(role => {
+      const roleConfigs = configurations.filter(config => 
+        this.baseConfigurations[role]?.some(baseConfig => baseConfig.id === config.id)
+      );
+      return this.evaluateConfigurations(roleConfigs, role, userId);
+    });
+
+    return combineLatest(roleEvaluations).pipe(
+      map(evaluatedConfigLists => {
+        // Combinar y eliminar duplicados
+        const combined = evaluatedConfigLists.flat();
+        return combined.filter((config, index, self) => 
+          index === self.findIndex(c => c.id === config.id)
         );
       })
     );

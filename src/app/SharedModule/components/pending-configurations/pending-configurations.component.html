@@ -9,7 +9,7 @@
     </mat-card-subtitle>
   </mat-card-header>
 
-  <mat-card-content>
+  <mat-card-content class="card-content">
     <!-- Progress Section -->
     <div class="progress-section" *ngIf="totalCount > 0">
       <div class="progress-info">
@@ -26,57 +26,60 @@
       </mat-progress-bar>
     </div>
 
-    <!-- Pending Configurations -->
-    <div class="configurations-section" *ngIf="pendingConfigurations.length > 0">
-      <h4 class="section-title">{{ translate('dashboard.pendingConfig.pending') }}</h4>
-      <div class="configuration-list">
-        <div 
-          *ngFor="let config of pendingConfigurations" 
-          class="configuration-item pending"
-          (click)="onConfigurationClick(config)">
-          
-          <div class="config-icon-container">
-            <mat-icon class="config-icon">{{ config.icon }}</mat-icon>
-            <mat-icon 
-              class="priority-indicator" 
-              [ngClass]="'priority-' + config.priority">
-              {{ getPriorityIcon(config.priority) }}
-            </mat-icon>
-          </div>
-          
-          <div class="config-content">
-            <div class="config-title">{{ translate(config.translationKey + '.title') }}</div>
-            <div class="config-description">{{ translate(config.translationKey + '.description') }}</div>
-          </div>
-          
-          <div class="config-actions">
-            <mat-chip 
-              [color]="getPriorityColor(config.priority)" 
-              class="priority-chip">
-              {{ translate('dashboard.pendingConfig.priority.' + config.priority) }}
-            </mat-chip>
-            <mat-icon class="action-arrow">chevron_right</mat-icon>
+    <!-- Scrollable configurations container -->
+    <div class="configurations-container">
+      <!-- Pending Configurations -->
+      <div class="configurations-section" *ngIf="pendingConfigurations.length > 0">
+        <h4 class="section-title">{{ translate('dashboard.pendingConfig.pending') }}</h4>
+        <div class="configuration-list">
+          <div 
+            *ngFor="let config of pendingConfigurations" 
+            class="configuration-item pending"
+            (click)="onConfigurationClick(config)">
+            
+            <div class="config-icon-container">
+              <mat-icon class="config-icon">{{ config.icon }}</mat-icon>
+              <mat-icon 
+                class="priority-indicator" 
+                [ngClass]="'priority-' + config.priority">
+                {{ getPriorityIcon(config.priority) }}
+              </mat-icon>
+            </div>
+            
+            <div class="config-content">
+              <div class="config-title">{{ translate(config.translationKey + '.title') }}</div>
+              <div class="config-description">{{ translate(config.translationKey + '.description') }}</div>
+            </div>
+            
+            <div class="config-actions">
+              <mat-chip 
+                [color]="getPriorityColor(config.priority)" 
+                class="priority-chip">
+                {{ translate('dashboard.pendingConfig.priority.' + config.priority) }}
+              </mat-chip>
+              <mat-icon class="action-arrow">chevron_right</mat-icon>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Completed Configurations -->
-    <div class="configurations-section" *ngIf="completedConfigurations.length > 0">
-      <h4 class="section-title">{{ translate('dashboard.pendingConfig.completed') }}</h4>
-      <div class="configuration-list">
-        <div 
-          *ngFor="let config of completedConfigurations" 
-          class="configuration-item completed">
-          
-          <div class="config-icon-container">
-            <mat-icon class="config-icon completed-icon">{{ config.icon }}</mat-icon>
-            <mat-icon class="completion-check">check_circle</mat-icon>
-          </div>
-          
-          <div class="config-content">
-            <div class="config-title">{{ translate(config.translationKey + '.title') }}</div>
-            <div class="config-description">{{ translate(config.translationKey + '.description') }}</div>
+      <!-- Completed Configurations -->
+      <div class="configurations-section" *ngIf="completedConfigurations.length > 0">
+        <h4 class="section-title">{{ translate('dashboard.pendingConfig.completed') }}</h4>
+        <div class="configuration-list">
+          <div 
+            *ngFor="let config of completedConfigurations" 
+            class="configuration-item completed">
+            
+            <div class="config-icon-container">
+              <mat-icon class="config-icon completed-icon">{{ config.icon }}</mat-icon>
+              <mat-icon class="completion-check">check_circle</mat-icon>
+            </div>
+            
+            <div class="config-content">
+              <div class="config-title">{{ translate(config.translationKey + '.title') }}</div>
+              <div class="config-description">{{ translate(config.translationKey + '.description') }}</div>
+            </div>
           </div>
         </div>
       </div>

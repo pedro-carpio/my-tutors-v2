@@ -19,6 +19,7 @@ export class RoleGuard implements CanActivate {
     state: RouterStateSnapshot
   ): Observable<boolean> {
     const requiredRole = route.data['role'] as UserRole;
+    const requiredRoles = route.data['roles'] as UserRole[]; // Nuevo: múltiples roles permitidos
     
     return user(this.auth).pipe(
       take(1),
@@ -30,32 +31,29 @@ export class RoleGuard implements CanActivate {
 
         return this.userService.getUser(authUser.uid).pipe(
           map(userData => {
-            if (userData && userData.role === requiredRole) {
-              return true;
-            } else {
-              // Redirigir al dashboard apropiado basado en el rol del usuario
-              this.redirectBasedOnRole(userData?.role);
+            if (!userData) {
+              this.router.navigate(['/dashboard']);
               return false;
             }
+
+            const userRoles = userData.roles;
+            
+            // Verificar si tiene al menos uno de los roles requeridos
+            if (requiredRoles && requiredRoles.length > 0) {
+              const hasAnyRole = requiredRoles.some(role => userRoles.includes(role));
+              if (hasAnyRole) return true;
+            }
+            
+            // Verificar rol individual (compatibilidad hacia atrás)
+            if (requiredRole && userRoles.includes(requiredRole)) {
+              return true;
+            }
+
+            this.router.navigate(['/dashboard']);
+            return false;
           })
         );
       })
     );
-  }
-
-  private redirectBasedOnRole(role?: UserRole): void {
-    switch (role) {
-      case 'student':
-        this.router.navigate(['/student/dashboard']);
-        break;
-      case 'tutor':
-        this.router.navigate(['/tutor/dashboard']);
-        break;
-      case 'institution':
-        this.router.navigate(['/institution/dashboard']);
-        break;
-      default:
-        this.router.navigate(['/dashboard']);
-    }
   }
 }

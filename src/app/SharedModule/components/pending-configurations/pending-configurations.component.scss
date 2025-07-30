@@ -1,7 +1,15 @@
+:host {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .pending-config-card {
   height: 100%;
   display: flex;
   flex-direction: column;
+  margin: 0; // Remover margen por defecto
+  box-sizing: border-box; // Incluir padding y border en el tamaño
   
   .card-title {
     display: flex;
@@ -12,57 +20,115 @@
       color: #1976d2;
     }
   }
+  
+  .card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0; // Importante para permitir shrinking
+  }
+  
+  // Cuando está en el dashboard grid, usar altura específica
+  &.dashboard-card {
+    max-height: 320px; // Dejar espacio para padding del grid tile
+  }
 }
 
 .progress-section {
-  margin-bottom: 20px;
+  margin-bottom: 16px; // Reducir margin
+  flex-shrink: 0; // No se contraerá
   
   .progress-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px; // Reducir margin
     
     .progress-text {
-      font-size: 14px;
+      font-size: 13px; // Reducir tamaño
       color: #666;
     }
     
     .progress-percentage {
-      font-size: 14px;
+      font-size: 13px; // Reducir tamaño
       font-weight: 500;
       color: #1976d2;
     }
   }
   
   .progress-bar {
-    height: 8px;
-    border-radius: 4px;
+    height: 6px; // Reducir altura
+    border-radius: 3px;
   }
 }
 
+.configurations-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .configurations-section {
-  margin-bottom: 20px;
+  margin-bottom: 16px; // Reducir margin
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; // Importante para el flex shrink
+  
+  &:last-child {
+    margin-bottom: 0; // Sin margin en la última sección
+  }
   
   .section-title {
-    margin: 0 0 12px 0;
-    font-size: 16px;
+    margin: 0 0 8px 0; // Reducir margin
+    font-size: 14px; // Reducir tamaño de fuente
     font-weight: 500;
     color: #333;
+    flex-shrink: 0;
   }
 }
 
 .configuration-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px; // Reducir gap
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding-right: 4px; // Espacio para el scrollbar
+  
+  // Personalizar scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+    
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+  
+  // Para Firefox
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
 }
 
 .configuration-item {
   display: flex;
   align-items: center;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 8px 12px; // Reducir padding vertical
+  border-radius: 6px; // Reducir border radius
   transition: all 0.2s ease;
   
   &.pending {
@@ -85,12 +151,12 @@
   
   .config-icon-container {
     position: relative;
-    margin-right: 12px;
+    margin-right: 10px; // Reducir margin
     
     .config-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
+      font-size: 20px; // Reducir tamaño
+      width: 20px;
+      height: 20px;
       color: #666;
       
       &.completed-icon {
@@ -134,33 +200,34 @@
     flex: 1;
     
     .config-title {
-      font-size: 14px;
+      font-size: 13px; // Reducir tamaño
       font-weight: 500;
       color: #333;
       margin-bottom: 2px;
+      line-height: 1.2; // Reducir line height
     }
     
     .config-description {
-      font-size: 12px;
+      font-size: 11px; // Reducir tamaño
       color: #666;
-      line-height: 1.3;
+      line-height: 1.2; // Reducir line height
     }
   }
   
   .config-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px; // Reducir gap
     
     .priority-chip {
-      font-size: 10px;
-      height: 20px;
-      min-height: 20px;
+      font-size: 9px; // Reducir tamaño
+      height: 18px;
+      min-height: 18px;
     }
     
     .action-arrow {
       color: #999;
-      font-size: 18px;
+      font-size: 16px; // Reducir tamaño
     }
   }
 }
@@ -209,4 +276,21 @@
       font-size: 12px;
     }
   }
+  
+  .configuration-list {
+    // En dispositivos móviles, altura más conservadora
+    max-height: 200px;
+  }
+}
+
+@media (min-width: 601px) {
+  .configuration-list {
+    // En desktop, altura máxima más conservadora para evitar overflow
+    max-height: 250px;
+  }
+}
+
+// Animaciones suaves para el scroll
+.configuration-list {
+  scroll-behavior: smooth;
 }

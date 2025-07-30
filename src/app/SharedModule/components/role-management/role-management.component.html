@@ -1,0 +1,87 @@
+<div class="role-management-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Gestión de Roles de Usuario</mat-card-title>
+      <mat-card-subtitle>Administra los roles múltiples de los usuarios</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <!-- Botón de migración para usuarios existentes -->
+      <div class="migration-section">
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="migrateAllUsers()"
+          [disabled]="isLoading">
+          <mat-icon>sync</mat-icon>
+          Migrar usuarios al sistema de múltiples roles
+        </button>
+      </div>
+
+      <!-- Barra de progreso -->
+      <mat-progress-bar 
+        *ngIf="isLoading" 
+        mode="indeterminate">
+      </mat-progress-bar>
+
+      <!-- Lista de usuarios -->
+      <div class="users-list">
+        <div 
+          *ngFor="let user of users$ | async" 
+          class="user-card">
+          
+          <div class="user-info">
+            <h3>{{ user.email }}</h3>
+            <p>ID: {{ user.id }}</p>
+            
+            <!-- Roles actuales -->
+            <div class="current-roles">
+              <label>Roles actuales:</label>
+              <mat-chip-set>
+                <mat-chip 
+                  *ngFor="let role of getUserRoles(user)"
+                  [highlighted]="user.primary_role === role">
+                  {{ role }}
+                  <button 
+                    matChipRemove 
+                    *ngIf="canRemoveRole(user, role)"
+                    (click)="removeRoleFromUser(user, role)">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+
+            <!-- Agregar nuevos roles -->
+            <div class="add-roles" *ngIf="getAvailableRolesToAdd(user).length > 0">
+              <label>Agregar rol:</label>
+              <mat-select 
+                placeholder="Seleccionar rol"
+                (selectionChange)="addRoleToUser(user, $event.value)">
+                <mat-option 
+                  *ngFor="let role of getAvailableRolesToAdd(user)" 
+                  [value]="role">
+                  {{ role }}
+                </mat-option>
+              </mat-select>
+            </div>
+
+            <!-- Establecer rol principal -->
+            <div class="primary-role" *ngIf="getUserRoles(user).length > 1">
+              <label>Rol principal:</label>
+              <mat-select 
+                [value]="user.primary_role || getUserRoles(user)[0]"
+                (selectionChange)="setPrimaryRole(user, $event.value)">
+                <mat-option 
+                  *ngFor="let role of getUserRoles(user)" 
+                  [value]="role">
+                  {{ role }}
+                </mat-option>
+              </mat-select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

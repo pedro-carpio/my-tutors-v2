@@ -8,6 +8,20 @@
     <mat-icon>menu</mat-icon>
   </button>
   <span>{{ title || ('layout.appName' | translate) }}</span>
+  
+  <!-- Selector de roles si el usuario tiene múltiples roles -->
+  <div class="role-selector" *ngIf="showRoleSelector && hasMultipleRoles">
+    <mat-select 
+      [value]="activeRole" 
+      (selectionChange)="switchRole($event.value)"
+      [placeholder]="'common.switchRole' | translate"
+      [matTooltip]="'common.currentRole' | translate">
+      <mat-option *ngFor="let role of currentUserRoles" [value]="role">
+        {{ ('roles.' + role) | translate }}
+      </mat-option>
+    </mat-select>
+  </div>
+
   <span class="spacer"></span>
   <button 
     mat-button 

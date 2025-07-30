@@ -18,6 +18,13 @@
   bottom: 15px;
   display: flex;
   flex-direction: column;
+  
+  // Asegurar que el componente hijo use toda la altura disponible
+  app-pending-configurations {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .more-button {

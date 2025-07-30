@@ -1,0 +1,82 @@
+.role-management-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.migration-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.users-list {
+  margin-top: 20px;
+}
+
+.user-card {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.user-info h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.user-info p {
+  margin: 0 0 16px 0;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.current-roles {
+  margin-bottom: 16px;
+}
+
+.current-roles label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.add-roles {
+  margin-bottom: 16px;
+}
+
+.add-roles label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.primary-role {
+  margin-bottom: 16px;
+}
+
+.primary-role label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+mat-chip-listbox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+mat-select {
+  width: 200px;
+}
+
+mat-progress-bar {
+  margin: 16px 0;
+}
