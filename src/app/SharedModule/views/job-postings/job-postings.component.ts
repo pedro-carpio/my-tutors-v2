@@ -15,7 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
 
@@ -23,9 +23,12 @@ import { ToolbarComponent } from '../../toolbar/toolbar.component';
 import { LayoutComponent } from '../../layout/layout.component';
 import { TranslatePipe } from '../../../pipes/translate.pipe';
 import { JobPostingDetailDialogComponent } from './job-posting-detail-dialog/job-posting-detail-dialog.component';
+import { JobPostulationDialogComponent } from './job-postulation-dialog/job-postulation-dialog.component';
+import { AssignTutorDialogComponent } from './assign-tutor-dialog/assign-tutor-dialog.component';
+import { PostulationsListDialogComponent } from './postulations-list-dialog/postulations-list-dialog.component';
 
-import { SessionService, JobPostingService, MultiRoleService } from '../../../services';
-import { JobPosting, UserRole, JobPostingStatus, ClassType, ClassModality } from '../../../types/firestore.types';
+import { SessionService, JobPostingService, MultiRoleService, TutorPostulationService, ClassInstanceService } from '../../../services';
+import { JobPosting, UserRole, JobPostingStatus, ClassType, ClassModality, TutorPostulation, PostulationStatus } from '../../../types/firestore.types';
 
 @Component({
   selector: 'app-job-postings',
@@ -57,9 +60,12 @@ import { JobPosting, UserRole, JobPostingStatus, ClassType, ClassModality } from
 export class JobPostingsComponent implements OnInit, OnDestroy {
   private sessionService = inject(SessionService);
   private jobPostingService = inject(JobPostingService);
+  private tutorPostulationService = inject(TutorPostulationService);
+  private classInstanceService = inject(ClassInstanceService);
   private multiRoleService = inject(MultiRoleService);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
   private destroy$ = new Subject<void>();
 
   // Estado del componente
@@ -67,6 +73,7 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
   currentUserRole: UserRole | null = null;
   jobPostings: JobPosting[] = [];
   filteredJobPostings: JobPosting[] = [];
+  userPostulations: Map<string, TutorPostulation> = new Map(); // Para tutores: sus postulaciones por job
   
   // Filtros
   statusFilter: JobPostingStatus | '' = '';
@@ -105,6 +112,12 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
       next: (jobPostings) => {
         this.jobPostings = jobPostings;
         this.applyFilters();
+        
+        // Si es tutor, cargar sus postulaciones
+        if (this.currentUserRole === 'tutor') {
+          this.loadUserPostulations();
+        }
+        
         this.isLoading = false;
       },
       error: (error) => {
@@ -118,6 +131,25 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
         } else {
           console.error('Unexpected error:', error);
         }
+      }
+    });
+  }
+
+  private loadUserPostulations(): void {
+    const currentUser = this.sessionService.currentUser;
+    if (!currentUser?.uid) return;
+
+    this.tutorPostulationService.getPostulationsByTutor(currentUser.uid).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (postulations) => {
+        this.userPostulations.clear();
+        postulations.forEach(postulation => {
+          this.userPostulations.set(postulation.job_posting_id, postulation);
+        });
+      },
+      error: (error) => {
+        console.error('Error loading user postulations:', error);
       }
     });
   }
@@ -241,9 +273,39 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
   }
 
   canApplyToJob(jobPosting: JobPosting): boolean {
-    return this.currentUserRole === 'tutor' && 
-           jobPosting.status === 'published' && 
-           !jobPosting.assigned_tutor_id;
+    if (this.currentUserRole !== 'tutor') return false;
+    if (jobPosting.status !== 'published') return false;
+    if (jobPosting.assigned_tutor_id) return false;
+    
+    // Verificar si ya se postuló
+    const postulation = this.userPostulations.get(jobPosting.id);
+    return !postulation || postulation.status === 'withdrawn';
+  }
+
+  hasAppliedToJob(jobPosting: JobPosting): boolean {
+    const postulation = this.userPostulations.get(jobPosting.id);
+    return postulation ? ['pending', 'accepted'].includes(postulation.status) : false;
+  }
+
+  getPostulationStatus(jobPosting: JobPosting): PostulationStatus | null {
+    const postulation = this.userPostulations.get(jobPosting.id);
+    return postulation?.status || null;
+  }
+
+  canWithdrawApplication(jobPosting: JobPosting): boolean {
+    const postulation = this.userPostulations.get(jobPosting.id);
+    return postulation?.status === 'pending';
+  }
+
+  canViewPostulations(jobPosting: JobPosting): boolean {
+    return !!(this.currentUserRole === 'institution' || this.currentUserRole === 'admin') &&
+           jobPosting.status === 'published';
+  }
+
+  canCreateClassFromJob(jobPosting: JobPosting): boolean {
+    return !!(this.currentUserRole === 'institution' || this.currentUserRole === 'admin') &&
+           jobPosting.status === 'assigned' &&
+           !!jobPosting.assigned_tutor_id;
   }
 
   canAssignTutor(jobPosting: JobPosting): boolean {
@@ -318,13 +380,110 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
   }
 
   applyToJob(jobPosting: JobPosting): void {
-    console.log('Apply to job:', jobPosting);
-    // TODO: Lógica para que el tutor aplique al trabajo
+    if (!this.canApplyToJob(jobPosting)) {
+      this.showError('No puedes postularte a esta convocatoria');
+      return;
+    }
+
+    const currentUser = this.sessionService.currentUser;
+    if (!currentUser?.uid) {
+      this.showError('Usuario no autenticado');
+      return;
+    }
+
+    // Abrir el diálogo avanzado de postulación
+    const dialogRef = this.dialog.open(JobPostulationDialogComponent, {
+      width: '700px',
+      maxWidth: '90vw',
+      data: {
+        jobPosting: jobPosting,
+        currentUserId: currentUser.uid
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Recargar las postulaciones del usuario
+        this.loadUserPostulations();
+        this.showSuccess('¡Postulación enviada exitosamente!');
+      }
+    });
+  }
+
+  withdrawApplication(jobPosting: JobPosting): void {
+    const postulation = this.userPostulations.get(jobPosting.id);
+    if (!postulation || !this.canWithdrawApplication(jobPosting)) {
+      this.showError('No puedes retirar esta postulación');
+      return;
+    }
+
+    this.tutorPostulationService.withdrawPostulation(postulation.id!).then(() => {
+      this.showSuccess('Postulación retirada exitosamente');
+      this.loadUserPostulations();
+    }).catch(error => {
+      console.error('Error withdrawing application:', error);
+      this.showError('Error al retirar la postulación');
+    });
+  }
+
+  viewPostulations(jobPosting: JobPosting): void {
+    if (!this.canViewPostulations(jobPosting)) {
+      this.showError('No tienes permisos para ver las postulaciones');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(PostulationsListDialogComponent, {
+      width: '1000px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: {
+        jobPosting: jobPosting
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Si se creó una clase, actualizar la lista
+        this.loadJobPostings();
+      }
+    });
+  }
+
+  createClassFromJob(jobPosting: JobPosting): void {
+    if (!this.canCreateClassFromJob(jobPosting)) {
+      this.showError('No puedes crear una clase desde esta convocatoria');
+      return;
+    }
+
+    // TODO: Abrir diálogo para configurar los detalles de la clase
+    console.log('Create class from job:', jobPosting);
   }
 
   assignTutor(jobPosting: JobPosting): void {
-    console.log('Assign tutor to job:', jobPosting);
-    // TODO: Abrir diálogo para seleccionar tutor
+    if (!this.canAssignTutor(jobPosting)) {
+      this.showError('No tienes permisos para asignar un tutor');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(AssignTutorDialogComponent, {
+      width: '800px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: {
+        jobPosting: jobPosting
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Si se asignó un tutor exitosamente, actualizar la lista
+        this.loadJobPostings();
+        this.snackBar.open('Tutor asignado exitosamente', 'Cerrar', { 
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+      }
+    });
   }
 
   completeJob(jobPosting: JobPosting): void {
@@ -417,5 +576,19 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.sessionService.logout();
+  }
+
+  private showSuccess(message: string): void {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 5000,
+      panelClass: ['error-snackbar']
+    });
   }
 }

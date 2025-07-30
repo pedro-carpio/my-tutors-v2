@@ -107,6 +107,10 @@
                   <mat-icon>send</mat-icon>
                   {{ 'jobPostings.actions.apply' | translate }}
                 </button>
+                <button mat-menu-item *ngIf="canViewPostulations(job)" (click)="viewPostulations(job)">
+                  <mat-icon>assignment</mat-icon>
+                  {{ 'jobPostings.actions.viewPostulations' | translate }}
+                </button>
                 <button mat-menu-item *ngIf="canAssignTutor(job)" (click)="assignTutor(job)">
                   <mat-icon>person_add</mat-icon>
                   {{ 'jobPostings.actions.assignTutor' | translate }}

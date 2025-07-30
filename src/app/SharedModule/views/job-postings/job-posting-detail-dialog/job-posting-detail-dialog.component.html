@@ -10,12 +10,15 @@
   </div>
 
   <mat-dialog-content class="dialog-content">
-    <!-- Estado y programa -->
-    <mat-card class="info-card">
-      <mat-card-header>
-        <mat-card-title>{{ 'jobPostings.details.basicInfo' | translate }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
+    <mat-tab-group>
+      <!-- Pestaña de detalles del trabajo -->
+      <mat-tab label="Detalles del Trabajo">
+        <!-- Estado y programa -->
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>{{ 'jobPostings.details.basicInfo' | translate }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
         <div class="info-grid">
           <div class="info-item">
             <strong>{{ 'jobPostings.fields.program' | translate }}:</strong>
@@ -182,6 +185,104 @@
         </div>
       </mat-card-content>
     </mat-card>
+  </mat-tab>
+
+  <!-- Pestaña de postulaciones (solo para instituciones y admins) -->
+  <mat-tab label="Postulaciones" *ngIf="canViewPostulations()">
+    <div class="postulations-content">
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>
+            Postulaciones Recibidas ({{ postulations.length }})
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="isLoadingPostulations" class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p>Cargando postulaciones...</p>
+          </div>
+
+          <div *ngIf="!isLoadingPostulations && postulations.length === 0" class="no-postulations">
+            <mat-icon>work_off</mat-icon>
+            <p>No hay postulaciones para esta convocatoria.</p>
+          </div>
+
+          <mat-table [dataSource]="postulations" *ngIf="!isLoadingPostulations && postulations.length > 0">
+            <!-- Columna de tutor -->
+            <ng-container matColumnDef="tutor">
+              <mat-header-cell *matHeaderCellDef>Tutor</mat-header-cell>
+              <mat-cell *matCellDef="let postulation">
+                <div class="tutor-info">
+                  <mat-icon>person</mat-icon>
+                  <span>{{ postulation.tutor_id }}</span>
+                </div>
+              </mat-cell>
+            </ng-container>
+
+            <!-- Columna de tarifa propuesta -->
+            <ng-container matColumnDef="proposed_rate">
+              <mat-header-cell *matHeaderCellDef>Tarifa Propuesta</mat-header-cell>
+              <mat-cell *matCellDef="let postulation">
+                {{ postulation.proposed_hourly_rate }} {{ postulation.currency }}
+              </mat-cell>
+            </ng-container>
+
+            <!-- Columna de estado -->
+            <ng-container matColumnDef="status">
+              <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+              <mat-cell *matCellDef="let postulation">
+                <mat-chip [color]="getPostulationStatusColor(postulation.status)" selected>
+                  {{ getPostulationStatusText(postulation.status) }}
+                </mat-chip>
+              </mat-cell>
+            </ng-container>
+
+            <!-- Columna de fecha -->
+            <ng-container matColumnDef="postulated_at">
+              <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+              <mat-cell *matCellDef="let postulation">
+                {{ formatDateTime(postulation.postulated_at) }}
+              </mat-cell>
+            </ng-container>
+
+            <!-- Columna de acciones -->
+            <ng-container matColumnDef="actions">
+              <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
+              <mat-cell *matCellDef="let postulation">
+                <div class="action-buttons" *ngIf="postulation.status === 'pending'">
+                  <button mat-icon-button color="primary" 
+                          (click)="acceptPostulation(postulation)"
+                          matTooltip="Aceptar postulación">
+                    <mat-icon>check</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" 
+                          (click)="rejectPostulation(postulation)"
+                          matTooltip="Rechazar postulación">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+                <div class="action-buttons" *ngIf="postulation.status === 'accepted'">
+                  <button mat-raised-button color="primary" 
+                          (click)="createClass(postulation)"
+                          matTooltip="Crear clase desde esta postulación">
+                    <mat-icon>add</mat-icon>
+                    Crear Clase
+                  </button>
+                </div>
+                <div class="status-info" *ngIf="postulation.status === 'rejected'">
+                  <mat-chip class="status-rejected">Rechazada</mat-chip>
+                </div>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="postulationColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: postulationColumns;"></mat-row>
+          </mat-table>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </mat-tab>
+</mat-tab-group>
   </mat-dialog-content>
 
   <mat-dialog-actions align="end" class="dialog-actions">

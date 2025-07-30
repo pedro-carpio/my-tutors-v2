@@ -1,0 +1,268 @@
+<app-layout>
+  <div class="class-container">
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Cargando clase...</p>
+    </div>
+
+    <!-- Class Content -->
+    <div *ngIf="!isLoading && classInstance" class="class-content">
+      <!-- Header -->
+      <div class="class-header">
+        <div class="header-content">
+          <button mat-icon-button (click)="goBack()" class="back-button">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div class="title-section">
+            <h1>Clase</h1>
+            <span class="status-chip" [class]="'status-' + classInstance.status">
+              {{ getStatusText(classInstance.status) }}
+            </span>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons" *ngIf="canEdit() || canCancel()">
+          <button 
+            *ngIf="canEdit() && !isEditing" 
+            mat-raised-button 
+            color="primary"
+            (click)="toggleEdit()">
+            <mat-icon>edit</mat-icon>
+            Editar
+          </button>
+          
+          <button 
+            *ngIf="isEditing" 
+            mat-raised-button 
+            color="primary"
+            [disabled]="!classForm.valid || isLoading"
+            (click)="saveChanges()">
+            <mat-icon>save</mat-icon>
+            Guardar
+          </button>
+          
+          <button 
+            *ngIf="isEditing" 
+            mat-button
+            (click)="toggleEdit()">
+            Cancelar edición
+          </button>
+          
+          <button 
+            *ngIf="canCancel()" 
+            mat-button 
+            color="warn"
+            (click)="cancelClass()">
+            <mat-icon>cancel</mat-icon>
+            Cancelar clase
+          </button>
+        </div>
+      </div>
+
+      <!-- Class Information Cards -->
+      <div class="class-info-grid">
+        <!-- Basic Information -->
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>info</mat-icon>
+              Información básica
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="classForm">
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Fecha de la clase</mat-label>
+                  <input 
+                    matInput 
+                    [matDatepicker]="picker"
+                    formControlName="class_date"
+                    [readonly]="!isEditing">
+                  <mat-datepicker-toggle matIconSuffix [for]="picker" [disabled]="!isEditing"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Hora de inicio</mat-label>
+                  <input 
+                    matInput 
+                    type="time"
+                    formControlName="start_time"
+                    [readonly]="!isEditing">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Duración (minutos)</mat-label>
+                  <input 
+                    matInput 
+                    type="number"
+                    formControlName="duration_minutes"
+                    [readonly]="!isEditing">
+                </mat-form-field>
+              </div>
+
+              <div class="form-row" *ngIf="isEditing">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Estado</mat-label>
+                  <mat-select formControlName="status">
+                    <mat-option *ngFor="let status of classStatuses" [value]="status">
+                      {{ getStatusText(status) }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Location Information -->
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>location_on</mat-icon>
+              Ubicación
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="classForm">
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Ubicación física</mat-label>
+                  <input 
+                    matInput 
+                    formControlName="location"
+                    placeholder="Dirección o aula"
+                    [readonly]="!isEditing">
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Enlace de videollamada</mat-label>
+                  <input 
+                    matInput 
+                    formControlName="video_call_link"
+                    placeholder="https://..."
+                    [readonly]="!isEditing">
+                </mat-form-field>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Participants Information -->
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>people</mat-icon>
+              Participantes
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="participant-info">
+              <div class="participant-item">
+                <mat-icon>school</mat-icon>
+                <div class="participant-details">
+                  <strong>Tutor:</strong>
+                  <span *ngIf="tutor">{{ tutor.full_name }}</span>
+                  <span *ngIf="!tutor">Cargando...</span>
+                </div>
+              </div>
+
+              <div class="participant-item">
+                <mat-icon>business</mat-icon>
+                <div class="participant-details">
+                  <strong>Institución:</strong>
+                  <span *ngIf="institution">{{ institution.name }}</span>
+                  <span *ngIf="!institution">Cargando...</span>
+                </div>
+              </div>
+
+              <div class="participant-item" *ngIf="classInstance.course_id">
+                <mat-icon>book</mat-icon>
+                <div class="participant-details">
+                  <strong>Curso ID:</strong>
+                  <span>{{ classInstance.course_id }}</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Notes -->
+        <mat-card class="info-card notes-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>note</mat-icon>
+              Notas
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="classForm">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Notas de la clase</mat-label>
+                <textarea 
+                  matInput 
+                  formControlName="notes"
+                  rows="4"
+                  placeholder="Notas, objetivos, materiales necesarios..."
+                  [readonly]="!isEditing">
+                </textarea>
+              </mat-form-field>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Quick Actions (if not editing) -->
+      <div *ngIf="!isEditing" class="quick-actions">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Acciones rápidas</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="action-buttons-grid">
+              <a 
+                *ngIf="classInstance.video_call_link" 
+                [href]="classInstance.video_call_link" 
+                target="_blank"
+                mat-raised-button 
+                color="primary">
+                <mat-icon>videocam</mat-icon>
+                Unirse a videollamada
+              </a>
+              
+              <button 
+                mat-raised-button
+                (click)="goBack()">
+                <mat-icon>arrow_back</mat-icon>
+                Volver
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="!isLoading && !classInstance" class="error-state">
+      <mat-card>
+        <mat-card-content>
+          <div class="error-content">
+            <mat-icon>error</mat-icon>
+            <h2>Clase no encontrada</h2>
+            <p>No se pudo cargar la información de la clase.</p>
+            <button mat-raised-button color="primary" (click)="goBack()">
+              Volver
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</app-layout>

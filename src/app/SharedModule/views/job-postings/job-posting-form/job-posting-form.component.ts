@@ -407,11 +407,15 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
     const students = this.studentsForm.value.students;
     const reviewData = this.reviewForm.value;
 
+    // Obtener la zona horaria del usuario
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     return {
       ...basicInfo,
       ...classDetails,
       students,
       institution_id: this.currentUser?.uid || '',
+      timezone: userTimezone, // Agregar zona horaria
       status: reviewData.save_as_draft ? 'draft' : 'published',
       created_by: this.currentUser?.uid || '',
       created_at: new Date() as any,

@@ -1,0 +1,233 @@
+.postulation-dialog {
+  max-width: 100%;
+
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e0e0e0;
+
+    .title-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .title-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+        color: #1976d2;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 500;
+      }
+    }
+
+    .close-button {
+      flex-shrink: 0;
+    }
+  }
+
+  .dialog-content {
+    padding: 16px 24px;
+    max-height: 70vh;
+    overflow-y: auto;
+
+    .job-info-card {
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+      mat-card-header {
+        margin-bottom: 16px;
+
+        mat-card-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 1.1rem;
+          color: #1976d2;
+        }
+      }
+
+      .job-summary {
+        h3 {
+          margin: 0 0 8px 0;
+          color: #333;
+          font-size: 1.2rem;
+        }
+
+        .subject-info {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 8px 0 16px 0;
+          color: #666;
+          font-weight: 500;
+
+          mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+          }
+        }
+
+        .details-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 12px;
+
+          .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            strong {
+              font-size: 0.9rem;
+              color: #666;
+            }
+
+            span {
+              font-size: 1rem;
+              color: #333;
+            }
+          }
+        }
+      }
+    }
+
+    .postulation-form {
+      .form-card {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        mat-card-header {
+          margin-bottom: 20px;
+
+          mat-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            color: #1976d2;
+          }
+        }
+
+        mat-card-content {
+          .full-width {
+            width: 100%;
+            margin-bottom: 16px;
+          }
+
+          .half-width {
+            width: 48%;
+            margin-bottom: 16px;
+            margin-right: 4%;
+
+            @media (max-width: 768px) {
+              width: 100%;
+              margin-right: 0;
+            }
+          }
+
+          mat-form-field {
+            textarea {
+              resize: vertical;
+              min-height: 60px;
+            }
+
+            mat-hint {
+              font-size: 0.8rem;
+            }
+
+            mat-error {
+              font-size: 0.8rem;
+            }
+          }
+
+          mat-select[multiple] {
+            .mat-mdc-select-value {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 4px;
+            }
+          }
+        }
+      }
+    }
+
+    .progress-bar {
+      margin-top: 16px;
+      margin-bottom: -6px;
+    }
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+
+    button {
+      min-width: 100px;
+
+      mat-icon {
+        margin-right: 4px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .postulation-dialog {
+    .dialog-content {
+      padding: 12px 16px;
+
+      .job-info-card {
+        .job-summary {
+          .details-grid {
+            grid-template-columns: 1fr;
+            gap: 8px;
+          }
+        }
+      }
+    }
+
+    .dialog-actions {
+      padding: 12px 16px;
+      flex-direction: column-reverse;
+
+      button {
+        width: 100%;
+        margin: 4px 0;
+      }
+    }
+  }
+}
+
+// Material theme overrides
+::ng-deep {
+  .mat-mdc-dialog-container {
+    .mdc-dialog__surface {
+      max-width: 700px;
+      width: 90vw;
+    }
+  }
+
+  .success-snackbar {
+    background-color: #4caf50 !important;
+    color: white !important;
+  }
+
+  .error-snackbar {
+    background-color: #f44336 !important;
+    color: white !important;
+  }
+}

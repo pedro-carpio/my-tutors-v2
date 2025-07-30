@@ -20,6 +20,7 @@ export interface User {
   phone?: string; // ✅ ACTUALMENTE EN USO - Formularios de registro de instituciones y tutores
   last_login?: FieldValue | Timestamp; // TODO: Implementar tracking de último login
   is_verified?: boolean; // TODO: Sistema de verificación de usuarios
+  timezone?: string; // Zona horaria del usuario
 }
 
 export interface Tutor {
@@ -47,6 +48,7 @@ export interface Tutor {
   total_classes?: number; // TODO: Implementar contador de clases
   created_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
   updated_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
+  timezone?: string; // Zona horaria del tutor
 }
 
 export interface Student {
@@ -73,6 +75,7 @@ export interface Student {
   responsible_person: string;
   contact_phone: string;
   additional_notes?: string;
+  timezone?: string; // Zona horaria del estudiante
 }
 
 export interface Goal {
@@ -346,6 +349,26 @@ export type ClassType = 'prueba' | 'regular' | 'recurrente' | 'intensiva';
 export type ClassModality = 'presencial' | 'virtual' | 'hibrida';
 export type JobPostingStatus = 'draft' | 'published' | 'assigned' | 'completed' | 'cancelled';
 export type FrequencyType = 'unica' | 'semanal' | 'diario' | 'otro';
+export type PostulationStatus = 'pending' | 'accepted' | 'rejected' | 'withdrawn';
+export type ClassStatus = 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
+
+export interface TutorPostulation {
+  id?: string;
+  job_posting_id: string;
+  tutor_id: string;
+  institution_id: string;
+  proposed_hourly_rate: number;
+  currency: string;
+  cover_letter: string;
+  teaching_approach: string;
+  availability_confirmation: boolean;
+  status: PostulationStatus;
+  postulated_at: FieldValue | Timestamp;
+  responded_at?: FieldValue | Timestamp;
+  response_notes?: string;
+  created_at: FieldValue | Timestamp;
+  updated_at?: FieldValue | Timestamp;
+}
 
 export interface StudentDetails {
   name: string;
@@ -362,6 +385,7 @@ export interface StudentDetails {
   is_registered?: boolean; // Si el estudiante está registrado en el sistema
   user_id?: string; // ID del usuario estudiante si está registrado
   created_during_job_posting?: boolean; // Si se creó durante el proceso de job posting
+  timezone?: string; // Zona horaria del estudiante
 }
 
 export interface JobPosting {
@@ -398,6 +422,9 @@ export interface JobPosting {
   currency?: string;
   total_payment?: number;
   
+  // Zona horaria
+  timezone: string; // Zona horaria de la institución
+  
   // Metadata
   created_by: string; // user_id de quien creó la convocatoria
   created_at: FieldValue | Timestamp;
@@ -405,4 +432,28 @@ export interface JobPosting {
   
   // TODO: Sistema de notificaciones cuando se asigna tutor
   // TODO: Integración automática con Zoom para generar meeting
+}
+
+// Tipos para clases generadas
+export interface ClassInstance {
+  id?: string;
+  course_id: string;
+  job_posting_id?: string; // Referencia a la convocatoria original
+  postulation_id?: string; // Referencia a la postulación aceptada
+  institution_id: string;
+  tutor_id: string;
+  class_date: Date | FieldValue | Timestamp;
+  start_time: string;
+  duration_minutes: number;
+  location?: string;
+  video_call_link?: string;
+  modality: ClassModality;
+  status: ClassStatus;
+  students: StudentDetails[];
+  hourly_rate: number;
+  currency: string;
+  timezone: string;
+  notes?: string;
+  created_at: FieldValue | Timestamp;
+  updated_at?: FieldValue | Timestamp;
 }

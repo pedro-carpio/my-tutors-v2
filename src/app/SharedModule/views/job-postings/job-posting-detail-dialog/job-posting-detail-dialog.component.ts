@@ -1,15 +1,26 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTableModule } from '@angular/material/table';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
+import { ToolbarComponent } from '../../../toolbar/toolbar.component';
+import { LayoutComponent } from '../../../layout/layout.component';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
-import { JobPosting, ClassType, ClassModality, JobPostingStatus, FrequencyType } from '../../../../types/firestore.types';
+import { CreateClassDialogComponent } from '../create-class-dialog/create-class-dialog.component';
+import { TutorPostulationService } from '../../../../services/tutor-postulation.service';
+import { SessionService } from '../../../../services/session.service';
+import { JobPosting, ClassType, ClassModality, JobPostingStatus, FrequencyType, TutorPostulation, PostulationStatus, UserRole } from '../../../../types/firestore.types';
 
 @Component({
   selector: 'app-job-posting-detail-dialog',
@@ -23,16 +34,93 @@ import { JobPosting, ClassType, ClassModality, JobPostingStatus, FrequencyType }
     MatChipsModule,
     MatDividerModule,
     MatListModule,
+    MatTabsModule,
+    MatTableModule,
+    MatProgressSpinnerModule,
     TranslatePipe
   ],
   templateUrl: './job-posting-detail-dialog.component.html',
   styleUrls: ['./job-posting-detail-dialog.component.scss']
 })
-export class JobPostingDetailDialogComponent {
+export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
+  private tutorPostulationService = inject(TutorPostulationService);
+  private sessionService = inject(SessionService);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+  private destroy$ = new Subject<void>();
+
+  // Datos
+  postulations: TutorPostulation[] = [];
+  isLoadingPostulations = false;
+  currentUserRole: UserRole | null = null;
+
+  // Columnas de la tabla de postulaciones
+  postulationColumns: string[] = ['tutor', 'proposed_rate', 'status', 'postulated_at', 'actions'];
+
   constructor(
     public dialogRef: MatDialogRef<JobPostingDetailDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { jobPosting: JobPosting }
-  ) {}
+    @Inject(MAT_DIALOG_DATA) public data: { jobPosting: JobPosting; userRole?: UserRole }
+  ) {
+    this.currentUserRole = data.userRole || null;
+  }
+
+  ngOnInit(): void {
+    if (this.canViewPostulations()) {
+      this.loadPostulations();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  canViewPostulations(): boolean {
+    return (this.currentUserRole === 'institution' || this.currentUserRole === 'admin') &&
+           this.jobPosting.status === 'published';
+  }
+
+  private loadPostulations(): void {
+    this.isLoadingPostulations = true;
+    
+    this.tutorPostulationService.getPostulationsByJobPosting(this.jobPosting.id).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (postulations) => {
+        this.postulations = postulations;
+        this.isLoadingPostulations = false;
+      },
+      error: (error) => {
+        console.error('Error loading postulations:', error);
+        this.isLoadingPostulations = false;
+        this.showError('Error al cargar las postulaciones');
+      }
+    });
+  }
+
+  acceptPostulation(postulation: TutorPostulation): void {
+    if (!postulation.id) return;
+
+    this.tutorPostulationService.acceptPostulation(postulation.id, 'Postulación aceptada').then(() => {
+      this.showSuccess('Postulación aceptada exitosamente');
+      this.loadPostulations();
+    }).catch(error => {
+      console.error('Error accepting postulation:', error);
+      this.showError('Error al aceptar la postulación');
+    });
+  }
+
+  rejectPostulation(postulation: TutorPostulation): void {
+    if (!postulation.id) return;
+
+    this.tutorPostulationService.rejectPostulation(postulation.id, 'Postulación rechazada').then(() => {
+      this.showSuccess('Postulación rechazada');
+      this.loadPostulations();
+    }).catch(error => {
+      console.error('Error rejecting postulation:', error);
+      this.showError('Error al rechazar la postulación');
+    });
+  }
 
   get jobPosting(): JobPosting {
     return this.data.jobPosting;
@@ -143,5 +231,64 @@ export class JobPostingDetailDialogComponent {
   getStudentAge(age: number): string {
     if (!age) return '';
     return `${age} años`;
+  }
+
+  getPostulationStatusColor(status: PostulationStatus): string {
+    const colors = {
+      pending: 'accent',
+      accepted: 'primary',
+      rejected: 'warn',
+      withdrawn: ''
+    };
+    return colors[status] || '';
+  }
+
+  getPostulationStatusText(status: PostulationStatus): string {
+    const translations = {
+      pending: 'Pendiente',
+      accepted: 'Aceptada',
+      rejected: 'Rechazada',
+      withdrawn: 'Retirada'
+    };
+    return translations[status] || status;
+  }
+
+  private showSuccess(message: string): void {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 5000,
+      panelClass: ['error-snackbar']
+    });
+  }
+
+  createClass(postulation: TutorPostulation): void {
+    // Necesitamos obtener los datos del tutor para el diálogo
+    // Por ahora, vamos a simular estos datos o usar un servicio para obtenerlos
+    
+    const dialogRef = this.dialog.open(CreateClassDialogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      data: {
+        jobPosting: this.jobPosting,
+        postulation: postulation,
+        tutor: { 
+          name: 'Tutor', // Aquí deberías obtener el nombre real del tutor
+          email: 'tutor@example.com' // Y otros datos del tutor
+        }
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.showSuccess('Clase creada exitosamente');
+        // Opcionalmente, cerrar este diálogo o actualizar la vista
+      }
+    });
   }
 }
