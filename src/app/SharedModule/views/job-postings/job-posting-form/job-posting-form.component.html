@@ -1,0 +1,441 @@
+<app-layout #layout>
+  <app-toolbar 
+    slot="toolbar"
+    [title]="isEditMode ? ('jobPostings.form.editTitle' | translate) : ('jobPostings.form.createTitle' | translate)"
+    [showLogout]="true"
+    [showMenuButton]="(layout.isHandset$ | async) || false"
+    (logout)="logout()"
+    (menuToggle)="layout.toggleDrawer()">
+  </app-toolbar>
+
+  <div class="job-posting-form-container">
+    <!-- Loading spinner -->
+    <div class="loading-container" *ngIf="isLoading">
+      <mat-spinner></mat-spinner>
+      <p>{{ isEditMode ? ('jobPostings.form.loading.edit' | translate) : ('jobPostings.form.loading.create' | translate) }}</p>
+    </div>
+
+    <!-- Formulario stepper -->
+    <mat-card class="form-card" *ngIf="!isLoading">
+      <mat-card-header>
+        <mat-card-title>
+          {{ isEditMode ? ('jobPostings.form.editTitle' | translate) : ('jobPostings.form.createTitle' | translate) }}
+        </mat-card-title>
+        <mat-card-subtitle>
+          {{ 'jobPostings.form.subtitle' | translate }}
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <mat-stepper #stepper [linear]="true" orientation="horizontal">
+          
+          <!-- Paso 1: Información básica -->
+          <mat-step [stepControl]="basicInfoForm" [editable]="true">
+            <form [formGroup]="basicInfoForm">
+              <ng-template matStepLabel>{{ 'jobPostings.form.steps.basicInfo' | translate }}</ng-template>
+              
+              <div class="step-content">
+                <h3>{{ 'jobPostings.form.steps.basicInfo' | translate }}</h3>
+                <p class="step-description">{{ 'jobPostings.form.steps.basicInfoDescription' | translate }}</p>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ 'jobPostings.form.fields.title' | translate }}</mat-label>
+                    <input matInput formControlName="title" 
+                           [placeholder]="'jobPostings.form.placeholders.title' | translate">
+                    <mat-error *ngIf="basicInfoForm.get('title')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                    <mat-error *ngIf="basicInfoForm.get('title')?.hasError('minlength')">
+                      {{ 'jobPostings.form.errors.minLength' | translate : {min: 5} }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>{{ 'jobPostings.form.fields.program' | translate }}</mat-label>
+                    <mat-select formControlName="program">
+                      <mat-option value="Trial Class">{{ 'jobPostings.form.options.program.trial' | translate }}</mat-option>
+                      <mat-option value="Programa Base">{{ 'jobPostings.form.options.program.base' | translate }}</mat-option>
+                      <mat-option value="Avanzado">{{ 'jobPostings.form.options.program.advanced' | translate }}</mat-option>
+                      <mat-option value="Otro">{{ 'jobPostings.form.options.program.other' | translate }}</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="basicInfoForm.get('program')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>{{ 'jobPostings.form.fields.classType' | translate }}</mat-label>
+                    <mat-select formControlName="class_type">
+                      <mat-option *ngFor="let type of classTypes" [value]="type">
+                        {{ 'jobPostings.classType.' + type | translate }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="basicInfoForm.get('class_type')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>{{ 'jobPostings.form.fields.modality' | translate }}</mat-label>
+                    <mat-select formControlName="modality">
+                      <mat-option *ngFor="let modality of modalities" [value]="modality">
+                        {{ 'jobPostings.modality.' + modality | translate }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="basicInfoForm.get('modality')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ 'jobPostings.form.fields.additionalComment' | translate }}</mat-label>
+                    <textarea matInput formControlName="additional_comment" rows="3"
+                              [placeholder]="'jobPostings.form.placeholders.additionalComment' | translate"></textarea>
+                  </mat-form-field>
+                </div>
+
+                <div class="step-actions">
+                  <button mat-raised-button color="primary" matStepperNext 
+                          [disabled]="!isBasicInfoValid()">
+                    {{ 'jobPostings.form.buttons.next' | translate }}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </mat-step>
+
+          <!-- Paso 2: Detalles de la clase -->
+          <mat-step [stepControl]="classDetailsForm" [editable]="true">
+            <form [formGroup]="classDetailsForm">
+              <ng-template matStepLabel>{{ 'jobPostings.form.steps.classDetails' | translate }}</ng-template>
+              
+              <div class="step-content">
+                <h3>{{ 'jobPostings.form.steps.classDetails' | translate }}</h3>
+                <p class="step-description">{{ 'jobPostings.form.steps.classDetailsDescription' | translate }}</p>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>{{ 'jobPostings.form.fields.classDate' | translate }}</mat-label>
+                    <input matInput [matDatepicker]="picker" formControlName="class_date">
+                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                    <mat-error *ngIf="classDetailsForm.get('class_date')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>{{ 'jobPostings.form.fields.startTime' | translate }}</mat-label>
+                    <mat-select formControlName="start_time">
+                      <mat-option *ngFor="let time of timeOptions" [value]="time">
+                        {{ time }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="classDetailsForm.get('start_time')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>{{ 'jobPostings.form.fields.duration' | translate }}</mat-label>
+                    <input matInput type="number" formControlName="total_duration_minutes"
+                           [placeholder]="'jobPostings.form.placeholders.duration' | translate">
+                    <mat-hint>{{ 'jobPostings.form.hints.duration' | translate }}</mat-hint>
+                    <mat-error *ngIf="classDetailsForm.get('total_duration_minutes')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                    <mat-error *ngIf="classDetailsForm.get('total_duration_minutes')?.hasError('min')">
+                      {{ 'jobPostings.form.errors.minValue' | translate : {min: 30} }}
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>{{ 'jobPostings.form.fields.frequency' | translate }}</mat-label>
+                    <mat-select formControlName="frequency">
+                      <mat-option *ngFor="let freq of frequencies" [value]="freq">
+                        {{ 'jobPostings.frequency.' + freq | translate }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="classDetailsForm.get('frequency')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- Campo adicional para frecuencia "otro" -->
+                <div class="form-row" *ngIf="classDetailsForm.get('frequency')?.value === 'otro'">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ 'jobPostings.form.fields.frequencyOther' | translate }}</mat-label>
+                    <input matInput formControlName="frequency_other"
+                           [placeholder]="'jobPostings.form.placeholders.frequencyOther' | translate">
+                    <mat-error *ngIf="classDetailsForm.get('frequency_other')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- Ubicación para clases presenciales/híbridas -->
+                <div class="form-row" *ngIf="basicInfoForm.get('modality')?.value === 'presencial' || basicInfoForm.get('modality')?.value === 'hibrida'">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ 'jobPostings.form.fields.location' | translate }}</mat-label>
+                    <input matInput formControlName="location"
+                           [placeholder]="'jobPostings.form.placeholders.location' | translate">
+                    <mat-error *ngIf="classDetailsForm.get('location')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- Link para clases virtuales/híbridas -->
+                <div class="form-row" *ngIf="basicInfoForm.get('modality')?.value === 'virtual' || basicInfoForm.get('modality')?.value === 'hibrida'">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ 'jobPostings.form.fields.videoCallLink' | translate }}</mat-label>
+                    <input matInput formControlName="video_call_link"
+                           [placeholder]="'jobPostings.form.placeholders.videoCallLink' | translate">
+                    <mat-error *ngIf="classDetailsForm.get('video_call_link')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- Tarifa y moneda -->
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>{{ 'jobPostings.form.fields.hourlyRate' | translate }}</mat-label>
+                    <input matInput type="number" formControlName="hourly_rate"
+                           [placeholder]="'jobPostings.form.placeholders.hourlyRate' | translate">
+                    <mat-hint>{{ 'jobPostings.form.hints.hourlyRate' | translate }}</mat-hint>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>{{ 'jobPostings.form.fields.currency' | translate }}</mat-label>
+                    <mat-select formControlName="currency">
+                      <mat-option value="USD">USD ($)</mat-option>
+                      <mat-option value="EUR">EUR (€)</mat-option>
+                      <mat-option value="BOB">BOB (Bs)</mat-option>
+                      <mat-option value="MXN">MXN ($)</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <!-- Checkbox para división por estudiantes -->
+                <div class="form-row">
+                  <mat-checkbox formControlName="is_divided_by_students">
+                    {{ 'jobPostings.form.fields.isDividedByStudents' | translate }}
+                  </mat-checkbox>
+                  <mat-hint>{{ 'jobPostings.form.hints.isDividedByStudents' | translate }}</mat-hint>
+                </div>
+
+                <div class="step-actions">
+                  <button mat-button matStepperPrevious>
+                    {{ 'jobPostings.form.buttons.back' | translate }}
+                  </button>
+                  <button mat-raised-button color="primary" matStepperNext 
+                          [disabled]="!isClassDetailsValid()">
+                    {{ 'jobPostings.form.buttons.next' | translate }}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </mat-step>
+
+          <!-- Paso 3: Estudiantes -->
+          <mat-step [stepControl]="studentsForm" [editable]="true">
+            <form [formGroup]="studentsForm">
+              <ng-template matStepLabel>{{ 'jobPostings.form.steps.students' | translate }}</ng-template>
+              
+              <div class="step-content">
+                <h3>{{ 'jobPostings.form.steps.students' | translate }}</h3>
+                <p class="step-description">{{ 'jobPostings.form.steps.studentsDescription' | translate }}</p>
+
+                <!-- Lista de estudiantes -->
+                <div formArrayName="students">
+                  <div *ngFor="let studentGroup of studentsArray.controls; let i = index" 
+                       [formGroupName]="i" 
+                       class="student-card">
+                    <mat-card>
+                      <mat-card-header>
+                        <mat-card-title>
+                          {{ 'jobPostings.form.student.title' | translate : {number: i + 1} }}
+                        </mat-card-title>
+                        <div class="card-actions">
+                          <button mat-icon-button color="warn" (click)="removeStudent(i)" 
+                                  [disabled]="studentsArray.length === 1"
+                                  type="button">
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </div>
+                      </mat-card-header>
+
+                      <mat-card-content>
+                        <div class="form-row">
+                          <mat-form-field appearance="outline" class="half-width">
+                            <mat-label>{{ 'jobPostings.form.student.name' | translate }}</mat-label>
+                            <input matInput formControlName="name">
+                            <mat-error *ngIf="studentGroup.get('name')?.hasError('required')">
+                              {{ 'jobPostings.form.errors.required' | translate }}
+                            </mat-error>
+                          </mat-form-field>
+
+                          <mat-form-field appearance="outline" class="half-width">
+                            <mat-label>{{ 'jobPostings.form.student.age' | translate }}</mat-label>
+                            <input matInput type="number" formControlName="age">
+                            <mat-error *ngIf="studentGroup.get('age')?.hasError('required')">
+                              {{ 'jobPostings.form.errors.required' | translate }}
+                            </mat-error>
+                          </mat-form-field>
+                        </div>
+
+                        <div class="form-row">
+                          <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>{{ 'jobPostings.form.student.levelGroup' | translate }}</mat-label>
+                            <input matInput formControlName="level_group"
+                                   [placeholder]="'jobPostings.form.student.levelGroupPlaceholder' | translate">
+                            <mat-error *ngIf="studentGroup.get('level_group')?.hasError('required')">
+                              {{ 'jobPostings.form.errors.required' | translate }}
+                            </mat-error>
+                          </mat-form-field>
+                        </div>
+
+                        <div class="form-row">
+                          <mat-form-field appearance="outline" class="half-width">
+                            <mat-label>{{ 'jobPostings.form.student.responsiblePerson' | translate }}</mat-label>
+                            <input matInput formControlName="responsible_person">
+                            <mat-error *ngIf="studentGroup.get('responsible_person')?.hasError('required')">
+                              {{ 'jobPostings.form.errors.required' | translate }}
+                            </mat-error>
+                          </mat-form-field>
+
+                          <mat-form-field appearance="outline" class="half-width">
+                            <mat-label>{{ 'jobPostings.form.student.contactPhone' | translate }}</mat-label>
+                            <input matInput formControlName="contact_phone">
+                            <mat-error *ngIf="studentGroup.get('contact_phone')?.hasError('required')">
+                              {{ 'jobPostings.form.errors.required' | translate }}
+                            </mat-error>
+                          </mat-form-field>
+                        </div>
+
+                        <div class="form-row">
+                          <mat-form-field appearance="outline" class="half-width">
+                            <mat-label>{{ 'jobPostings.form.student.individualDuration' | translate }}</mat-label>
+                            <input matInput type="number" formControlName="individual_duration_minutes">
+                            <mat-hint>{{ 'jobPostings.form.student.individualDurationHint' | translate }}</mat-hint>
+                          </mat-form-field>
+                        </div>
+
+                        <div class="form-row">
+                          <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>{{ 'jobPostings.form.student.allergiesConditions' | translate }}</mat-label>
+                            <textarea matInput formControlName="allergies_conditions" rows="2"></textarea>
+                          </mat-form-field>
+                        </div>
+
+                        <div class="form-row">
+                          <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>{{ 'jobPostings.form.student.additionalNotes' | translate }}</mat-label>
+                            <textarea matInput formControlName="additional_notes" rows="2"></textarea>
+                          </mat-form-field>
+                        </div>
+                      </mat-card-content>
+                    </mat-card>
+                  </div>
+                </div>
+
+                <!-- Botón para agregar estudiante -->
+                <div class="add-student-section">
+                  <button mat-raised-button color="accent" (click)="addStudent()" type="button">
+                    <mat-icon>add</mat-icon>
+                    {{ 'jobPostings.form.buttons.addStudent' | translate }}
+                  </button>
+                </div>
+
+                <div class="step-actions">
+                  <button mat-button matStepperPrevious>
+                    {{ 'jobPostings.form.buttons.back' | translate }}
+                  </button>
+                  <button mat-raised-button color="primary" matStepperNext 
+                          [disabled]="!isStudentsValid()">
+                    {{ 'jobPostings.form.buttons.next' | translate }}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </mat-step>
+
+          <!-- Paso 4: Revisión y envío -->
+          <mat-step [stepControl]="reviewForm" [editable]="true">
+            <form [formGroup]="reviewForm">
+              <ng-template matStepLabel>{{ 'jobPostings.form.steps.review' | translate }}</ng-template>
+              
+              <div class="step-content">
+                <h3>{{ 'jobPostings.form.steps.review' | translate }}</h3>
+                <p class="step-description">{{ 'jobPostings.form.steps.reviewDescription' | translate }}</p>
+
+                <!-- Resumen de la información -->
+                <mat-card class="summary-card">
+                  <mat-card-header>
+                    <mat-card-title>{{ 'jobPostings.form.summary.title' | translate }}</mat-card-title>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <div class="summary-section">
+                      <h4>{{ 'jobPostings.form.summary.basicInfo' | translate }}</h4>
+                      <p><strong>{{ 'jobPostings.form.fields.title' | translate }}:</strong> {{ basicInfoForm.get('title')?.value }}</p>
+                      <p><strong>{{ 'jobPostings.form.fields.program' | translate }}:</strong> {{ basicInfoForm.get('program')?.value }}</p>
+                      <p><strong>{{ 'jobPostings.form.fields.classType' | translate }}:</strong> {{ 'jobPostings.classType.' + basicInfoForm.get('class_type')?.value | translate }}</p>
+                      <p><strong>{{ 'jobPostings.form.fields.modality' | translate }}:</strong> {{ 'jobPostings.modality.' + basicInfoForm.get('modality')?.value | translate }}</p>
+                    </div>
+
+                    <div class="summary-section">
+                      <h4>{{ 'jobPostings.form.summary.classDetails' | translate }}</h4>
+                      <p><strong>{{ 'jobPostings.form.fields.classDate' | translate }}:</strong> {{ formatDate(classDetailsForm.get('class_date')?.value) }}</p>
+                      <p><strong>{{ 'jobPostings.form.fields.startTime' | translate }}:</strong> {{ classDetailsForm.get('start_time')?.value }}</p>
+                      <p><strong>{{ 'jobPostings.form.fields.duration' | translate }}:</strong> {{ classDetailsForm.get('total_duration_minutes')?.value }} {{ 'jobPostings.minutes' | translate }}</p>
+                      <p><strong>{{ 'jobPostings.form.fields.frequency' | translate }}:</strong> {{ 'jobPostings.frequency.' + classDetailsForm.get('frequency')?.value | translate }}</p>
+                    </div>
+
+                    <div class="summary-section">
+                      <h4>{{ 'jobPostings.form.summary.students' | translate }}</h4>
+                      <p><strong>{{ 'jobPostings.form.summary.studentCount' | translate }}:</strong> {{ studentsArray.length }}</p>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+
+                <!-- Opciones de guardado -->
+                <div class="save-options">
+                  <mat-checkbox formControlName="save_as_draft">
+                    {{ 'jobPostings.form.options.saveAsDraft' | translate }}
+                  </mat-checkbox>
+                  <mat-hint>{{ 'jobPostings.form.hints.saveAsDraft' | translate }}</mat-hint>
+                </div>
+
+                <div class="step-actions">
+                  <button mat-button matStepperPrevious>
+                    {{ 'jobPostings.form.buttons.back' | translate }}
+                  </button>
+                  <button mat-button (click)="onCancel()">
+                    {{ 'jobPostings.form.buttons.cancel' | translate }}
+                  </button>
+                  <button mat-raised-button color="primary" (click)="onSubmit()" 
+                          [disabled]="isLoading || !isFormValid()">
+                    <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+                    {{ isEditMode ? ('jobPostings.form.buttons.update' | translate) : ('jobPostings.form.buttons.create' | translate) }}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </mat-step>
+
+        </mat-stepper>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</app-layout>

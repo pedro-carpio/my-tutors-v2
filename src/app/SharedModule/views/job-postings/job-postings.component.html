@@ -1,11 +1,181 @@
 <app-layout #layout>
   <app-toolbar 
     slot="toolbar"
-    title="Dashboard" 
+    [title]="'jobPostings.title' | translate" 
     [showLogout]="true"
     [showMenuButton]="(layout.isHandset$ | async) || false"
     (logout)="logout()"
     (menuToggle)="layout.toggleDrawer()">
   </app-toolbar>
+  
+  <div class="job-postings-container">
+    <!-- Cabecera con botón de crear -->
+    <div class="header-section">
+      <div class="title-section">
+        <h1>{{ 'jobPostings.title' | translate }}</h1>
+        <p class="subtitle">{{ 'jobPostings.subtitle' | translate }}</p>
+      </div>
+      
+      <div class="actions-section" *ngIf="canCreateJobPosting()">
+        <button mat-raised-button color="primary" (click)="createJobPosting()">
+          <mat-icon>add</mat-icon>
+          {{ 'jobPostings.actions.create' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <mat-card class="filters-card">
+      <mat-card-content>
+        <div class="filters-row">
+          <!-- Búsqueda -->
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>{{ 'jobPostings.filters.search' | translate }}</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" 
+                   [placeholder]="'jobPostings.filters.searchPlaceholder' | translate">
+          </mat-form-field>
+
+          <!-- Filtro por estado -->
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'jobPostings.filters.status' | translate }}</mat-label>
+            <mat-select [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange()">
+              <mat-option value="">{{ 'jobPostings.filters.allStatuses' | translate }}</mat-option>
+              <mat-option *ngFor="let status of statusOptions" [value]="status">
+                {{ 'jobPostings.status.' + status | translate }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Filtro por tipo -->
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'jobPostings.filters.type' | translate }}</mat-label>
+            <mat-select [(ngModel)]="typeFilter" (ngModelChange)="onTypeFilterChange()">
+              <mat-option value="">{{ 'jobPostings.filters.allTypes' | translate }}</mat-option>
+              <mat-option *ngFor="let type of typeOptions" [value]="type">
+                {{ 'jobPostings.classType.' + type | translate }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Filtro por modalidad -->
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'jobPostings.filters.modality' | translate }}</mat-label>
+            <mat-select [(ngModel)]="modalityFilter" (ngModelChange)="onModalityFilterChange()">
+              <mat-option value="">{{ 'jobPostings.filters.allModalities' | translate }}</mat-option>
+              <mat-option *ngFor="let modality of modalityOptions" [value]="modality">
+                {{ 'jobPostings.modality.' + modality | translate }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Loading spinner -->
+    <div class="loading-container" *ngIf="isLoading">
+      <mat-spinner></mat-spinner>
+      <p>{{ 'jobPostings.loading' | translate }}</p>
+    </div>
+
+    <!-- Lista de trabajos -->
+    <div class="job-cards-container" *ngIf="!isLoading">
+      <!-- Vista de tarjetas para móvil/tablet -->
+      <div class="mobile-view" *ngIf="filteredJobPostings.length > 0">
+        <mat-card class="job-card" *ngFor="let job of filteredJobPostings">
+          <mat-card-header>
+            <div mat-card-avatar class="job-avatar">
+              <mat-icon>{{ getModalityIcon(job.modality) }}</mat-icon>
+            </div>
+            <mat-card-title>{{ job.title }}</mat-card-title>
+            <mat-card-subtitle>{{ job.program }}</mat-card-subtitle>
+            
+            <div class="card-actions">
+              <button mat-icon-button [matMenuTriggerFor]="cardMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #cardMenu="matMenu">
+                <button mat-menu-item (click)="viewJobPosting(job)">
+                  <mat-icon>visibility</mat-icon>
+                  {{ 'jobPostings.actions.view' | translate }}
+                </button>
+                <button mat-menu-item *ngIf="canEditJobPosting(job)" (click)="editJobPosting(job)">
+                  <mat-icon>edit</mat-icon>
+                  {{ 'jobPostings.actions.edit' | translate }}
+                </button>
+                <button mat-menu-item *ngIf="canApplyToJob(job)" (click)="applyToJob(job)">
+                  <mat-icon>send</mat-icon>
+                  {{ 'jobPostings.actions.apply' | translate }}
+                </button>
+                <button mat-menu-item *ngIf="canAssignTutor(job)" (click)="assignTutor(job)">
+                  <mat-icon>person_add</mat-icon>
+                  {{ 'jobPostings.actions.assignTutor' | translate }}
+                </button>
+                <button mat-menu-item *ngIf="canCompleteJob(job)" (click)="completeJob(job)">
+                  <mat-icon>check_circle</mat-icon>
+                  {{ 'jobPostings.actions.complete' | translate }}
+                </button>
+                <button mat-menu-item *ngIf="canCancelJob(job)" (click)="cancelJob(job)">
+                  <mat-icon>cancel</mat-icon>
+                  {{ 'jobPostings.actions.cancel' | translate }}
+                </button>
+              </mat-menu>
+            </div>
+          </mat-card-header>
+
+          <mat-card-content>
+            <!-- Estado -->
+            <div class="job-info-row">
+              <mat-chip-set>
+                <mat-chip [color]="getStatusColor(job.status)" selected>
+                  {{ 'jobPostings.status.' + job.status | translate }}
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+
+            <!-- Información básica -->
+            <div class="job-info-row">
+              <mat-icon>event</mat-icon>
+              <span>{{ formatDate(job.class_date) }} - {{ formatTime(job.start_time) }}</span>
+            </div>
+
+            <div class="job-info-row">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ job.total_duration_minutes }} {{ 'jobPostings.minutes' | translate }}</span>
+            </div>
+
+            <div class="job-info-row">
+              <mat-icon>group</mat-icon>
+              <span>{{ getStudentCount(job.students) }} {{ 'jobPostings.students' | translate }}</span>
+            </div>
+
+            <div class="job-info-row">
+              <mat-icon>{{ getModalityIcon(job.modality) }}</mat-icon>
+              <span>{{ 'jobPostings.modality.' + job.modality | translate }}</span>
+            </div>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-button color="primary" (click)="viewJobPosting(job)">
+              {{ 'jobPostings.actions.viewDetails' | translate }}
+            </button>
+            <button mat-button color="accent" *ngIf="canApplyToJob(job)" (click)="applyToJob(job)">
+              {{ 'jobPostings.actions.apply' | translate }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+
+      <!-- Mensaje cuando no hay resultados -->
+      <div class="no-results" *ngIf="filteredJobPostings.length === 0">
+        <mat-icon>work_off</mat-icon>
+        <h3>{{ 'jobPostings.noResults' | translate }}</h3>
+        <p>{{ 'jobPostings.noResultsDescription' | translate }}</p>
+        <button mat-raised-button color="primary" *ngIf="canCreateJobPosting()" (click)="createJobPosting()">
+          {{ 'jobPostings.actions.createFirst' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
 
 </app-layout>

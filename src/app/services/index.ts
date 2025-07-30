@@ -18,6 +18,7 @@ export * from './email.service';
 export * from './password-generator.service';
 export * from './loading.service';
 export * from './pending-configurations.service';
+export * from './job-posting.service'; // Nuevo servicio de convocatorias
 
 // Export types
 export * from '../types/firestore.types';

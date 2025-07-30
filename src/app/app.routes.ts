@@ -90,12 +90,27 @@ export const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ['student', 'tutor', 'institution', 'admin'] } // Todos los roles
   },
-  // Convocatorias de trabajo - permitido para tutores y estudiantes
+  // Convocatorias de trabajo - permitido para tutores e instituciones
   {
     path: 'job-postings',
-    loadComponent: () => import('./SharedModule/views/job-postings/job-postings.component').then(m => m.JobPostingsComponent),
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['tutor', 'institution'] } // Múltiples roles
+    data: { roles: ['tutor', 'institution', 'admin'] },
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./SharedModule/views/job-postings/job-postings.component').then(m => m.JobPostingsComponent)
+      },
+      {
+        path: 'create',
+        loadComponent: () => import('./SharedModule/views/job-postings/job-posting-form/job-posting-form.component').then(m => m.JobPostingFormComponent),
+        data: { roles: ['institution', 'admin'] }
+      },
+      {
+        path: 'edit/:id',
+        loadComponent: () => import('./SharedModule/views/job-postings/job-posting-form/job-posting-form.component').then(m => m.JobPostingFormComponent),
+        data: { roles: ['institution', 'admin'] }
+      }
+    ]
   },
 
   // Rutas específicas por rol - Estudiantes

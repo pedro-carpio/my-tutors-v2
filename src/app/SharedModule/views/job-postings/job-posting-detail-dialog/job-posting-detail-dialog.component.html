@@ -1,0 +1,192 @@
+<div class="job-posting-detail-dialog">
+  <div mat-dialog-title class="dialog-header">
+    <div class="title-section">
+      <mat-icon class="title-icon">work</mat-icon>
+      <h2>{{ jobPosting.title }}</h2>
+    </div>
+    <button mat-icon-button (click)="onClose()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <!-- Estado y programa -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'jobPostings.details.basicInfo' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <strong>{{ 'jobPostings.fields.program' | translate }}:</strong>
+            <span>{{ jobPosting.program }}</span>
+          </div>
+          
+          <div class="info-item">
+            <strong>{{ 'jobPostings.fields.status' | translate }}:</strong>
+            <mat-chip [color]="getStatusColor(jobPosting.status)" selected>
+              {{ 'jobPostings.status.' + jobPosting.status | translate }}
+            </mat-chip>
+          </div>
+
+          <div class="info-item">
+            <strong>{{ 'jobPostings.fields.classType' | translate }}:</strong>
+            <div class="type-info">
+              <mat-icon>{{ getClassTypeIcon(jobPosting.class_type) }}</mat-icon>
+              <span>{{ 'jobPostings.classTypes.' + jobPosting.class_type | translate }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <strong>{{ 'jobPostings.fields.modality' | translate }}:</strong>
+            <div class="modality-info">
+              <mat-icon>{{ getModalityIcon(jobPosting.modality) }}</mat-icon>
+              <span>{{ 'jobPostings.modalities.' + jobPosting.modality | translate }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Detalles de la clase -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'jobPostings.details.classDetails' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <strong>{{ 'jobPostings.fields.classDate' | translate }}:</strong>
+            <span>{{ formatDate(jobPosting.class_date) }}</span>
+          </div>
+
+          <div class="info-item">
+            <strong>{{ 'jobPostings.fields.startTime' | translate }}:</strong>
+            <span>{{ formatTime(jobPosting.start_time) }}</span>
+          </div>
+
+          <div class="info-item">
+            <strong>{{ 'jobPostings.fields.duration' | translate }}:</strong>
+            <span>{{ formatDuration(jobPosting.total_duration_minutes) }}</span>
+          </div>
+
+          <div class="info-item">
+            <strong>{{ 'jobPostings.fields.frequency' | translate }}:</strong>
+            <span>{{ 'jobPostings.frequencies.' + jobPosting.frequency | translate }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="jobPosting.frequency === 'otro' && jobPosting.frequency_other">
+            <strong>{{ 'jobPostings.fields.frequencyOther' | translate }}:</strong>
+            <span>{{ jobPosting.frequency_other }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="jobPosting.location">
+            <strong>{{ 'jobPostings.fields.location' | translate }}:</strong>
+            <span>{{ jobPosting.location }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="jobPosting.video_call_link">
+            <strong>{{ 'jobPostings.fields.videoCallLink' | translate }}:</strong>
+            <a [href]="jobPosting.video_call_link" target="_blank">{{ jobPosting.video_call_link }}</a>
+          </div>
+
+          <div class="info-item" *ngIf="jobPosting.hourly_rate">
+            <strong>{{ 'jobPostings.fields.hourlyRate' | translate }}:</strong>
+            <span>{{ jobPosting.hourly_rate }} {{ jobPosting.currency || 'USD' }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Estudiantes -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>
+          {{ 'jobPostings.details.students' | translate }} ({{ jobPosting.students.length }})
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="students-list">
+          <mat-card *ngFor="let student of jobPosting.students; let i = index" class="student-card">
+            <mat-card-header>
+              <mat-card-title class="student-name">
+                <mat-icon>person</mat-icon>
+                {{ student.name }}
+              </mat-card-title>
+              <mat-card-subtitle>{{ getStudentAge(student.age) }} - {{ student.level_group }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="student-info">
+                <div class="info-item" *ngIf="student.individual_duration_minutes">
+                  <strong>{{ 'jobPostings.fields.individualDuration' | translate }}:</strong>
+                  <span>{{ formatDuration(student.individual_duration_minutes) }}</span>
+                </div>
+                
+                <div class="info-item">
+                  <strong>{{ 'jobPostings.fields.responsiblePerson' | translate }}:</strong>
+                  <span>{{ student.responsible_person }}</span>
+                </div>
+                
+                <div class="info-item">
+                  <strong>{{ 'jobPostings.fields.contactPhone' | translate }}:</strong>
+                  <span>{{ student.contact_phone }}</span>
+                </div>
+                
+                <div class="info-item" *ngIf="student.allergies_conditions">
+                  <strong>{{ 'jobPostings.fields.allergiesConditions' | translate }}:</strong>
+                  <span>{{ student.allergies_conditions }}</span>
+                </div>
+                
+                <div class="info-item" *ngIf="student.additional_notes">
+                  <strong>{{ 'jobPostings.fields.additionalNotes' | translate }}:</strong>
+                  <span>{{ student.additional_notes }}</span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Comentarios adicionales -->
+    <mat-card class="info-card" *ngIf="jobPosting.additional_comment">
+      <mat-card-header>
+        <mat-card-title>{{ 'jobPostings.details.additionalComments' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>{{ jobPosting.additional_comment }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Información de creación -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'jobPostings.details.metadata' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <strong>{{ 'jobPostings.fields.createdAt' | translate }}:</strong>
+            <span>{{ formatDateTime(jobPosting.created_at) }}</span>
+          </div>
+          
+          <div class="info-item" *ngIf="jobPosting.updated_at">
+            <strong>{{ 'jobPostings.fields.updatedAt' | translate }}:</strong>
+            <span>{{ formatDateTime(jobPosting.updated_at) }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="jobPosting.assigned_tutor_id">
+            <strong>{{ 'jobPostings.fields.assignedTutor' | translate }}:</strong>
+            <span>{{ jobPosting.assigned_tutor_id }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-button (click)="onClose()">
+      {{ 'common.close' | translate }}
+    </button>
+  </mat-dialog-actions>
+</div>

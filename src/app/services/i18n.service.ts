@@ -410,6 +410,257 @@ export class I18nService {
           tutor: 'Tutor',
           institution: 'Institución',
           admin: 'Administrador'
+        },
+
+        // Sistema de convocatorias de trabajo
+        jobPostings: {
+          title: 'Convocatorias de Trabajo',
+          createNew: 'Nueva Convocatoria',
+          viewAll: 'Ver Todas',
+          myPostings: 'Mis Convocatorias',
+          availableJobs: 'Trabajos Disponibles',
+          assignedJobs: 'Trabajos Asignados',
+          
+          // Estados
+          status: {
+            draft: 'Borrador',
+            published: 'Publicada',
+            assigned: 'Asignada',
+            completed: 'Completada',
+            cancelled: 'Cancelada'
+          },
+
+          // Tipos de clase
+          classType: {
+            label: 'Tipo de clase',
+            prueba: 'Prueba',
+            regular: 'Regular',
+            recurrente: 'Recurrente',
+            intensiva: 'Intensiva'
+          },
+
+          // Modalidades
+          modality: {
+            label: 'Modalidad',
+            presencial: 'Presencial',
+            virtual: 'Virtual',
+            hibrida: 'Híbrida'
+          },
+
+          // Frecuencias
+          frequency: {
+            label: 'Frecuencia',
+            unica: 'Única',
+            semanal: 'Semanal',
+            diario: 'Diario',
+            otro: 'Otro'
+          },
+
+          // Formulario de creación
+          form: {
+            createTitle: 'Crear Nueva Convocatoria',
+            editTitle: 'Editar Convocatoria',
+            subtitle: 'Complete los detalles de la convocatoria de trabajo',
+            
+            loading: {
+              create: 'Creando convocatoria...',
+              edit: 'Cargando datos para editar...'
+            },
+            
+            steps: {
+              basicInfo: 'Información Básica',
+              basicInfoDescription: 'Datos generales de la convocatoria de trabajo',
+              classDetails: 'Detalles de la Clase',
+              classDetailsDescription: 'Especificaciones de fecha, hora y duración',
+              students: 'Estudiantes',
+              studentsDescription: 'Información de los estudiantes participantes',
+              review: 'Revisión',
+              reviewDescription: 'Revise todos los datos antes de crear la convocatoria'
+            },
+            
+            fields: {
+              title: 'Título de la convocatoria',
+              program: 'Programa',
+              classType: 'Tipo de clase',
+              modality: 'Modalidad',
+              additionalComment: 'Comentario adicional',
+              classDate: 'Fecha de clase',
+              startTime: 'Hora de inicio',
+              duration: 'Duración (minutos)',
+              frequency: 'Frecuencia',
+              frequencyOther: 'Especificar frecuencia',
+              location: 'Ubicación',
+              videoCallLink: 'Enlace de videollamada',
+              hourlyRate: 'Tarifa por hora',
+              currency: 'Moneda',
+              isDividedByStudents: 'Dividir tiempo por estudiantes'
+            },
+            
+            placeholders: {
+              title: 'Ej: Clase de prueba domingo 20 julio – 2 estudiantes',
+              additionalComment: 'Ej: Clase dividida en 2 bloques según nivel',
+              duration: '60',
+              frequencyOther: 'Cada 15 días, mensual, etc.',
+              location: 'Ej: 4445 Willard Ave, Ste 600 – Oficina 654, MD 20815',
+              videoCallLink: 'https://zoom.us/j/...',
+              hourlyRate: '25.00'
+            },
+            
+            options: {
+              program: {
+                trial: 'Trial Class',
+                base: 'Programa Base',
+                advanced: 'Avanzado',
+                other: 'Otro'
+              },
+              saveAsDraft: 'Guardar como borrador'
+            },
+            
+            hints: {
+              duration: 'Duración total de la clase en minutos',
+              hourlyRate: 'Tarifa que se pagará al tutor',
+              isDividedByStudents: 'Si se marca, el tiempo se dividirá entre los estudiantes',
+              saveAsDraft: 'Los borradores no serán visibles para los tutores'
+            },
+            
+            student: {
+              title: 'Estudiante {number}',
+              name: 'Nombre',
+              age: 'Edad',
+              levelGroup: 'Nivel / Grupo',
+              levelGroupPlaceholder: 'Ej: Madrid Musketeers (7–9 años)',
+              responsiblePerson: 'Persona responsable',
+              contactPhone: 'Teléfono de contacto',
+              individualDuration: 'Duración individual (min)',
+              individualDurationHint: 'Tiempo específico para este estudiante (opcional)',
+              allergiesConditions: 'Alergias / Condiciones',
+              additionalNotes: 'Notas adicionales'
+            },
+            
+            summary: {
+              title: 'Resumen de la Convocatoria',
+              basicInfo: 'Información Básica',
+              classDetails: 'Detalles de la Clase',
+              students: 'Estudiantes',
+              studentCount: 'Número de estudiantes'
+            },
+            
+            buttons: {
+              next: 'Siguiente',
+              back: 'Atrás',
+              cancel: 'Cancelar',
+              create: 'Crear Convocatoria',
+              update: 'Actualizar Convocatoria',
+              addStudent: 'Agregar Estudiante',
+              createFirst: 'Crear Primera Convocatoria'
+            },
+            
+            errors: {
+              required: 'Este campo es obligatorio',
+              minLength: 'Mínimo {min} caracteres',
+              minValue: 'Valor mínimo: {min}',
+              maxValue: 'Valor máximo: {max}'
+            }
+          },
+          
+          // Filtros y acciones en la lista
+          filters: {
+            search: 'Buscar',
+            searchPlaceholder: 'Buscar por título, programa o estudiante...',
+            status: 'Estado',
+            type: 'Tipo',
+            modality: 'Modalidad',
+            allStatuses: 'Todos los estados',
+            allTypes: 'Todos los tipos',
+            allModalities: 'Todas las modalidades'
+          },
+          
+          actions: {
+            create: 'Crear Convocatoria',
+            view: 'Ver',
+            viewDetails: 'Ver Detalles',
+            edit: 'Editar',
+            apply: 'Aplicar',
+            assignTutor: 'Asignar Tutor',
+            complete: 'Completar',
+            cancel: 'Cancelar',
+            createFirst: 'Crear Primera Convocatoria'
+          },
+          
+          messages: {
+            loading: 'Cargando convocatorias...',
+            noResults: 'No se encontraron convocatorias',
+            noResultsDescription: 'Intenta ajustar los filtros o crear una nueva convocatoria',
+            created: 'Convocatoria creada exitosamente',
+            updated: 'Convocatoria actualizada exitosamente',
+            deleted: 'Convocatoria eliminada',
+            applied: 'Aplicación enviada exitosamente',
+            tutorAssigned: 'Tutor asignado exitosamente'
+          },
+
+          // Diálogo de detalles
+          details: {
+            basicInfo: 'Información Básica',
+            classDetails: 'Detalles de la Clase',
+            students: 'Estudiantes',
+            additionalComments: 'Comentarios Adicionales',
+            metadata: 'Información del Sistema'
+          },
+
+          // Campos específicos para el diálogo
+          fields: {
+            program: 'Programa',
+            status: 'Estado',
+            classType: 'Tipo de Clase',
+            modality: 'Modalidad',
+            classDate: 'Fecha de Clase',
+            startTime: 'Hora de Inicio',
+            duration: 'Duración',
+            frequency: 'Frecuencia',
+            frequencyOther: 'Otra Frecuencia',
+            location: 'Ubicación',
+            videoCallLink: 'Enlace de Videollamada',
+            hourlyRate: 'Tarifa por Hora',
+            individualDuration: 'Duración Individual',
+            responsiblePerson: 'Persona Responsable',
+            contactPhone: 'Teléfono de Contacto',
+            allergiesConditions: 'Alergias / Condiciones',
+            additionalNotes: 'Notas Adicionales',
+            createdAt: 'Fecha de Creación',
+            updatedAt: 'Última Actualización',
+            assignedTutor: 'Tutor Asignado'
+          },
+
+          // Tipos de clase
+          classTypes: {
+            prueba: 'Prueba',
+            regular: 'Regular',
+            recurrente: 'Recurrente',
+            intensiva: 'Intensiva'
+          },
+
+          // Modalidades
+          modalities: {
+            presencial: 'Presencial',
+            virtual: 'Virtual',
+            hibrida: 'Híbrida'
+          },
+
+          // Frecuencias
+          frequencies: {
+            unica: 'Única',
+            semanal: 'Semanal',
+            diario: 'Diario',
+            otro: 'Otro'
+          },
+          
+          // Otros textos
+          loading: 'Cargando convocatorias...',
+          noResults: 'No se encontraron convocatorias',
+          noResultsDescription: 'Intenta ajustar los filtros o crear una nueva convocatoria',
+          minutes: 'minutos',
+          students: 'estudiantes',
+          subtitle: 'Gestiona las convocatorias de trabajo para tutores'
         }
       },
       
@@ -758,6 +1009,257 @@ export class I18nService {
           tutor: 'Tutor',
           institution: 'Institution',
           admin: 'Administrator'
+        },
+
+        // Job Postings System
+        jobPostings: {
+          title: 'Job Postings',
+          subtitle: 'Manage work postings for tutors',
+          createNew: 'New Posting',
+          viewAll: 'View All',
+          myPostings: 'My Postings',
+          availableJobs: 'Available Jobs',
+          assignedJobs: 'Assigned Jobs',
+          
+          // Status
+          status: {
+            draft: 'Draft',
+            published: 'Published',
+            assigned: 'Assigned',
+            completed: 'Completed',
+            cancelled: 'Cancelled'
+          },
+
+          // Class Types
+          classType: {
+            label: 'Class type',
+            prueba: 'Trial',
+            regular: 'Regular',
+            recurrente: 'Recurring',
+            intensiva: 'Intensive'
+          },
+
+          // Modalities
+          modality: {
+            label: 'Modality',
+            presencial: 'In-person',
+            virtual: 'Virtual',
+            hibrida: 'Hybrid'
+          },
+
+          // Frequencies
+          frequency: {
+            label: 'Frequency',
+            unica: 'One-time',
+            semanal: 'Weekly',
+            diario: 'Daily',
+            otro: 'Other'
+          },
+
+          // Creation form
+          form: {
+            createTitle: 'Create New Job Posting',
+            editTitle: 'Edit Job Posting',
+            subtitle: 'Complete the job posting details',
+            
+            loading: {
+              create: 'Creating job posting...',
+              edit: 'Loading data for editing...'
+            },
+            
+            steps: {
+              basicInfo: 'Basic Information',
+              basicInfoDescription: 'General job posting data',
+              classDetails: 'Class Details',
+              classDetailsDescription: 'Date, time and duration specifications',
+              students: 'Students',
+              studentsDescription: 'Participating students information',
+              review: 'Review',
+              reviewDescription: 'Review all data before creating the job posting'
+            },
+            
+            fields: {
+              title: 'Job posting title',
+              program: 'Program',
+              classType: 'Class type',
+              modality: 'Modality',
+              additionalComment: 'Additional comment',
+              classDate: 'Class date',
+              startTime: 'Start time',
+              duration: 'Duration (minutes)',
+              frequency: 'Frequency',
+              frequencyOther: 'Specify frequency',
+              location: 'Location',
+              videoCallLink: 'Video call link',
+              hourlyRate: 'Hourly rate',
+              currency: 'Currency',
+              isDividedByStudents: 'Divide time by students'
+            },
+            
+            placeholders: {
+              title: 'E.g: Trial class Sunday July 20 – 2 students',
+              additionalComment: 'E.g: Class divided into 2 blocks by level',
+              duration: '60',
+              frequencyOther: 'Every 15 days, monthly, etc.',
+              location: 'E.g: 4445 Willard Ave, Ste 600 – Office 654, MD 20815',
+              videoCallLink: 'https://zoom.us/j/...',
+              hourlyRate: '25.00'
+            },
+            
+            options: {
+              program: {
+                trial: 'Trial Class',
+                base: 'Base Program',
+                advanced: 'Advanced',
+                other: 'Other'
+              },
+              saveAsDraft: 'Save as draft'
+            },
+            
+            hints: {
+              duration: 'Total class duration in minutes',
+              hourlyRate: 'Rate to be paid to the tutor',
+              isDividedByStudents: 'If checked, time will be divided among students',
+              saveAsDraft: 'Drafts will not be visible to tutors'
+            },
+            
+            student: {
+              title: 'Student {number}',
+              name: 'Name',
+              age: 'Age',
+              levelGroup: 'Level / Group',
+              levelGroupPlaceholder: 'E.g: Madrid Musketeers (7–9 years)',
+              responsiblePerson: 'Responsible person',
+              contactPhone: 'Contact phone',
+              individualDuration: 'Individual duration (min)',
+              individualDurationHint: 'Specific time for this student (optional)',
+              allergiesConditions: 'Allergies / Conditions',
+              additionalNotes: 'Additional notes'
+            },
+            
+            summary: {
+              title: 'Job Posting Summary',
+              basicInfo: 'Basic Information',
+              classDetails: 'Class Details',
+              students: 'Students',
+              studentCount: 'Number of students'
+            },
+            
+            buttons: {
+              next: 'Next',
+              back: 'Back',
+              cancel: 'Cancel',
+              create: 'Create Job Posting',
+              update: 'Update Job Posting',
+              addStudent: 'Add Student',
+              createFirst: 'Create First Job Posting'
+            },
+            
+            errors: {
+              required: 'This field is required',
+              minLength: 'Minimum {min} characters',
+              minValue: 'Minimum value: {min}',
+              maxValue: 'Maximum value: {max}'
+            }
+          },
+          
+          // Filters and actions in the list
+          filters: {
+            search: 'Search',
+            searchPlaceholder: 'Search by title, program or student...',
+            status: 'Status',
+            type: 'Type',
+            modality: 'Modality',
+            allStatuses: 'All statuses',
+            allTypes: 'All types',
+            allModalities: 'All modalities'
+          },
+          
+          actions: {
+            create: 'Create Job Posting',
+            view: 'View',
+            viewDetails: 'View Details',
+            edit: 'Edit',
+            apply: 'Apply',
+            assignTutor: 'Assign Tutor',
+            complete: 'Complete',
+            cancel: 'Cancel',
+            createFirst: 'Create First Job Posting'
+          },
+          
+          messages: {
+            loading: 'Loading job postings...',
+            noResults: 'No job postings found',
+            noResultsDescription: 'Try adjusting filters or create a new job posting',
+            created: 'Job posting created successfully',
+            updated: 'Job posting updated successfully',
+            deleted: 'Job posting deleted',
+            applied: 'Application sent successfully',
+            tutorAssigned: 'Tutor assigned successfully'
+          },
+
+          // Detail dialog
+          details: {
+            basicInfo: 'Basic Information',
+            classDetails: 'Class Details',
+            students: 'Students',
+            additionalComments: 'Additional Comments',
+            metadata: 'System Information'
+          },
+
+          // Specific fields for dialog
+          fields: {
+            program: 'Program',
+            status: 'Status',
+            classType: 'Class Type',
+            modality: 'Modality',
+            classDate: 'Class Date',
+            startTime: 'Start Time',
+            duration: 'Duration',
+            frequency: 'Frequency',
+            frequencyOther: 'Other Frequency',
+            location: 'Location',
+            videoCallLink: 'Video Call Link',
+            hourlyRate: 'Hourly Rate',
+            individualDuration: 'Individual Duration',
+            responsiblePerson: 'Responsible Person',
+            contactPhone: 'Contact Phone',
+            allergiesConditions: 'Allergies / Conditions',
+            additionalNotes: 'Additional Notes',
+            createdAt: 'Created At',
+            updatedAt: 'Last Updated',
+            assignedTutor: 'Assigned Tutor'
+          },
+
+          // Class types
+          classTypes: {
+            prueba: 'Trial',
+            regular: 'Regular',
+            recurrente: 'Recurring',
+            intensiva: 'Intensive'
+          },
+
+          // Modalities
+          modalities: {
+            presencial: 'In-person',
+            virtual: 'Virtual',
+            hibrida: 'Hybrid'
+          },
+
+          // Frequencies
+          frequencies: {
+            unica: 'One-time',
+            semanal: 'Weekly',
+            diario: 'Daily',
+            otro: 'Other'
+          },
+          
+          // Other texts
+          loading: 'Loading job postings...',
+          noResults: 'No job postings found',
+          noResultsDescription: 'Try adjusting filters or create a new job posting',
+          minutes: 'minutes',
+          students: 'students'
         }
       }
     };

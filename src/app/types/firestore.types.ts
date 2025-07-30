@@ -333,3 +333,63 @@ export interface SystemSettings {
   updated_at: FieldValue | Timestamp;
   // TODO: Panel de administración para configuraciones del sistema
 }
+
+// Tipos para sistema de convocatorias/trabajos
+export type ClassType = 'prueba' | 'regular' | 'recurrente' | 'intensiva';
+export type ClassModality = 'presencial' | 'virtual' | 'hibrida';
+export type JobPostingStatus = 'draft' | 'published' | 'assigned' | 'completed' | 'cancelled';
+export type FrequencyType = 'unica' | 'semanal' | 'diario' | 'otro';
+
+export interface StudentDetails {
+  name: string;
+  age: number;
+  level_group: string; // e.g., "Madrid Musketeers (7–9 años)"
+  individual_duration_minutes?: number;
+  allergies_conditions?: string;
+  responsible_person: string;
+  contact_phone: string;
+  additional_notes?: string;
+}
+
+export interface JobPosting {
+  id: string;
+  institution_id: string;
+  
+  // Bloque 1 - Información General
+  title: string;
+  class_type: ClassType;
+  modality: ClassModality;
+  program: string; // "Trial Class", "Programa Base", "Avanzado", "Otro…"
+  additional_comment?: string;
+  
+  // Bloque 2 - Detalles de la(s) clase(s)
+  class_date: Date;
+  start_time: string; // formato HH:mm
+  total_duration_minutes: number;
+  is_divided_by_students: boolean;
+  frequency: FrequencyType;
+  frequency_other?: string; // si frequency === 'otro'
+  location?: string; // para clases presenciales
+  location_latitude?: number;
+  location_longitude?: number;
+  video_call_link?: string; // para clases virtuales
+  
+  // Bloque 3 - Estudiantes & Logística
+  students: StudentDetails[];
+  
+  // Gestión del trabajo
+  status: JobPostingStatus;
+  assigned_tutor_id?: string;
+  assigned_at?: Date;
+  hourly_rate?: number;
+  currency?: string;
+  total_payment?: number;
+  
+  // Metadata
+  created_by: string; // user_id de quien creó la convocatoria
+  created_at: FieldValue | Timestamp;
+  updated_at?: FieldValue | Timestamp;
+  
+  // TODO: Sistema de notificaciones cuando se asigna tutor
+  // TODO: Integración automática con Zoom para generar meeting
+}
