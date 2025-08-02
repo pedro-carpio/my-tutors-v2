@@ -13,8 +13,9 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { Observable, of } from 'rxjs';
+import { Observable, of, firstValueFrom } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { Firestore, collection, getDocs } from '@angular/fire/firestore';
 
 import { TutorService } from '../../../../services/tutor.service';
 import { JobPostingService } from '../../../../services/job-posting.service';
@@ -49,200 +50,7 @@ interface TutorWithUser extends Tutor {
     MatChipsModule,
     MatCheckboxModule
   ],
-  template: `
-    <div class="assign-tutor-dialog">
-      <div class="dialog-header">
-        <div class="title-section">
-          <mat-icon class="title-icon">person_add</mat-icon>
-          <h2>Asignar Tutor</h2>
-        </div>
-        <button mat-icon-button mat-dialog-close class="close-button">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-
-      <div class="dialog-content" mat-dialog-content>
-        <!-- Información del trabajo -->
-        <mat-card class="job-info-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>work</mat-icon>
-              Información del Trabajo
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="job-summary">
-              <h3>{{ data.jobPosting.title }}</h3>
-              <div class="details-grid">
-                <div class="detail-item">
-                  <strong>Programa:</strong>
-                  <span>{{ data.jobPosting.program }}</span>
-                </div>
-                <div class="detail-item">
-                  <strong>Fecha:</strong>
-                  <span>{{ formatDate(data.jobPosting.class_date) }}</span>
-                </div>
-                <div class="detail-item">
-                  <strong>Hora:</strong>
-                  <span>{{ data.jobPosting.start_time }}</span>
-                </div>
-                <div class="detail-item">
-                  <strong>Duración:</strong>
-                  <span>{{ data.jobPosting.total_duration_minutes }} min</span>
-                </div>
-                <div class="detail-item">
-                  <strong>Modalidad:</strong>
-                  <span>{{ getModalityLabel(data.jobPosting.modality) }}</span>
-                </div>
-                <div class="detail-item">
-                  <strong>Estudiantes:</strong>
-                  <span>{{ data.jobPosting.students.length }}</span>
-                </div>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <!-- Selección de tutor -->
-        <form [formGroup]="assignForm" class="assign-form">
-          <mat-card class="tutor-selection-card">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon>person_search</mat-icon>
-                Seleccionar Tutor
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <!-- Búsqueda de tutor -->
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Buscar tutor</mat-label>
-                <mat-icon matPrefix>search</mat-icon>
-                <input 
-                  matInput 
-                  formControlName="tutorSearch"
-                  placeholder="Nombre, email o especialidad del tutor...">
-              </mat-form-field>
-
-              <!-- Lista de tutores disponibles -->
-              <div class="tutors-list" *ngIf="filteredTutors$ | async as tutors">
-                <div class="tutor-option" 
-                     *ngFor="let tutor of tutors"
-                     [class.selected]="selectedTutor?.user_id === tutor.user_id"
-                     (click)="selectTutor(tutor)">
-                  <div class="tutor-info">
-                    <div class="tutor-avatar">
-                      <mat-icon>person</mat-icon>
-                    </div>
-                    <div class="tutor-details">
-                      <h4>{{ tutor.displayName }}</h4>
-                      <p class="tutor-email">{{ tutor.userData?.email }}</p>
-                      <div class="tutor-meta">
-                        <mat-chip class="experience-chip">
-                          {{ getExperienceLabel(tutor.experience_level) }}
-                        </mat-chip>
-                        <span class="hourly-rate">
-                          \${{ tutor.hourly_rate }}/h {{ tutor.hourly_rate_currency || 'USD' }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="selection-indicator" *ngIf="selectedTutor?.user_id === tutor.user_id">
-                    <mat-icon>check_circle</mat-icon>
-                  </div>
-                </div>
-
-                <!-- Mensaje cuando no hay tutores -->
-                <div class="no-tutors" *ngIf="tutors.length === 0">
-                  <mat-icon>person_off</mat-icon>
-                  <p>No se encontraron tutores disponibles</p>
-                </div>
-              </div>
-
-              <!-- Detalles del tutor seleccionado -->
-              <div class="selected-tutor-details" *ngIf="selectedTutor">
-                <h4>Tutor Seleccionado</h4>
-                <mat-card class="tutor-detail-card">
-                  <mat-card-content>
-                    <div class="tutor-summary">
-                      <div class="tutor-header">
-                        <mat-icon class="tutor-icon">person</mat-icon>
-                        <div>
-                          <h5>{{ selectedTutor.displayName }}</h5>
-                          <p>{{ selectedTutor.userData?.email }}</p>
-                        </div>
-                      </div>
-                      <div class="tutor-stats">
-                        <div class="stat-item">
-                          <strong>Experiencia:</strong>
-                          <span>{{ getExperienceLabel(selectedTutor.experience_level) }}</span>
-                        </div>
-                        <div class="stat-item">
-                          <strong>Tarifa:</strong>
-                          <span>\${{ selectedTutor.hourly_rate }}/h</span>
-                        </div>
-                        <div class="stat-item">
-                          <strong>Idioma nativo:</strong>
-                          <span>{{ selectedTutor.birth_language }}</span>
-                        </div>
-                        <div class="stat-item" *ngIf="selectedTutor.bio">
-                          <strong>Bio:</strong>
-                          <span>{{ selectedTutor.bio }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-              </div>
-
-              <!-- Opciones adicionales -->
-              <div class="assignment-options" *ngIf="selectedTutor">
-                <mat-checkbox formControlName="sendNotificationEmail">
-                  Enviar email de notificación al tutor
-                </mat-checkbox>
-                
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Notas adicionales (opcional)</mat-label>
-                  <textarea 
-                    matInput 
-                    formControlName="assignmentNotes"
-                    placeholder="Instrucciones especiales o información adicional para el tutor..."
-                    rows="3"
-                    maxlength="500">
-                  </textarea>
-                  <mat-hint align="end">{{ assignForm.get('assignmentNotes')?.value?.length || 0 }}/500</mat-hint>
-                </mat-form-field>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </form>
-
-        <!-- Barra de progreso -->
-        <mat-progress-bar 
-          *ngIf="isAssigning" 
-          mode="indeterminate"
-          class="progress-bar">
-        </mat-progress-bar>
-      </div>
-
-      <div class="dialog-actions" mat-dialog-actions>
-        <button 
-          mat-button 
-          mat-dialog-close
-          [disabled]="isAssigning">
-          Cancelar
-        </button>
-        <button 
-          mat-raised-button 
-          color="primary"
-          (click)="assignTutor()"
-          [disabled]="!selectedTutor || isAssigning">
-          <mat-icon *ngIf="!isAssigning">assignment_ind</mat-icon>
-          <mat-icon *ngIf="isAssigning">hourglass_empty</mat-icon>
-          {{ isAssigning ? 'Asignando...' : 'Asignar Tutor' }}
-        </button>
-      </div>
-    </div>
-  `,
+  templateUrl: './assign-tutor-dialog.component.html',
   styleUrl: './assign-tutor-dialog.component.scss'
 })
 export class AssignTutorDialogComponent implements OnInit {
@@ -251,6 +59,7 @@ export class AssignTutorDialogComponent implements OnInit {
   private tutorService = inject(TutorService);
   private jobPostingService = inject(JobPostingService);
   private emailService = inject(EmailService);
+  private firestore = inject(Firestore);
 
   assignForm: FormGroup;
   isAssigning = false;
@@ -266,8 +75,133 @@ export class AssignTutorDialogComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    await this.loadAvailableTutors();
-    this.setupTutorSearch();
+    console.log('🚀 Inicializando componente AssignTutorDialogComponent...');
+    console.log('📋 Datos del job posting:', this.data.jobPosting);
+    
+    try {
+      console.log('🔧 Verificando conectividad con Firestore...');
+      await this.testFirestoreConnection();
+      
+      console.log('⏳ Cargando tutores disponibles...');
+      this.loadAvailableTutors(); // No await porque ahora es una suscripción
+      
+      console.log('🔧 Configurando búsqueda de tutores...');
+      this.setupTutorSearch();
+      console.log('✅ Búsqueda configurada exitosamente');
+      
+    } catch (error) {
+      console.error('❌ Error durante la inicialización:', error);
+    }
+    
+    console.log('🏁 Inicialización completada');
+  }
+
+  private async testFirestoreConnection(): Promise<void> {
+    try {
+      console.log('🔌 Probando conexión directa a Firestore...');
+      const tutorsCollection = collection(this.firestore, 'tutors');
+      console.log('📁 Referencia a colección tutors creada:', tutorsCollection);
+      
+      const snapshot = await getDocs(tutorsCollection);
+      console.log('📊 Snapshot obtenido:', {
+        empty: snapshot.empty,
+        size: snapshot.size,
+        docs: snapshot.docs.length
+      });
+      
+      if (snapshot.empty) {
+        console.warn('⚠️ La colección "tutors" está vacía');
+        console.log('🔍 Verifica:');
+        console.log('   1. Que hayas creado documentos en la colección "tutors"');
+        console.log('   2. Que los documentos tengan la estructura correcta');
+        console.log('   3. Que las reglas de Firestore permitan lectura');
+        
+        // Oferta para crear datos de prueba
+        console.log('💡 ¿Quieres crear datos de prueba?');
+        console.log('   Ejecuta: await this.createSampleTutors()');
+      } else {
+        console.log('✅ Conectividad con Firestore verificada exitosamente');
+        snapshot.docs.forEach((doc, index) => {
+          console.log(`📄 Documento ${index + 1}:`, {
+            id: doc.id,
+            data: doc.data()
+          });
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error al probar conectividad con Firestore:', error);
+      throw error;
+    }
+  }
+
+  // Método temporal para crear tutores de prueba - SOLO PARA DESARROLLO
+  async createSampleTutors(): Promise<void> {
+    console.log('🏗️ Creando tutores de prueba...');
+    
+    const sampleTutors: Tutor[] = [
+      {
+        user_id: 'tutor-001',
+        full_name: 'María García',
+        birth_date: new Date('1990-05-15'),
+        country: 'España',
+        phone: '+34 600 123 456',
+        max_hours_per_week: 20,
+        bio: 'Profesora de español con 5 años de experiencia enseñando a estudiantes internacionales.',
+        birth_language: 'Español',
+        experience_level: 'intermediate',
+        hourly_rate: 25,
+        hourly_rate_currency: 'EUR',
+        institution_id: 'inst-001',
+        timezone: 'Europe/Madrid'
+      },
+      {
+        user_id: 'tutor-002',
+        full_name: 'John Smith',
+        birth_date: new Date('1985-03-22'),
+        country: 'Estados Unidos',
+        phone: '+1 555 987 6543',
+        max_hours_per_week: 30,
+        bio: 'Native English speaker with expertise in business English and conversation practice.',
+        birth_language: 'Inglés',
+        experience_level: 'advanced',
+        hourly_rate: 35,
+        hourly_rate_currency: 'USD',
+        institution_id: 'inst-001',
+        timezone: 'America/New_York'
+      },
+      {
+        user_id: 'tutor-003',
+        full_name: 'Sophie Dubois',
+        birth_date: new Date('1992-08-10'),
+        country: 'Francia',
+        phone: '+33 1 45 67 89 12',
+        max_hours_per_week: 25,
+        bio: 'Professeure de français langue étrangère certifiée avec expérience en préparation DELF.',
+        birth_language: 'Francés',
+        experience_level: 'expert',
+        hourly_rate: 30,
+        hourly_rate_currency: 'EUR',
+        institution_id: 'inst-001',
+        timezone: 'Europe/Paris'
+      }
+    ];
+
+    try {
+      for (const tutor of sampleTutors) {
+        console.log(`👨‍🏫 Creando tutor: ${tutor.full_name}...`);
+        await this.tutorService.createTutor(tutor);
+        console.log(`✅ Tutor ${tutor.full_name} creado exitosamente`);
+      }
+      
+      console.log('🎉 Todos los tutores de prueba han sido creados');
+      
+      // Recargar los tutores después de crearlos
+      console.log('🔄 Recargando lista de tutores...');
+      this.loadAvailableTutors(); // No await porque ahora es una suscripción
+      
+    } catch (error) {
+      console.error('❌ Error creando tutores de prueba:', error);
+    }
   }
 
   private createForm(): FormGroup {
@@ -278,47 +212,213 @@ export class AssignTutorDialogComponent implements OnInit {
     });
   }
 
-  private async loadAvailableTutors(): Promise<void> {
-    try {
-      // Obtener todos los tutores activos
-      const tutors = await this.tutorService.getAllTutors().toPromise() || [];
-      
-      // Enriquecer con datos de usuario y crear nombre para mostrar
-      this.tutors = tutors.map(tutor => ({
-        ...tutor,
-                      displayName: tutor.full_name || 'Tutor sin nombre'
-      }));
+  private loadAvailableTutors(): void {
+    console.log('🔄 Iniciando carga de tutores disponibles...');
+    this.isAssigning = true; // Mostrar loading mientras se cargan tutores
+    
+    console.log('📞 Llamando al servicio TutorService.getAllTutors()...');
+    
+    // Suscribirse directamente al Observable (método más eficiente)
+    this.tutorService.getAllTutors().subscribe({
+      next: (tutors) => {
+        console.log('✅ Tutores obtenidos de Firestore:', {
+          count: tutors?.length || 0,
+          data: tutors || []
+        });
 
-      this.filteredTutors$ = of(this.tutors);
-    } catch (error) {
-      console.error('Error loading tutors:', error);
-      this.snackBar.open('Error al cargar los tutores', 'Cerrar', { duration: 3000 });
-    }
+        // Asegurar que tutors sea un array válido
+        const validTutors = tutors || [];
+
+        if (validTutors.length === 0) {
+          console.warn('⚠️ No se encontraron tutores en la base de datos');
+          console.log('🔍 Verificar:');
+          console.log('   - Que existan documentos en la colección "tutors"');
+          console.log('   - Los permisos de lectura en Firestore');
+          console.log('   - La configuración de Firebase');
+          console.log('   - Los índices compuestos necesarios');
+        } else {
+          console.log('🎉 Se encontraron tutores. Procesando...');
+          
+          // Verificar inconsistencias en los datos
+          validTutors.forEach((tutor, index) => {
+            console.log(`🔍 Analizando tutor ${index + 1}:`, {
+              id: tutor.user_id,
+              full_name: tutor.full_name,
+              hasCountry: !!tutor.country,
+              hasCountryTypo: !!(tutor as any).counrty, // Detectar typo
+              hasExperience: !!tutor.experience_level,
+              hasExperienceTypo: !!(tutor as any).expirience_level, // Detectar typo
+              allFields: Object.keys(tutor)
+            });
+          });
+        }
+        
+        // Enriquecer con datos de usuario y crear nombre para mostrar
+        this.tutors = validTutors.map((tutor, index) => {
+          console.log(`👨‍🏫 Procesando tutor ${index + 1}:`, {
+            user_id: tutor.user_id,
+            full_name: tutor.full_name,
+            institution_id: tutor.institution_id,
+            hourly_rate: tutor.hourly_rate,
+            experience_level: tutor.experience_level
+          });
+
+          // Normalizar datos con typos comunes
+          const normalizedTutor = {
+            ...tutor,
+            // Corregir typo en country si existe
+            country: tutor.country || (tutor as any).counrty || 'No especificado',
+            // Corregir typo en experience_level si existe
+            experience_level: tutor.experience_level || (tutor as any).expirience_level || 'beginner'
+          };
+
+          const enrichedTutor = {
+            ...normalizedTutor,
+            displayName: normalizedTutor.full_name || 'Tutor sin nombre'
+          };
+
+          console.log(`✨ Tutor enriquecido ${index + 1}:`, {
+            displayName: enrichedTutor.displayName,
+            user_id: enrichedTutor.user_id,
+            country: enrichedTutor.country,
+            experience_level: enrichedTutor.experience_level,
+            normalizedFields: {
+              originalCountry: tutor.country,
+              typoCountry: (tutor as any).counrty,
+              originalExperience: tutor.experience_level,
+              typoExperience: (tutor as any).expirience_level
+            }
+          });
+
+          return enrichedTutor;
+        });
+
+        console.log('📋 Lista final de tutores procesados:', {
+          totalCount: this.tutors.length,
+          tutorNames: this.tutors.map(t => t.displayName)
+        });
+
+        this.filteredTutors$ = of(this.tutors);
+        console.log('🎯 Observable filteredTutors$ actualizado con', this.tutors.length, 'tutores');
+        
+        // Verificar que el Observable contenga los datos correctos
+        this.filteredTutors$.subscribe(filteredTutors => {
+          console.log('🔍 Suscripción a filteredTutors$:', {
+            count: filteredTutors.length,
+            tutors: filteredTutors.map(t => ({
+              displayName: t.displayName,
+              user_id: t.user_id
+            }))
+          });
+        });
+
+        this.isAssigning = false; // Ocultar loading
+        console.log('🏁 Carga de tutores finalizada exitosamente. isAssigning =', this.isAssigning);
+      },
+      error: (error) => {
+        console.error('❌ Error loading tutors:', error);
+        
+        // Manejo seguro del error
+        const errorDetails: any = error;
+        console.error('📊 Detalles del error:', {
+          message: errorDetails?.message || 'Error desconocido',
+          code: errorDetails?.code || 'N/A',
+          name: errorDetails?.name || 'Error',
+          toString: error?.toString() || 'Error sin descripción'
+        });
+        
+        // Verificar problemas comunes
+        console.log('🔧 Posibles causas del error:');
+        console.log('   1. Problemas de conectividad con Firestore');
+        console.log('   2. Reglas de seguridad muy restrictivas');
+        console.log('   3. Índices compuestos faltantes para orderBy');
+        console.log('   4. Configuración incorrecta de Firebase');
+        console.log('   5. El usuario no tiene permisos de lectura');
+        
+        this.snackBar.open('Error al cargar los tutores', 'Cerrar', { duration: 3000 });
+        this.isAssigning = false; // Ocultar loading en caso de error
+        console.log('🏁 Carga de tutores finalizada con error. isAssigning =', this.isAssigning);
+      }
+    });
   }
 
   private setupTutorSearch(): void {
+    console.log('🔍 Configurando búsqueda de tutores...');
+    console.log('📋 Tutores disponibles para búsqueda:', this.tutors.length);
+    
     this.filteredTutors$ = this.assignForm.get('tutorSearch')!.valueChanges.pipe(
       startWith(''),
-      map(searchTerm => this.filterTutors(searchTerm || ''))
+      map(searchTerm => {
+        console.log('🔎 Término de búsqueda:', searchTerm);
+        const filtered = this.filterTutors(searchTerm || '');
+        console.log('📊 Resultados filtrados:', filtered.length);
+        return filtered;
+      })
     );
   }
 
   private filterTutors(searchTerm: string): TutorWithUser[] {
+    console.log('🔍 Filtrando tutores con término:', searchTerm);
+    console.log('📋 Total de tutores a filtrar:', this.tutors.length);
+    
     if (!searchTerm.trim()) {
+      console.log('✨ Sin término de búsqueda, devolviendo todos los tutores:', this.tutors.length);
       return this.tutors;
     }
 
     const term = searchTerm.toLowerCase();
-    return this.tutors.filter(tutor => 
-      tutor.displayName.toLowerCase().includes(term) ||
-      tutor.userData?.email?.toLowerCase().includes(term) ||
-      tutor.bio?.toLowerCase().includes(term) ||
-      tutor.birth_language.toLowerCase().includes(term)
-    );
+    console.log('🔤 Término normalizado:', term);
+    
+    const filtered = this.tutors.filter((tutor, index) => {
+      const matches = 
+        tutor.displayName.toLowerCase().includes(term) ||
+        tutor.userData?.email?.toLowerCase().includes(term) ||
+        tutor.bio?.toLowerCase().includes(term) ||
+        tutor.birth_language.toLowerCase().includes(term);
+      
+      console.log(`👨‍🏫 Tutor ${index + 1} (${tutor.displayName}):`, {
+        displayName: tutor.displayName,
+        email: tutor.userData?.email,
+        bio: tutor.bio,
+        birth_language: tutor.birth_language,
+        matches: matches
+      });
+      
+      return matches;
+    });
+    
+    console.log('✅ Tutores que coinciden con la búsqueda:', {
+      searchTerm: term,
+      matchCount: filtered.length,
+      matches: filtered.map(t => t.displayName)
+    });
+    
+    return filtered;
   }
 
   selectTutor(tutor: TutorWithUser): void {
     this.selectedTutor = tutor;
+  }
+
+  // Método público para debugging - llamar desde la consola del navegador
+  debugCurrentState(): void {
+    console.log('🔧 Estado actual del componente:', {
+      tutorsArray: this.tutors,
+      tutorsCount: this.tutors.length,
+      selectedTutor: this.selectedTutor,
+      isAssigning: this.isAssigning,
+      formValue: this.assignForm.value
+    });
+
+    console.log('🔍 Verificando filteredTutors$ Observable...');
+    this.filteredTutors$.subscribe(filtered => {
+      console.log('📊 Tutores filtrados actuales:', {
+        count: filtered.length,
+        tutors: filtered
+      });
+    });
+
+    console.log('🎯 Para probar, ejecuta: component.createSampleTutors()');
   }
 
   async assignTutor(): Promise<void> {
@@ -336,7 +436,7 @@ export class AssignTutorDialogComponent implements OnInit {
       await this.jobPostingService.assignTutorToJobPosting(
         this.data.jobPosting.id,
         this.selectedTutor.user_id,
-        formValue.assignmentNotes || ''
+        this.selectedTutor.hourly_rate
       );
 
       // Enviar email de notificación si está habilitado
@@ -368,8 +468,8 @@ export class AssignTutorDialogComponent implements OnInit {
       const emailData = {
         tutorName: this.selectedTutor.displayName,
         tutorEmail: this.selectedTutor.userData.email,
-        institutionName: 'Tu Institución', // Obtener del contexto
-        institutionEmail: 'institucion@example.com', // Obtener del contexto
+        institutionName: 'Tu Institución', // TODO: Obtener del contexto
+        institutionEmail: 'institucion@example.com', // TODO: Obtener del contexto
         jobTitle: this.data.jobPosting.title,
         classDate: this.formatDate(this.data.jobPosting.class_date),
         startTime: this.data.jobPosting.start_time,
@@ -393,12 +493,22 @@ export class AssignTutorDialogComponent implements OnInit {
   formatDate(date: any): string {
     if (!date) return '';
     
+    // Si es un Timestamp de Firestore
+    if (date && typeof date.toDate === 'function') {
+      return date.toDate().toLocaleDateString('es-ES');
+    }
+    
     if (date instanceof Date) {
       return date.toLocaleDateString('es-ES');
     }
     
     if (typeof date === 'string') {
       return new Date(date).toLocaleDateString('es-ES');
+    }
+    
+    // Si es un objeto con seconds (Timestamp serializado)
+    if (date && typeof date === 'object' && date.seconds) {
+      return new Date(date.seconds * 1000).toLocaleDateString('es-ES');
     }
     
     return date.toString();

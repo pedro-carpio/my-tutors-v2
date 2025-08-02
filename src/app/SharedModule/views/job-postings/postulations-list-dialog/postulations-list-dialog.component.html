@@ -1,0 +1,236 @@
+<div class="postulations-dialog">
+      <div class="dialog-header">
+        <div class="title-section">
+          <mat-icon class="title-icon">assignment</mat-icon>
+          <div>
+            <h2>Postulaciones</h2>
+            <p class="job-title">{{ data.jobPosting.title }}</p>
+          </div>
+        </div>
+        <button mat-icon-button mat-dialog-close class="close-button">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="dialog-content" mat-dialog-content>
+        <!-- Información del trabajo -->
+        <mat-card class="job-summary-card">
+          <mat-card-content>
+            <div class="job-info-grid">
+              <div class="info-item">
+                <mat-icon>event</mat-icon>
+                <span>{{ formatDate(data.jobPosting.class_date) }} - {{ data.jobPosting.start_time }}</span>
+              </div>
+              <div class="info-item">
+                <mat-icon>schedule</mat-icon>
+                <span>{{ data.jobPosting.total_duration_minutes }} minutos</span>
+              </div>
+              <div class="info-item">
+                <mat-icon>{{ getModalityIcon(data.jobPosting.modality) }}</mat-icon>
+                <span>{{ getModalityLabel(data.jobPosting.modality) }}</span>
+              </div>
+              <div class="info-item">
+                <mat-icon>group</mat-icon>
+                <span>{{ data.jobPosting.students.length }} estudiantes</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Pestañas de postulaciones -->
+        <div class="postulations-content" *ngIf="!isLoading">
+          <!-- Si hay postulaciones aceptadas, mostrar solo la información de la clase -->
+          <div class="accepted-postulation-info" *ngIf="acceptedPostulations.length > 0">
+            <mat-card class="class-info-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon color="primary">check_circle</mat-icon>
+                  Postulación Aceptada - Clase Asignada
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="accepted-tutor-info">
+                  <div class="tutor-section">
+                    <h4>Tutor Asignado</h4>
+                    <div class="tutor-card">
+                      <div class="tutor-avatar">
+                        <mat-icon>person</mat-icon>
+                      </div>
+                      <div class="tutor-details">
+                        <h5>{{ acceptedPostulations[0].displayName }}</h5>
+                        <p>{{ acceptedPostulations[0].tutorData?.email }}</p>
+                        <mat-chip color="primary">
+                          \${{ acceptedPostulations[0].proposed_hourly_rate }} {{ acceptedPostulations[0].currency }}/h
+                        </mat-chip>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="class-details-section">
+                    <h4>Detalles de la Clase</h4>
+                    <div class="class-details-grid">
+                      <div class="detail-item">
+                        <mat-icon>event</mat-icon>
+                        <span><strong>Fecha:</strong> {{ formatDate(data.jobPosting.class_date) }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <mat-icon>schedule</mat-icon>
+                        <span><strong>Hora:</strong> {{ data.jobPosting.start_time }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <mat-icon>timer</mat-icon>
+                        <span><strong>Duración:</strong> {{ data.jobPosting.total_duration_minutes }} min</span>
+                      </div>
+                      <div class="detail-item">
+                        <mat-icon>{{ getModalityIcon(data.jobPosting.modality) }}</mat-icon>
+                        <span><strong>Modalidad:</strong> {{ getModalityLabel(data.jobPosting.modality) }}</span>
+                      </div>
+                      <div class="detail-item" *ngIf="data.jobPosting.location">
+                        <mat-icon>location_on</mat-icon>
+                        <span><strong>Ubicación:</strong> {{ data.jobPosting.location }}</span>
+                      </div>
+                      <div class="detail-item" *ngIf="data.jobPosting.video_call_link">
+                        <mat-icon>videocam</mat-icon>
+                        <span><strong>Enlace:</strong> {{ data.jobPosting.video_call_link }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="students-section">
+                    <h4>Estudiantes ({{ data.jobPosting.students.length }})</h4>
+                    <div class="students-list">
+                      <mat-card class="student-card" *ngFor="let student of data.jobPosting.students">
+                        <div class="student-info">
+                          <h6>{{ student.name }}</h6>
+                          <p><strong>Edad:</strong> {{ student.age }} años</p>
+                          <p><strong>Nivel:</strong> {{ student.level_group }}</p>
+                          <p *ngIf="student.responsible_person"><strong>Responsable:</strong> {{ student.responsible_person }}</p>
+                          <p *ngIf="student.contact_phone"><strong>Contacto:</strong> {{ student.contact_phone }}</p>
+                        </div>
+                      </mat-card>
+                    </div>
+                  </div>
+
+                  <div class="action-section">
+                    <button 
+                      mat-raised-button 
+                      color="primary"
+                      (click)="createClass(acceptedPostulations[0])"
+                      [disabled]="isProcessingAction">
+                      <mat-icon *ngIf="!isProcessingAction">class</mat-icon>
+                      <mat-icon *ngIf="isProcessingAction">hourglass_empty</mat-icon>
+                      {{ isProcessingAction ? 'Creando clase...' : 'Crear Clase' }}
+                    </button>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <!-- Si no hay postulaciones aceptadas, mostrar solo las pendientes -->
+          <div class="pending-postulations" *ngIf="acceptedPostulations.length === 0">
+            <h3>Postulaciones Pendientes ({{ pendingPostulations.length }})</h3>
+            
+            <div class="postulations-table" *ngIf="pendingPostulations.length > 0">
+              <mat-card class="postulation-card" *ngFor="let postulation of pendingPostulations">
+                <mat-card-content>
+                  <div class="postulation-header">
+                    <div class="tutor-info">
+                      <div class="tutor-avatar">
+                        <mat-icon>person</mat-icon>
+                      </div>
+                      <div class="tutor-details">
+                        <h4>{{ postulation.displayName }}</h4>
+                        <p class="tutor-email">{{ postulation.tutorData?.email }}</p>
+                      </div>
+                    </div>
+                    <div class="postulation-meta">
+                      <mat-chip color="accent">Pendiente</mat-chip>
+                      <span class="postulation-date">{{ formatDateTime(postulation.postulated_at) }}</span>
+                    </div>
+                  </div>
+
+                  <div class="postulation-details">
+                    <div class="rate-section">
+                      <h5>Tarifa Propuesta</h5>
+                      <div class="rate-display">
+                        <strong>\${{ postulation.proposed_hourly_rate }}</strong>
+                        <span class="currency">{{ postulation.currency }}/hora</span>
+                      </div>
+                    </div>
+
+                    <div class="approach-section" *ngIf="postulation.teaching_approach">
+                      <h5>Enfoque Pedagógico</h5>
+                      <p>{{ postulation.teaching_approach }}</p>
+                    </div>
+
+                    <div class="cover-letter-section" *ngIf="postulation.cover_letter">
+                      <h5>Carta de Presentación</h5>
+                      <p>{{ postulation.cover_letter }}</p>
+                    </div>
+                  </div>
+
+                  <div class="postulation-actions">
+                    <button 
+                      mat-raised-button 
+                      color="primary"
+                      (click)="acceptPostulation(postulation)"
+                      [disabled]="isProcessingAction">
+                      <mat-icon *ngIf="!isProcessingAction">check</mat-icon>
+                      <mat-icon *ngIf="isProcessingAction">hourglass_empty</mat-icon>
+                      {{ isProcessingAction ? 'Aceptando...' : 'Aceptar' }}
+                    </button>
+                    <button 
+                      mat-outlined-button 
+                      color="warn"
+                      (click)="rejectPostulation(postulation)"
+                      [disabled]="isProcessingAction">
+                      <mat-icon *ngIf="!isProcessingAction">close</mat-icon>
+                      <mat-icon *ngIf="isProcessingAction">hourglass_empty</mat-icon>
+                      {{ isProcessingAction ? 'Rechazando...' : 'Rechazar' }}
+                    </button>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <!-- Mensaje cuando no hay postulaciones pendientes -->
+            <div class="no-postulations" *ngIf="pendingPostulations.length === 0">
+              <mat-icon>assignment_late</mat-icon>
+              <h3>No hay postulaciones pendientes</h3>
+              <p>Aún no se han recibido postulaciones para esta oferta de trabajo.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-container" *ngIf="isLoading">
+          <mat-spinner></mat-spinner>
+          <p>Cargando postulaciones...</p>
+        </div>
+        
+        <!-- Debug Info (temporal) -->
+        <div style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; font-size: 12px; z-index: 9999;" *ngIf="true">
+          <div><strong>Estado del Componente:</strong></div>
+          <div>isLoading: {{ isLoading }}</div>
+          <div>allPostulations: {{ allPostulations.length }}</div>
+          <div>pendingPostulations: {{ pendingPostulations.length }}</div>
+          <div>acceptedPostulations: {{ acceptedPostulations.length }}</div>
+          <hr style="margin: 5px 0;">
+          <div *ngIf="pendingPostulations.length > 0"><strong>Pendientes:</strong></div>
+          <div *ngFor="let p of pendingPostulations" style="font-size: 10px;">
+            {{ p.displayName }} ({{ p.status }})
+          </div>
+          <div *ngIf="acceptedPostulations.length > 0"><strong>Aceptadas:</strong></div>
+          <div *ngFor="let p of acceptedPostulations" style="font-size: 10px;">
+            {{ p.displayName }} ({{ p.status }})
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-actions" mat-dialog-actions>
+        <button mat-button mat-dialog-close [disabled]="isProcessingAction">
+          Cerrar
+        </button>
+      </div>
+    </div>

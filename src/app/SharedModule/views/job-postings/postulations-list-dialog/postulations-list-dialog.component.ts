@@ -1,4 +1,4 @@
-import { Component, Inject, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -11,8 +11,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, firstValueFrom } from 'rxjs';
+import { takeUntil, timeout } from 'rxjs/operators';
 
 import { TutorPostulationService } from '../../../../services/tutor-postulation.service';
 import { UserService } from '../../../../services/user.service';
@@ -45,227 +45,7 @@ interface PostulationWithTutor extends TutorPostulation {
     MatMenuModule,
     MatTooltipModule
   ],
-  template: `
-    <div class="postulations-dialog">
-      <div class="dialog-header">
-        <div class="title-section">
-          <mat-icon class="title-icon">assignment</mat-icon>
-          <div>
-            <h2>Postulaciones</h2>
-            <p class="job-title">{{ data.jobPosting.title }}</p>
-          </div>
-        </div>
-        <button mat-icon-button mat-dialog-close class="close-button">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-
-      <div class="dialog-content" mat-dialog-content>
-        <!-- Información del trabajo -->
-        <mat-card class="job-summary-card">
-          <mat-card-content>
-            <div class="job-info-grid">
-              <div class="info-item">
-                <mat-icon>event</mat-icon>
-                <span>{{ formatDate(data.jobPosting.class_date) }} - {{ data.jobPosting.start_time }}</span>
-              </div>
-              <div class="info-item">
-                <mat-icon>schedule</mat-icon>
-                <span>{{ data.jobPosting.total_duration_minutes }} minutos</span>
-              </div>
-              <div class="info-item">
-                <mat-icon>{{ getModalityIcon(data.jobPosting.modality) }}</mat-icon>
-                <span>{{ getModalityLabel(data.jobPosting.modality) }}</span>
-              </div>
-              <div class="info-item">
-                <mat-icon>group</mat-icon>
-                <span>{{ data.jobPosting.students.length }} estudiantes</span>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <!-- Pestañas de postulaciones -->
-        <mat-tab-group class="postulations-tabs">
-          <mat-tab [label]="'Todas (' + allPostulations.length + ')'">
-            <div class="tab-content">
-              <div class="postulations-content" *ngIf="!isLoading">
-                <div class="postulations-table" *ngIf="allPostulations.length > 0">
-                  <mat-table [dataSource]="allPostulations" class="postulations-mat-table">
-                    
-                    <!-- Columna de tutor -->
-                    <ng-container matColumnDef="tutor">
-                      <mat-header-cell *matHeaderCellDef>Tutor</mat-header-cell>
-                      <mat-cell *matCellDef="let postulation">
-                        <div class="tutor-info">
-                          <div class="tutor-avatar">
-                            <mat-icon>person</mat-icon>
-                          </div>
-                          <div class="tutor-details">
-                            <div class="tutor-name">{{ postulation.displayName }}</div>
-                            <div class="tutor-email">{{ postulation.tutorData?.email }}</div>
-                          </div>
-                        </div>
-                      </mat-cell>
-                    </ng-container>
-
-                    <!-- Columna de tarifa propuesta -->
-                    <ng-container matColumnDef="proposed_rate">
-                      <mat-header-cell *matHeaderCellDef>Tarifa/hora</mat-header-cell>
-                      <mat-cell *matCellDef="let postulation">
-                        <div class="rate-info">
-                          <strong>\${{ postulation.proposed_hourly_rate }}</strong>
-                          <span class="currency">{{ postulation.currency }}</span>
-                        </div>
-                      </mat-cell>
-                    </ng-container>
-
-                    <!-- Columna de estado -->
-                    <ng-container matColumnDef="status">
-                      <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
-                      <mat-cell *matCellDef="let postulation">
-                        <mat-chip 
-                          [color]="getStatusColor(postulation.status)"
-                          [class]="'status-' + postulation.status">
-                          {{ getStatusText(postulation.status) }}
-                        </mat-chip>
-                      </mat-cell>
-                    </ng-container>
-
-                    <!-- Columna de fecha -->
-                    <ng-container matColumnDef="postulated_at">
-                      <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
-                      <mat-cell *matCellDef="let postulation">
-                        {{ formatDateTime(postulation.postulated_at) }}
-                      </mat-cell>
-                    </ng-container>
-
-                    <!-- Columna de acciones -->
-                    <ng-container matColumnDef="actions">
-                      <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
-                      <mat-cell *matCellDef="let postulation">
-                        <div class="action-buttons">
-                          <!-- Acciones para postulaciones pendientes -->
-                          <ng-container *ngIf="postulation.status === 'pending'">
-                            <button 
-                              mat-icon-button 
-                              color="primary"
-                              (click)="acceptPostulation(postulation)"
-                              matTooltip="Aceptar postulación">
-                              <mat-icon>check</mat-icon>
-                            </button>
-                            <button 
-                              mat-icon-button 
-                              color="warn"
-                              (click)="rejectPostulation(postulation)"
-                              matTooltip="Rechazar postulación">
-                              <mat-icon>close</mat-icon>
-                            </button>
-                          </ng-container>
-                          
-                          <!-- Acciones para postulaciones aceptadas -->
-                          <ng-container *ngIf="postulation.status === 'accepted'">
-                            <button 
-                              mat-raised-button 
-                              color="primary"
-                              (click)="createClass(postulation)"
-                              matTooltip="Crear clase">
-                              <mat-icon>add</mat-icon>
-                              Crear Clase
-                            </button>
-                          </ng-container>
-
-                          <!-- Menú de opciones adicionales -->
-                          <button 
-                            mat-icon-button 
-                            [matMenuTriggerFor]="postulationMenu"
-                            matTooltip="Más opciones">
-                            <mat-icon>more_vert</mat-icon>
-                          </button>
-                          <mat-menu #postulationMenu="matMenu">
-                            <button mat-menu-item (click)="viewPostulationDetails(postulation)">
-                              <mat-icon>info</mat-icon>
-                              Ver detalles
-                            </button>
-                            <button mat-menu-item (click)="contactTutor(postulation)">
-                              <mat-icon>email</mat-icon>
-                              Contactar tutor
-                            </button>
-                          </mat-menu>
-                        </div>
-                      </mat-cell>
-                    </ng-container>
-
-                    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-                    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-                  </mat-table>
-                </div>
-
-                <!-- Mensaje cuando no hay postulaciones -->
-                <div class="no-postulations" *ngIf="allPostulations.length === 0">
-                  <mat-icon>assignment_late</mat-icon>
-                  <h3>No hay postulaciones</h3>
-                  <p>Aún no se han recibido postulaciones para esta oferta de trabajo.</p>
-                </div>
-              </div>
-
-              <!-- Loading -->
-              <div class="loading-container" *ngIf="isLoading">
-                <mat-spinner></mat-spinner>
-                <p>Cargando postulaciones...</p>
-              </div>
-            </div>
-          </mat-tab>
-
-          <mat-tab [label]="'Pendientes (' + pendingPostulations.length + ')'">
-            <div class="tab-content">
-              <div class="postulations-table" *ngIf="pendingPostulations.length > 0">
-                <mat-table [dataSource]="pendingPostulations" class="postulations-mat-table">
-                  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-                  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-                </mat-table>
-              </div>
-              <div class="no-postulations" *ngIf="pendingPostulations.length === 0">
-                <mat-icon>hourglass_empty</mat-icon>
-                <h3>No hay postulaciones pendientes</h3>
-                <p>Todas las postulaciones han sido procesadas.</p>
-              </div>
-            </div>
-          </mat-tab>
-
-          <mat-tab [label]="'Aceptadas (' + acceptedPostulations.length + ')'">
-            <div class="tab-content">
-              <div class="postulations-table" *ngIf="acceptedPostulations.length > 0">
-                <mat-table [dataSource]="acceptedPostulations" class="postulations-mat-table">
-                  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-                  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-                </mat-table>
-              </div>
-              <div class="no-postulations" *ngIf="acceptedPostulations.length === 0">
-                <mat-icon>check_circle_outline</mat-icon>
-                <h3>No hay postulaciones aceptadas</h3>
-                <p>Aún no has aceptado ninguna postulación.</p>
-              </div>
-            </div>
-          </mat-tab>
-        </mat-tab-group>
-      </div>
-
-      <div class="dialog-actions" mat-dialog-actions>
-        <button mat-button mat-dialog-close>
-          Cerrar
-        </button>
-        <button 
-          mat-raised-button 
-          color="primary"
-          *ngIf="acceptedPostulations.length > 0"
-          (click)="createClassFromFirstAccepted()">
-          <mat-icon>class</mat-icon>
-          Crear Clase
-        </button>
-      </div>
-    </div>
-  `,
+  templateUrl: './postulations-list-dialog.component.html',
   styleUrl: './postulations-list-dialog.component.scss'
 })
 export class PostulationsListDialogComponent implements OnInit, OnDestroy {
@@ -273,9 +53,11 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
   private userService = inject(UserService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
+  private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
   isLoading = false;
+  isProcessingAction = false;
   allPostulations: PostulationWithTutor[] = [];
   pendingPostulations: PostulationWithTutor[] = [];
   acceptedPostulations: PostulationWithTutor[] = [];
@@ -288,95 +70,348 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    console.log('🚀 [PostulationsDialog] Componente inicializado');
+    console.log('📝 [PostulationsDialog] Job Posting recibido:', this.data.jobPosting);
+    
+    // Verificar servicios
+    console.log('🔍 [PostulationsDialog] Verificando servicios disponibles:');
+    console.log('   - tutorPostulationService:', !!this.tutorPostulationService);
+    console.log('   - userService:', !!this.userService);
+    console.log('   - snackBar:', !!this.snackBar);
+    console.log('   - dialog:', !!this.dialog);
+    console.log('   - cdr:', !!this.cdr);
+    
     this.loadPostulations();
   }
 
   ngOnDestroy(): void {
+    console.log('🛑 [PostulationsDialog] Componente destruyéndose');
     this.destroy$.next();
     this.destroy$.complete();
   }
 
   private async loadPostulations(): Promise<void> {
+    console.log('🔄 [PostulationsDialog] === INICIANDO CARGA DE POSTULACIONES ===');
+    console.log('📝 [PostulationsDialog] Job Posting ID:', this.data.jobPosting.id);
+    
+    // Inicializar estado
     this.isLoading = true;
-
+    this.allPostulations = [];
+    this.pendingPostulations = [];
+    this.acceptedPostulations = [];
+    this.cdr.detectChanges();
+    
     try {
-      this.tutorPostulationService.getPostulationsByJobPosting(this.data.jobPosting.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: async (postulations) => {
-            // Enriquecer postulaciones con datos del tutor
-            this.allPostulations = await Promise.all(
-              postulations.map(async (postulation) => {
-                const tutorData = postulation.tutor_id ? 
-                  await this.userService.getUser(postulation.tutor_id).toPromise() : 
-                  undefined;
+      // Obtener postulaciones desde el servicio
+      const postulations = await new Promise<TutorPostulation[]>((resolve, reject) => {
+        this.tutorPostulationService.getPostulationsByJobPosting(this.data.jobPosting.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (data) => {
+              console.log('✅ [PostulationsDialog] Postulaciones obtenidas:', data.length);
+              resolve(data);
+            },
+            error: (error) => {
+              console.error('❌ [PostulationsDialog] Error obteniendo postulaciones:', error);
+              reject(error);
+            }
+          });
+      });
 
-                return {
-                  ...postulation,
-                  tutorData,
-                  displayName: tutorData?.email || 'Tutor sin nombre'
-                };
-              })
-            );
+      console.log('📊 [PostulationsDialog] Postulaciones recibidas:', postulations);
 
-            this.filterPostulationsByStatus();
-            this.isLoading = false;
-          },
-          error: (error) => {
-            console.error('Error loading postulations:', error);
-            this.snackBar.open('Error al cargar las postulaciones', 'Cerrar', { duration: 3000 });
-            this.isLoading = false;
-          }
+      // Si no hay postulaciones, terminar aquí
+      if (postulations.length === 0) {
+        console.log('⚠️ [PostulationsDialog] No hay postulaciones');
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        return;
+      }
+
+      // Enriquecer cada postulación con datos del tutor
+      console.log('🔄 [PostulationsDialog] Enriqueciendo postulaciones...');
+      const enrichedPostulations: PostulationWithTutor[] = [];
+
+      for (let i = 0; i < postulations.length; i++) {
+        const postulation = postulations[i];
+        console.log(`👤 [PostulationsDialog] Procesando postulación ${i + 1}/${postulations.length}:`, {
+          id: postulation.id,
+          tutor_id: postulation.tutor_id,
+          status: postulation.status,
+          rate: postulation.proposed_hourly_rate
         });
+
+        let tutorData: User | undefined;
+        let displayName = 'Tutor sin nombre';
+
+        console.log(`🔍 [PostulationsDialog] Verificando tutor_id para postulación ${postulation.id}:`, postulation.tutor_id);
+
+        if (postulation.tutor_id) {
+          console.log(`🔄 [PostulationsDialog] tutor_id existe, iniciando llamada al servicio...`);
+          console.log(`📋 [PostulationsDialog] Valor de tutor_id:`, {
+            id: postulation.tutor_id,
+            tipo: typeof postulation.tutor_id,
+            longitud: postulation.tutor_id.length
+          });
+
+          try {
+            console.log(`🚀 [PostulationsDialog] Llamando a userService.getUser('${postulation.tutor_id}')...`);
+            
+            // Verificar que el servicio existe
+            if (!this.userService) {
+              console.error(`❌ [PostulationsDialog] userService no está disponible!`);
+              throw new Error('UserService no está disponible');
+            }
+
+            console.log(`🔍 [PostulationsDialog] userService disponible, llamando getUser()...`);
+            const userObservable = this.userService.getUser(postulation.tutor_id);
+            
+            if (!userObservable) {
+              console.error(`❌ [PostulationsDialog] getUser() devolvió null/undefined`);
+              throw new Error('getUser() devolvió null/undefined');
+            }
+
+            console.log(`🔍 [PostulationsDialog] Observable obtenido:`, {
+              observable: userObservable,
+              tipo: typeof userObservable,
+              esObservable: userObservable.constructor?.name === 'Observable'
+            });
+
+            console.log(`🔍 [PostulationsDialog] Observable obtenido, convirtiendo a Promise con firstValueFrom()...`);
+            
+            try {
+              // Agregar timeout de 10 segundos para evitar cuelgues
+              const userObservableWithTimeout = userObservable.pipe(timeout(10000));
+              console.log(`⏰ [PostulationsDialog] Timeout de 10 segundos agregado al Observable`);
+              
+              tutorData = await firstValueFrom(userObservableWithTimeout);
+              console.log(`✅ [PostulationsDialog] firstValueFrom() completado exitosamente`);
+            } catch (conversionError) {
+              console.error(`❌ [PostulationsDialog] Error en firstValueFrom():`, {
+                error: conversionError,
+                mensaje: conversionError instanceof Error ? conversionError.message : 'Error desconocido',
+                esTimeout: conversionError instanceof Error && conversionError.name === 'TimeoutError',
+                tutorId: postulation.tutor_id
+              });
+              throw conversionError;
+            }
+            
+            console.log(`📊 [PostulationsDialog] Resultado de toPromise():`, {
+              resultado: tutorData,
+              tipo: typeof tutorData,
+              esNull: tutorData === null,
+              esUndefined: tutorData === undefined,
+              tieneEmail: tutorData?.email ? true : false
+            });
+
+            if (tutorData) {
+              displayName = tutorData.email || `Tutor ${postulation.tutor_id.substring(0, 8)}`;
+              console.log(`✅ [PostulationsDialog] Datos del tutor obtenidos exitosamente:`, {
+                postulationId: postulation.id,
+                tutorId: postulation.tutor_id,
+                tutorEmail: tutorData.email,
+                displayName: displayName,
+                tutorData: tutorData
+              });
+            } else {
+              console.warn(`⚠️ [PostulationsDialog] tutorData es null/undefined para tutor_id: ${postulation.tutor_id}`);
+              displayName = `Tutor ${postulation.tutor_id.substring(0, 8)}`;
+            }
+
+          } catch (error) {
+            console.error(`❌ [PostulationsDialog] Error completo obteniendo tutor ${postulation.tutor_id}:`, {
+              error: error,
+              mensaje: error instanceof Error ? error.message : 'Error desconocido',
+              stack: error instanceof Error ? error.stack : 'No stack disponible',
+              postulationId: postulation.id,
+              tutorId: postulation.tutor_id
+            });
+            
+            // Establecer un displayName por defecto en caso de error
+            displayName = `Tutor ${postulation.tutor_id.substring(0, 8)} (Error)`;
+          }
+        } else {
+          console.warn(`⚠️ [PostulationsDialog] Postulación ${postulation.id} NO tiene tutor_id`);
+          displayName = 'Tutor sin ID';
+        }
+
+        console.log(`📋 [PostulationsDialog] Resultado final para postulación ${postulation.id}:`, {
+          tutorId: postulation.tutor_id,
+          displayName: displayName,
+          tieneTutorData: !!tutorData,
+          tutorEmail: tutorData?.email
+        });
+
+        enrichedPostulations.push({
+          ...postulation,
+          tutorData,
+          displayName
+        });
+
+        console.log(`✅ [PostulationsDialog] Postulación ${i + 1} procesada y agregada al array:`, {
+          id: postulation.id,
+          displayName: displayName,
+          status: postulation.status,
+          arrayLength: enrichedPostulations.length
+        });
+      }
+
+      console.log(`📊 [PostulationsDialog] Bucle completado. Array final:`, {
+        totalProcessed: enrichedPostulations.length,
+        originalLength: postulations.length,
+        allIds: enrichedPostulations.map(p => ({ id: p.id, name: p.displayName, status: p.status }))
+      });
+
+      // Actualizar todas las postulaciones
+      this.allPostulations = enrichedPostulations;
+      console.log('✅ [PostulationsDialog] Postulaciones enriquecidas asignadas a this.allPostulations:', this.allPostulations.length);
+
+      // Filtrar por estado
+      this.filterPostulationsByStatus();
+
+      console.log('📊 [PostulationsDialog] === RESUMEN FINAL ===');
+      console.log(`   Total: ${this.allPostulations.length}`);
+      console.log(`   Pendientes: ${this.pendingPostulations.length}`);
+      console.log(`   Aceptadas: ${this.acceptedPostulations.length}`);
+
     } catch (error) {
-      console.error('Error in loadPostulations:', error);
+      console.error('❌ [PostulationsDialog] Error en carga:', error);
+      this.snackBar.open('Error al cargar las postulaciones', 'Cerrar', { duration: 3000 });
+    } finally {
       this.isLoading = false;
+      this.cdr.detectChanges();
+      console.log('✅ [PostulationsDialog] === CARGA COMPLETADA ===');
     }
   }
 
   private filterPostulationsByStatus(): void {
-    this.pendingPostulations = this.allPostulations.filter(p => p.status === 'pending');
-    this.acceptedPostulations = this.allPostulations.filter(p => p.status === 'accepted');
+    console.log('🔄 [PostulationsDialog] === INICIANDO FILTRADO DE POSTULACIONES ===');
+    console.log('📊 [PostulationsDialog] Estado antes del filtrado:', {
+      allPostulationsLength: this.allPostulations.length,
+      allPostulations: this.allPostulations.map(p => ({ 
+        id: p.id, 
+        status: p.status, 
+        displayName: p.displayName,
+        tutorId: p.tutor_id 
+      }))
+    });
+    
+    // Filtrar pendientes
+    console.log('🔍 [PostulationsDialog] Filtrando postulaciones pendientes...');
+    this.pendingPostulations = this.allPostulations.filter(p => {
+      const isPending = p.status === 'pending';
+      console.log(`📋 [PostulationsDialog] Postulación ${p.id}: status='${p.status}', isPending=${isPending}`);
+      return isPending;
+    });
+    
+    // Filtrar aceptadas
+    console.log('🔍 [PostulationsDialog] Filtrando postulaciones aceptadas...');
+    this.acceptedPostulations = this.allPostulations.filter(p => {
+      const isAccepted = p.status === 'accepted';
+      console.log(`📋 [PostulationsDialog] Postulación ${p.id}: status='${p.status}', isAccepted=${isAccepted}`);
+      return isAccepted;
+    });
+    
+    console.log('📊 [PostulationsDialog] === RESULTADO DEL FILTRADO ===');
+    console.log(`   Total original: ${this.allPostulations.length}`);
+    console.log(`   Pendientes filtradas: ${this.pendingPostulations.length}`);
+    console.log(`   Aceptadas filtradas: ${this.acceptedPostulations.length}`);
+    
+    // Log detallado para debugging
+    if (this.pendingPostulations.length > 0) {
+      console.log('⏳ [PostulationsDialog] Postulaciones PENDIENTES encontradas:', 
+        this.pendingPostulations.map(p => ({ 
+          id: p.id, 
+          tutor: p.displayName, 
+          status: p.status,
+          tutorData: !!p.tutorData 
+        })));
+    } else {
+      console.warn('⚠️ [PostulationsDialog] NO se encontraron postulaciones pendientes');
+    }
+    
+    if (this.acceptedPostulations.length > 0) {
+      console.log('✅ [PostulationsDialog] Postulaciones ACEPTADAS encontradas:', 
+        this.acceptedPostulations.map(p => ({ 
+          id: p.id, 
+          tutor: p.displayName, 
+          status: p.status,
+          tutorData: !!p.tutorData 
+        })));
+    } else {
+      console.log('ℹ️ [PostulationsDialog] No hay postulaciones aceptadas');
+    }
+    
+    console.log('🔄 [PostulationsDialog] Forzando detección de cambios...');
+    this.cdr.detectChanges();
+    console.log('✅ [PostulationsDialog] === FILTRADO COMPLETADO ===');
   }
 
   async acceptPostulation(postulation: PostulationWithTutor): Promise<void> {
-    if (!postulation.id) return;
+    console.log('✅ [PostulationsDialog] Aceptando postulación:', postulation.id);
+    
+    if (!postulation.id) {
+      console.error('❌ [PostulationsDialog] Error: Postulación sin ID');
+      return;
+    }
+
+    this.isProcessingAction = true;
 
     try {
       await this.tutorPostulationService.acceptPostulation(postulation.id, 'Postulación aceptada');
-      this.snackBar.open('Postulación aceptada correctamente', 'Cerrar', { 
-        duration: 3000,
-        panelClass: ['success-snackbar']
-      });
-      this.loadPostulations(); // Recargar para actualizar estados
+      console.log('✅ [PostulationsDialog] Postulación aceptada exitosamente');
+      this.snackBar.open('Postulación aceptada correctamente', 'Cerrar', { duration: 3000 });
+      this.loadPostulations(); // Recargar datos
     } catch (error) {
-      console.error('Error accepting postulation:', error);
+      console.error('❌ [PostulationsDialog] Error aceptando postulación:', error);
       this.snackBar.open('Error al aceptar la postulación', 'Cerrar', { duration: 3000 });
+    } finally {
+      this.isProcessingAction = false;
     }
   }
 
   async rejectPostulation(postulation: PostulationWithTutor): Promise<void> {
-    if (!postulation.id) return;
+    console.log('❌ [PostulationsDialog] Rechazando postulación:', postulation.id);
+    
+    if (!postulation.id) {
+      console.error('❌ [PostulationsDialog] Error: Postulación sin ID');
+      return;
+    }
+
+    this.isProcessingAction = true;
 
     try {
       await this.tutorPostulationService.rejectPostulation(postulation.id, 'Postulación rechazada');
-      this.snackBar.open('Postulación rechazada correctamente', 'Cerrar', { 
-        duration: 3000,
-        panelClass: ['success-snackbar']
-      });
-      this.loadPostulations(); // Recargar para actualizar estados
+      console.log('✅ [PostulationsDialog] Postulación rechazada exitosamente');
+      this.snackBar.open('Postulación rechazada correctamente', 'Cerrar', { duration: 3000 });
+      this.loadPostulations(); // Recargar datos
     } catch (error) {
-      console.error('Error rejecting postulation:', error);
+      console.error('❌ [PostulationsDialog] Error rechazando postulación:', error);
       this.snackBar.open('Error al rechazar la postulación', 'Cerrar', { duration: 3000 });
+    } finally {
+      this.isProcessingAction = false;
     }
   }
 
   createClass(postulation: PostulationWithTutor): void {
+    console.log('🎓 [PostulationsDialog] Iniciando proceso de creación de clase...');
+    console.log('📝 [PostulationsDialog] Postulación para crear clase:', {
+      id: postulation.id,
+      tutorName: postulation.displayName,
+      tutorEmail: postulation.tutorData?.email,
+      jobTitle: this.data.jobPosting.title
+    });
+    
     if (!postulation.tutorData) {
+      console.error('❌ [PostulationsDialog] Error: No se pueden obtener los datos del tutor');
       this.snackBar.open('No se pueden obtener los datos del tutor', 'Cerrar', { duration: 3000 });
       return;
     }
 
+    this.isProcessingAction = true;
+    console.log('🔄 [PostulationsDialog] Estado de procesamiento activado para creación de clase');
+
+    console.log('🔄 [PostulationsDialog] Abriendo diálogo de creación de clase...');
     const dialogRef = this.dialog.open(CreateClassDialogComponent, {
       width: '800px',
       maxWidth: '90vw',
@@ -387,13 +422,25 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
       }
     });
 
+    console.log('✅ [PostulationsDialog] Diálogo de creación de clase abierto');
+
     dialogRef.afterClosed().subscribe(result => {
+      console.log('🔄 [PostulationsDialog] Diálogo de creación de clase cerrado');
+      console.log('📝 [PostulationsDialog] Resultado del diálogo:', result);
+      
+      this.isProcessingAction = false;
+      console.log('✅ [PostulationsDialog] Estado de procesamiento desactivado');
+      
       if (result) {
+        console.log('✅ [PostulationsDialog] Clase creada exitosamente');
         this.snackBar.open('Clase creada exitosamente', 'Cerrar', { 
           duration: 3000,
           panelClass: ['success-snackbar']
         });
+        console.log('🔄 [PostulationsDialog] Cerrando diálogo principal...');
         this.dialogRef.close(true);
+      } else {
+        console.log('ℹ️ [PostulationsDialog] Creación de clase cancelada por el usuario');
       }
     });
   }
@@ -419,12 +466,22 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
   formatDate(date: any): string {
     if (!date) return '';
     
+    // Si es un Timestamp de Firestore  
+    if (date && typeof date.toDate === 'function') {
+      return date.toDate().toLocaleDateString('es-ES');
+    }
+    
     if (date instanceof Date) {
       return date.toLocaleDateString('es-ES');
     }
     
     if (typeof date === 'string') {
       return new Date(date).toLocaleDateString('es-ES');
+    }
+    
+    // Si es un objeto con seconds (Timestamp serializado)
+    if (date && typeof date === 'object' && date.seconds) {
+      return new Date(date.seconds * 1000).toLocaleDateString('es-ES');
     }
     
     return date.toString();
@@ -446,6 +503,13 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
     
     if (typeof date === 'string') {
       const dateObj = new Date(date);
+      return dateObj.toLocaleDateString('es-ES') + ' ' + 
+             dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    // Si es un objeto con seconds (Timestamp serializado)
+    if (date && typeof date === 'object' && date.seconds) {
+      const dateObj = new Date(date.seconds * 1000);
       return dateObj.toLocaleDateString('es-ES') + ' ' + 
              dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     }

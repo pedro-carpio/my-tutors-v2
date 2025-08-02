@@ -82,6 +82,8 @@ export class EmailService {
    */
   async sendJobAssignmentEmailToTutor(data: JobAssignmentEmailData): Promise<void> {
     const template = this.generateJobAssignmentTutorTemplate(data);
+    console.log('Enviando email de asignación de trabajo al tutor:', data.tutorEmail);
+    console.log('Template:', template);
     await this.sendEmail(data.tutorEmail, template);
   }
 

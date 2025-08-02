@@ -17,12 +17,31 @@ service cloud.firestore {
                       && request.resource.data.imageUrl.matches('https?://.*'));
       allow delete: if false;
     }
+    
     // FCM Tokens:
     //   - Anyone can write their token.
     //   - Reading list of tokens is not allowed.
     match /fcmTokens/{token} {
       allow read: if false;
       allow write;
+    }
+    
+    // TEMPORARY: Allow read access to tutors collection for debugging
+    // TODO: Implement proper authentication and authorization rules
+    match /tutors/{tutorId} {
+      allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
+    }
+    
+    // TEMPORARY: Allow read access to users collection for debugging
+    // TODO: Implement proper authentication and authorization rules  
+    match /users/{userId} {
+      allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
+    }
+    
+    // TEMPORARY: Allow read access to job_postings collection for debugging
+    // TODO: Implement proper authentication and authorization rules
+    match /job_postings/{jobId} {
+      allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
     }
   }
 }

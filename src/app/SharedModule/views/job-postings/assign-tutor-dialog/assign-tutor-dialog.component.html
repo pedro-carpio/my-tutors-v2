@@ -1,0 +1,194 @@
+    <div class="assign-tutor-dialog">
+      <div class="dialog-header">
+        <div class="title-section">
+          <mat-icon class="title-icon">person_add</mat-icon>
+          <h2>Asignar Tutor</h2>
+        </div>
+        <button mat-icon-button mat-dialog-close class="close-button">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="dialog-content" mat-dialog-content>
+        <!-- Información del trabajo -->
+        <mat-card class="job-info-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>work</mat-icon>
+              Información del Trabajo
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="job-summary">
+              <h3>{{ data.jobPosting.title }}</h3>
+              <div class="details-grid">
+                <div class="detail-item">
+                  <strong>Programa:</strong>
+                  <span>{{ data.jobPosting.program }}</span>
+                </div>
+                <div class="detail-item">
+                  <strong>Fecha:</strong>
+                  <span>{{ formatDate(data.jobPosting.class_date) }}</span>
+                </div>
+                <div class="detail-item">
+                  <strong>Hora:</strong>
+                  <span>{{ data.jobPosting.start_time }}</span>
+                </div>
+                <div class="detail-item">
+                  <strong>Duración:</strong>
+                  <span>{{ data.jobPosting.total_duration_minutes }} min</span>
+                </div>
+                <div class="detail-item">
+                  <strong>Modalidad:</strong>
+                  <span>{{ getModalityLabel(data.jobPosting.modality) }}</span>
+                </div>
+                <div class="detail-item">
+                  <strong>Estudiantes:</strong>
+                  <span>{{ data.jobPosting.students.length }}</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Selección de tutor -->
+        <form [formGroup]="assignForm" class="assign-form">
+          <mat-card class="tutor-selection-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>person_search</mat-icon>
+                Seleccionar Tutor
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <!-- Búsqueda de tutor -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Buscar tutor</mat-label>
+                <mat-icon matPrefix>search</mat-icon>
+                <input 
+                  matInput 
+                  formControlName="tutorSearch"
+                  placeholder="Nombre, email o especialidad del tutor...">
+              </mat-form-field>
+
+              <!-- Lista de tutores disponibles -->
+              <div class="tutors-list" *ngIf="filteredTutors$ | async as tutors">
+                <div class="tutor-option" 
+                     *ngFor="let tutor of tutors"
+                     [class.selected]="selectedTutor?.user_id === tutor.user_id"
+                     (click)="selectTutor(tutor)">
+                  <div class="tutor-info">
+                    <div class="tutor-avatar">
+                      <mat-icon>person</mat-icon>
+                    </div>
+                    <div class="tutor-details">
+                      <h4>{{ tutor.displayName }}</h4>
+                      <p class="tutor-email">{{ tutor.user_id }}</p>
+                      <p class="tutor-country">{{ tutor.country }}</p>
+                      <div class="tutor-meta">
+                        <mat-chip class="experience-chip">
+                          {{ getExperienceLabel(tutor.experience_level) }}
+                        </mat-chip>
+                        <span class="hourly-rate">
+                          \${{ tutor.hourly_rate }}/h {{ tutor.hourly_rate_currency || 'USD' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="selection-indicator" *ngIf="selectedTutor?.user_id === tutor.user_id">
+                    <mat-icon>check_circle</mat-icon>
+                  </div>
+                </div>
+
+                <!-- Mensaje cuando no hay tutores -->
+                <div class="no-tutors" *ngIf="tutors.length === 0">
+                  <mat-icon>person_off</mat-icon>
+                  <p>No se encontraron tutores disponibles</p>
+                </div>
+              </div>
+
+              <!-- Detalles del tutor seleccionado -->
+              <div class="selected-tutor-details" *ngIf="selectedTutor">
+                <h4>Tutor Seleccionado</h4>
+                <mat-card class="tutor-detail-card">
+                  <mat-card-content>
+                    <div class="tutor-summary">
+                      <div class="tutor-header">
+                        <mat-icon class="tutor-icon">person</mat-icon>
+                        <div>
+                          <h5>{{ selectedTutor.displayName }}</h5>
+                          <p>{{ selectedTutor.user_id }}</p>
+                          <p><small>{{ selectedTutor.country }}</small></p>
+                        </div>
+                      </div>
+                      <div class="tutor-stats">
+                        <div class="stat-item">
+                          <strong>Experiencia:</strong>
+                          <span>{{ getExperienceLabel(selectedTutor.experience_level) }}</span>
+                        </div>
+                        <div class="stat-item">
+                          <strong>Tarifa:</strong>
+                          <span>\${{ selectedTutor.hourly_rate }}/h</span>
+                        </div>
+                        <div class="stat-item">
+                          <strong>Idioma nativo:</strong>
+                          <span>{{ selectedTutor.birth_language }}</span>
+                        </div>
+                        <div class="stat-item" *ngIf="selectedTutor.bio">
+                          <strong>Bio:</strong>
+                          <span>{{ selectedTutor.bio }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+
+              <!-- Opciones adicionales -->
+              <div class="assignment-options" *ngIf="selectedTutor">
+                <mat-checkbox formControlName="sendNotificationEmail">
+                  Enviar email de notificación al tutor
+                </mat-checkbox>
+                
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Notas adicionales (opcional)</mat-label>
+                  <textarea 
+                    matInput 
+                    formControlName="assignmentNotes"
+                    placeholder="Instrucciones especiales o información adicional para el tutor..."
+                    rows="3"
+                    maxlength="500">
+                  </textarea>
+                  <mat-hint align="end">{{ assignForm.get('assignmentNotes')?.value?.length || 0 }}/500</mat-hint>
+                </mat-form-field>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </form>
+
+        <!-- Barra de progreso -->
+        <mat-progress-bar 
+          *ngIf="isAssigning" 
+          mode="indeterminate"
+          class="progress-bar">
+        </mat-progress-bar>
+      </div>
+
+      <div class="dialog-actions" mat-dialog-actions>
+        <button 
+          mat-button 
+          mat-dialog-close
+          [disabled]="isAssigning">
+          Cancelar
+        </button>
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="assignTutor()"
+          [disabled]="!selectedTutor || isAssigning">
+          <mat-icon *ngIf="!isAssigning">assignment_ind</mat-icon>
+          <mat-icon *ngIf="isAssigning">hourglass_empty</mat-icon>
+          {{ isAssigning ? 'Asignando...' : 'Asignar Tutor' }}
+        </button>
+      </div>
+    </div>
