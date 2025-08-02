@@ -38,13 +38,38 @@ export class MetaService {
     image?: string;
     url?: string;
     type?: string;
+    siteName?: string;
+    locale?: string;
+    imageAlt?: string;
+    imageWidth?: string;
+    imageHeight?: string;
   }): void {
     this.meta.updateTag({ property: 'og:title', content: data.title });
     this.meta.updateTag({ property: 'og:description', content: data.description });
     this.meta.updateTag({ property: 'og:type', content: data.type || 'website' });
     
+    if (data.siteName) {
+      this.meta.updateTag({ property: 'og:site_name', content: data.siteName });
+    }
+    
+    if (data.locale) {
+      this.meta.updateTag({ property: 'og:locale', content: data.locale });
+    }
+    
     if (data.image) {
       this.meta.updateTag({ property: 'og:image', content: data.image });
+      
+      if (data.imageAlt) {
+        this.meta.updateTag({ property: 'og:image:alt', content: data.imageAlt });
+      }
+      
+      if (data.imageWidth) {
+        this.meta.updateTag({ property: 'og:image:width', content: data.imageWidth });
+      }
+      
+      if (data.imageHeight) {
+        this.meta.updateTag({ property: 'og:image:height', content: data.imageHeight });
+      }
     }
     
     if (data.url) {
@@ -68,6 +93,97 @@ export class MetaService {
     if (data.image) {
       this.meta.updateTag({ name: 'twitter:image', content: data.image });
     }
+  }
+
+  /**
+   * Establece meta tags específicas para Facebook
+   */
+  setFacebookTags(data: {
+    appId?: string;
+    admins?: string;
+    pages?: string;
+  }): void {
+    if (data.appId) {
+      this.meta.updateTag({ property: 'fb:app_id', content: data.appId });
+    }
+    
+    if (data.admins) {
+      this.meta.updateTag({ property: 'fb:admins', content: data.admins });
+    }
+    
+    if (data.pages) {
+      this.meta.updateTag({ property: 'fb:pages', content: data.pages });
+    }
+  }
+
+  /**
+   * Establece meta tags específicas para WhatsApp
+   */
+  setWhatsAppTags(data: {
+    title: string;
+    description: string;
+    image?: string;
+    url?: string;
+  }): void {
+    // WhatsApp usa principalmente Open Graph, pero podemos optimizar para WhatsApp
+    this.meta.updateTag({ property: 'og:title', content: data.title });
+    this.meta.updateTag({ property: 'og:description', content: data.description });
+    this.meta.updateTag({ property: 'og:type', content: 'website' });
+    
+    if (data.image) {
+      this.meta.updateTag({ property: 'og:image', content: data.image });
+      // WhatsApp prefiere imágenes cuadradas o 1.91:1
+      this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+      this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    }
+    
+    if (data.url) {
+      this.meta.updateTag({ property: 'og:url', content: data.url });
+    }
+  }
+
+  /**
+   * Establece meta tags completas para Meta platforms (Facebook, Instagram, WhatsApp)
+   */
+  setMetaPlatformTags(data: {
+    title: string;
+    description: string;
+    image?: string;
+    url?: string;
+    type?: string;
+    siteName?: string;
+    locale?: string;
+    imageAlt?: string;
+    facebookAppId?: string;
+    facebookAdmins?: string;
+    facebookPages?: string;
+  }): void {
+    // Open Graph tags (usado por Facebook, Instagram, WhatsApp)
+    this.setOpenGraphTags({
+      title: data.title,
+      description: data.description,
+      image: data.image,
+      url: data.url,
+      type: data.type || 'website',
+      siteName: data.siteName,
+      locale: data.locale,
+      imageAlt: data.imageAlt,
+      imageWidth: '1200',
+      imageHeight: '630'
+    });
+
+    // Facebook específico
+    if (data.facebookAppId || data.facebookAdmins || data.facebookPages) {
+      this.setFacebookTags({
+        appId: data.facebookAppId,
+        admins: data.facebookAdmins,
+        pages: data.facebookPages
+      });
+    }
+
+    // Meta tags adicionales para mejor compatibilidad
+    this.meta.updateTag({ name: 'theme-color', content: '#1877f2' }); // Color de Facebook
+    this.meta.updateTag({ name: 'msapplication-TileColor', content: '#1877f2' });
   }
 
   /**
@@ -117,12 +233,28 @@ export class MetaService {
       image?: string;
       url?: string;
       type?: string;
+      siteName?: string;
+      locale?: string;
+      imageAlt?: string;
     };
     twitter?: {
       title: string;
       description: string;
       image?: string;
       card?: string;
+    };
+    meta?: {
+      title: string;
+      description: string;
+      image?: string;
+      url?: string;
+      type?: string;
+      siteName?: string;
+      locale?: string;
+      imageAlt?: string;
+      facebookAppId?: string;
+      facebookAdmins?: string;
+      facebookPages?: string;
     };
   }): void {
     // Título de la página
@@ -156,6 +288,11 @@ export class MetaService {
     if (metaData.twitter) {
       this.setTwitterCardTags(metaData.twitter);
     }
+
+    // Meta Platform tags (Facebook, Instagram, WhatsApp)
+    if (metaData.meta) {
+      this.setMetaPlatformTags(metaData.meta);
+    }
   }
 
   /**
@@ -167,11 +304,21 @@ export class MetaService {
       'keywords',
       'author',
       'robots',
+      'theme-color',
+      'msapplication-TileColor',
       'og:title',
       'og:description',
       'og:type',
       'og:image',
+      'og:image:alt',
+      'og:image:width',
+      'og:image:height',
       'og:url',
+      'og:site_name',
+      'og:locale',
+      'fb:app_id',
+      'fb:admins',
+      'fb:pages',
       'twitter:card',
       'twitter:title',
       'twitter:description',
@@ -179,7 +326,7 @@ export class MetaService {
     ];
 
     tagsToRemove.forEach(tag => {
-      if (tag.startsWith('og:')) {
+      if (tag.startsWith('og:') || tag.startsWith('fb:')) {
         this.meta.removeTag(`property="${tag}"`);
       } else {
         this.meta.removeTag(`name="${tag}"`);

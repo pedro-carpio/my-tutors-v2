@@ -14,7 +14,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MetaService } from '../../../../../services/meta.service';
-import { generatePageMetaTags } from '../../../../../constants/meta.constants';
+import { generatePlatformOptimizedMetaTags } from '../../../../../constants/meta.constants';
 
 @Component({
   selector: 'app-campaign-tutor-postulate',
@@ -145,7 +145,8 @@ export class CampaignTutorPostulateComponent implements OnInit, OnDestroy {
   }
 
   private setMetaTags(): void {
-    const metaData = generatePageMetaTags('TUTOR_POSTULATE');
+    // Usar meta tags optimizadas para Facebook por defecto (funciona bien para compartir)
+    const metaData = generatePlatformOptimizedMetaTags('TUTOR_POSTULATE', 'facebook');
     this.metaService.setAllMetaTags(metaData);
   }
 

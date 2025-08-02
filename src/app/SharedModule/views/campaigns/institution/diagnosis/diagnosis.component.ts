@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MetaService } from '../../../../../services/meta.service';
-import { generatePageMetaTags } from '../../../../../constants/meta.constants';
+import { generatePlatformOptimizedMetaTags } from '../../../../../constants/meta.constants';
 
 @Component({
   selector: 'app-campaign-institution-diagnosis',
@@ -53,7 +53,8 @@ export class CampaignInstitutionDiagnosisComponent implements OnInit, OnDestroy 
   }
 
   private setMetaTags(): void {
-    const metaData = generatePageMetaTags('INSTITUTION_DIAGNOSIS');
+    // Usar meta tags optimizadas para Facebook por defecto
+    const metaData = generatePlatformOptimizedMetaTags('INSTITUTION_DIAGNOSIS', 'facebook');
     this.metaService.setAllMetaTags(metaData);
   }
 

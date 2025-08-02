@@ -1,4 +1,20 @@
-# Servicio de Meta Tags - My Tutors
+# Servicio de Meta Tags con Soporte para Meta Platforms - My Tutors
+
+## Descripción
+El `MetaService` es un servicio Angular que facilita la gestión de meta tags, título de página y tags especializados para Meta platforms (Facebook, Instagram, WhatsApp), además de Twitter Cards y SEO general.
+
+## Características
+
+- ✅ Gestión del título de la página
+- ✅ Meta tags básicas (description, keywords, author, robots)
+- ✅ Open Graph tags para redes sociales
+- ✅ Twitter Card tags
+- ✅ **Meta Platform Tags específicas (Facebook, Instagram, WhatsApp)**
+- ✅ **Optimización por plataforma con emojis y hashtags**
+- ✅ **Configuración de campañas de marketing con UTM**
+- ✅ URLs canónicas para SEO
+- ✅ Limpieza automática de meta tags
+- ✅ Constantes predefinidas para páginas comunesMeta Tags - My Tutors
 
 ## Descripción
 El `MetaService` es un servicio Angular que facilita la gestión de meta tags, título de página y tags de Open Graph/Twitter Card para mejorar el SEO y la presentación en redes sociales.
@@ -20,7 +36,7 @@ El servicio ya está configurado y exportado en `src/app/services/index.ts`. Par
 ```typescript
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { MetaService } from '../services/meta.service';
-import { generatePageMetaTags } from '../constants/meta.constants';
+import { generatePlatformOptimizedMetaTags } from '../constants/meta.constants';
 
 @Component({
   // ...
@@ -37,30 +53,25 @@ export class MyComponent implements OnInit, OnDestroy {
   }
 
   private setMetaTags(): void {
-    // Opción 1: Usar constantes predefinidas
-    const metaData = generatePageMetaTags('TUTOR_POSTULATE');
+    // ✨ NUEVO: Usar meta tags optimizadas por plataforma
+    const metaData = generatePlatformOptimizedMetaTags('TUTOR_POSTULATE', 'facebook');
     this.metaService.setAllMetaTags(metaData);
 
-    // Opción 2: Configuración manual
+    // Opción 2: Configuración manual con Meta platform
     this.metaService.setAllMetaTags({
       title: 'Mi Página - My Tutors',
       description: 'Descripción de mi página',
       keywords: 'palabra1, palabra2, palabra3',
-      author: 'My Tutors',
-      robots: 'index, follow',
-      canonicalUrl: 'https://my-tutors.com/mi-pagina',
-      openGraph: {
-        title: 'Mi Página - My Tutors',
-        description: 'Descripción para redes sociales',
-        type: 'website',
-        url: 'https://my-tutors.com/mi-pagina',
-        image: 'https://my-tutors.com/assets/images/mi-imagen.jpg'
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title: 'Mi Página - My Tutors',
-        description: 'Descripción para Twitter',
-        image: 'https://my-tutors.com/assets/images/mi-imagen.jpg'
+      // ... otras configuraciones
+      meta: {
+        title: '🎓 Mi Página - My Tutors',
+        description: 'Descripción optimizada para Meta con emojis ✨',
+        image: 'https://mytutors.click/images/mi-imagen.jpg',
+        url: 'https://mytutors.click/mi-pagina',
+        siteName: 'My Tutors',
+        locale: 'es_ES',
+        imageAlt: 'Descripción de la imagen para Meta',
+        facebookAppId: 'tu-facebook-app-id'
       }
     });
   }
@@ -68,6 +79,8 @@ export class MyComponent implements OnInit, OnDestroy {
 ```
 
 ## Métodos Disponibles
+
+### Métodos Básicos
 
 ### `setTitle(title: string)`
 Establece el título de la página.
@@ -78,8 +91,21 @@ Establece la meta tag description.
 ### `setKeywords(keywords: string)`
 Establece las palabras clave de la página.
 
+### Métodos para Meta Platforms
+
+### `setMetaPlatformTags(data: MetaPlatformData)`
+🆕 Configura meta tags completas optimizadas para Meta platforms (Facebook, Instagram, WhatsApp).
+
+### `setFacebookTags(data: FacebookData)`
+🆕 Configura meta tags específicas de Facebook (App ID, Admins, Pages).
+
+### `setWhatsAppTags(data: WhatsAppData)`
+🆕 Optimiza meta tags específicamente para WhatsApp (imágenes 1.91:1).
+
+### Métodos Generales
+
 ### `setOpenGraphTags(data: OpenGraphData)`
-Configura las meta tags de Open Graph para redes sociales.
+Configura las meta tags de Open Graph para redes sociales (ahora con más opciones).
 
 ### `setTwitterCardTags(data: TwitterCardData)`
 Configura las meta tags de Twitter Card.
@@ -91,14 +117,69 @@ Establece la URL canónica de la página.
 Configura las instrucciones para robots de búsqueda.
 
 ### `setAllMetaTags(metaData: CompleteMetaData)`
-Configura todas las meta tags de una vez.
+Configura todas las meta tags de una vez (ahora incluye meta platforms).
 
 ### `clearMetaTags()`
 Limpia todas las meta tags dinámicas. **Importante**: Llamar este método en `ngOnDestroy()`.
 
-## Constantes Predefinidas
+## Nuevas Funcionalidades para Meta Platforms
 
-El archivo `meta.constants.ts` contiene configuraciones predefinidas para las páginas principales:
+### 1. Meta Tags Optimizadas por Plataforma
+
+```typescript
+import { generatePlatformOptimizedMetaTags } from '../constants/meta.constants';
+
+// Para Facebook (con emojis y descripciones atractivas)
+const facebookMeta = generatePlatformOptimizedMetaTags('TUTOR_POSTULATE', 'facebook');
+
+// Para WhatsApp (títulos concisos, descripciones cortas)  
+const whatsappMeta = generatePlatformOptimizedMetaTags('TUTOR_POSTULATE', 'whatsapp');
+
+// Para Instagram (incluye hashtags automáticamente)
+const instagramMeta = generatePlatformOptimizedMetaTags('TUTOR_POSTULATE', 'instagram');
+```
+
+### 2. Campañas de Marketing con UTM
+
+```typescript
+import { generateMarketingCampaignMetaTags } from '../constants/meta.constants';
+
+const campaignMeta = generateMarketingCampaignMetaTags(
+  'TUTOR_POSTULATE',
+  {
+    campaignName: 'Campaña Verano 2025',
+    campaignSource: 'facebook',
+    utmParams: {
+      source: 'facebook',
+      medium: 'social',
+      campaign: 'tutores_verano_2025',
+      content: 'post_organico'
+    }
+  },
+  {
+    title: '🌞 Campaña especial de verano',
+    description: '¡Únete ahora y obtén beneficios exclusivos! ☀️'
+  }
+);
+```
+
+### 3. Meta Tags Específicas por Uso
+
+```typescript
+// Solo para Facebook
+import { generateFacebookMetaTags } from '../constants/meta.constants';
+const fbMeta = generateFacebookMetaTags('TUTOR_POSTULATE', {
+  appId: 'tu-facebook-app-id',
+  imageAlt: 'Descripción detallada de la imagen'
+});
+
+// Solo para WhatsApp
+import { generateWhatsAppMetaTags } from '../constants/meta.constants';
+const waMeta = generateWhatsAppMetaTags('TUTOR_POSTULATE', {
+  title: 'Título conciso para WhatsApp',
+  description: 'Descripción corta y directa'
+});
+```
 
 - `TUTOR_POSTULATE`: Página de postulación para tutores
 - `INSTITUTION_DIAGNOSIS`: Página de diagnóstico para instituciones
