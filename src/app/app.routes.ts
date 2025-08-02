@@ -10,10 +10,45 @@ export const routes: Routes = [
     loadComponent: () => import('./SharedModule/views/login/login.component').then(m => m.LoginComponent),
     canActivate: [GuestGuard],
   },
+  {
+    path: 'campaigns',
+    children: [
+      {
+        path: 'tutor',
+        children: [
+          {
+            path: 'postulate',
+            loadComponent: () => import('./SharedModule/views/campaigns/tutor/postulate/postulate.component').then(m => m.CampaignTutorPostulateComponent),
+          }
+        ]
+      },
+      {
+        path: 'institution',
+        children: [
+          {
+            path: 'diagnosis',
+            loadComponent: () => import('./SharedModule/views/campaigns/institution/diagnosis/diagnosis.component').then(m => m.CampaignInstitutionDiagnosisComponent),
+          }
+        ]
+      }
+    ],
+    canActivate: [GuestGuard]
+  },
 
   {
-    path: 'postular',
-    loadComponent: () => import('./modules/institution/components/postulate/tutor/tutor.component').then(m => m.TutorPostulationFormComponent),
+    path: 'forms',
+    children: [
+      {
+        path: 'tutor',
+        children: [
+          {
+            path: 'postular',
+            loadComponent: () => import('./modules/institution/components/postulate/tutor/tutor.component').then(m => m.TutorPostulationFormComponent),
+          }
+        ]
+      }
+    ],
+    canActivate: [GuestGuard]
   },
 
   {

@@ -1,0 +1,174 @@
+<!-- Encabezado Principal -->
+<section class="header-section">
+  <div class="container">
+    <div class="header-content">
+      <h1 class="main-title">
+        ¿Eres parte de My Tutors? <span class="accent-text">Ayúdanos a crecer contigo.</span>
+      </h1>
+      <p class="main-subtitle">
+        Estamos construyendo nuevas herramientas, funcionalidades y formas de trabajo para facilitarte todo.
+      </p>
+      <p class="call-to-action-text">
+        Cuéntanos qué necesitas, cómo trabajas, y qué haría tu experiencia aún mejor.
+      </p>
+      
+      <div class="main-buttons">
+        <button mat-raised-button class="tutor-button" (click)="scrollToSection('tutor-section')">
+          <mat-icon>school</mat-icon>
+          Soy Tutor – Quiero compartir mis necesidades
+        </button>
+        <button mat-raised-button class="institution-button" (click)="scrollToSection('institution-section')">
+          <mat-icon>business</mat-icon>
+          Soy una Institución – Quiero ayudar a mejorar el sistema
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ¿Por qué estamos haciendo esto? -->
+<section class="why-section">
+  <div class="container">
+    <h2 class="section-title">
+      Queremos escucharte porque nadie sabe mejor cómo funciona esto que tú.
+    </h2>
+    
+    <div class="why-grid">
+      <mat-card *ngFor="let item of whyWeDoThis" class="why-card">
+        <mat-card-content>
+          <div class="why-icon">
+            <mat-icon>{{ item.icon }}</mat-icon>
+          </div>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</section>
+
+<!-- CTA para Tutores -->
+<section id="tutor-section" class="tutor-section">
+  <div class="container">
+    <mat-card class="cta-card tutor-card">
+      <mat-card-header>
+        <div mat-card-avatar class="tutor-avatar">
+          <mat-icon>school</mat-icon>
+        </div>
+        <mat-card-title>Formulario para Tutores Activos</mat-card-title>
+        <mat-card-subtitle>Ayúdanos a mejorar tu experiencia de enseñanza</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="questions-preview">
+          <h4>Te preguntaremos sobre:</h4>
+          <div class="question-item">
+            <mat-icon class="question-icon">help_outline</mat-icon>
+            <span>¿Cómo agendas tus clases actualmente? ¿Usas alguna herramienta digital?</span>
+          </div>
+          <div class="question-item">
+            <mat-icon class="question-icon">help_outline</mat-icon>
+            <span>¿Qué plataformas utilizas para dar clase y qué herramientas usas dentro de ellas?</span>
+          </div>
+          <div class="question-item">
+            <mat-icon class="question-icon">help_outline</mat-icon>
+            <span>¿Qué tareas te quitan tiempo y podrían automatizarse?</span>
+          </div>
+        </div>
+        
+        <div class="form-summary">
+          <h4>Resumen del formulario (6 secciones):</h4>
+          <ul class="summary-list">
+            <li><strong>Información general:</strong> Tu perfil, idiomas, tipo y modalidad de clases</li>
+            <li><strong>Gestión académica:</strong> Agendamiento, asignación de estudiantes, control de asistencia</li>
+            <li><strong>Herramientas actuales:</strong> Plataformas (Zoom, Meet, Skype), apps de comunicación</li>
+            <li><strong>Reportes y seguimiento:</strong> Información que envías a instituciones, evaluación de progreso</li>
+            <li><strong>Mejoras deseadas:</strong> Automatización, nuevas herramientas, selección de horarios</li>
+          </ul>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions>
+        <button mat-raised-button class="tutor-cta-button" (click)="openExternalForm(tutorFormUrl)">
+          <mat-icon>edit</mat-icon>
+          Llenar formulario como Tutor
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</section>
+
+<!-- CTA para Instituciones -->
+<section id="institution-section" class="institution-section">
+  <div class="container">
+    <mat-card class="cta-card institution-card">
+      <mat-card-header>
+        <div mat-card-avatar class="institution-avatar">
+          <mat-icon>business</mat-icon>
+        </div>
+        <mat-card-title>Formulario para Instituciones Registradas</mat-card-title>
+        <mat-card-subtitle>Optimicemos juntos el sistema educativo</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="questions-preview">
+          <h4>Te preguntaremos sobre:</h4>
+          <div class="question-item">
+            <mat-icon class="question-icon">help_outline</mat-icon>
+            <span>¿Cómo gestionan las agendas de clases y qué plataformas usan para clases virtuales?</span>
+          </div>
+          <div class="question-item">
+            <mat-icon class="question-icon">help_outline</mat-icon>
+            <span>¿Tienen sistema de reportes de asistencia y rendimiento?</span>
+          </div>
+          <div class="question-item">
+            <mat-icon class="question-icon">help_outline</mat-icon>
+            <span>¿Qué funcionalidades consideran más importantes para una plataforma completa?</span>
+          </div>
+        </div>
+        
+        <div class="form-summary">
+          <h4>Resumen del formulario (3 secciones):</h4>
+          <ul class="summary-list">
+            <li><strong>Información institucional:</strong> Ubicación, alumnos activos, profesores, horarios demandados</li>
+            <li><strong>Estructura operativa:</strong> Gestión de agendas, plataformas virtuales, reportes, comunicación</li>
+            <li><strong>Interés en MyTutors:</strong> Plataforma de gestión, clases integradas, profesores externos</li>
+            <li><strong>Funcionalidades clave:</strong> Agendamiento automático, reportes, dashboards, red de profesores</li>
+          </ul>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions>
+        <button mat-raised-button class="institution-cta-button" (click)="openExternalForm(institutionFormUrl)">
+          <mat-icon>edit</mat-icon>
+          Llenar formulario como Institución
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</section>
+
+<!-- Frase de Cierre -->
+<section class="closing-section">
+  <div class="container">
+    <div class="closing-content">
+      <h2 class="closing-title">
+        🙌 Gracias por construir esto con nosotros.
+      </h2>
+      <p class="closing-text">
+        Tus ideas no solo mejoran tu experiencia, sino también la de miles de estudiantes y profesores que creen que enseñar bien puede cambiar el mundo.
+      </p>
+      
+      <div class="final-actions">
+        <button mat-raised-button class="final-tutor-button" (click)="openExternalForm(tutorFormUrl)">
+          <mat-icon>school</mat-icon>
+          Formulario Tutores
+        </button>
+        <button mat-raised-button class="final-institution-button" (click)="openExternalForm(institutionFormUrl)">
+          <mat-icon>business</mat-icon>
+          Formulario Instituciones
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

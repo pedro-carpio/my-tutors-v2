@@ -1,0 +1,167 @@
+<!-- Hero Principal -->
+<section class="hero-section">
+  <div class="hero-container">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Enseña tu idioma. <span class="accent-text">Expande tu mundo.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Gana ingresos enseñando idiomas a estudiantes de todo el mundo con el respaldo de instituciones serias.
+      </p>
+      <div class="hero-features">
+        <div class="feature-item">
+          <mat-icon>schedule</mat-icon>
+          <span>Tú eliges tu horario</span>
+        </div>
+        <div class="feature-item">
+          <mat-icon>public</mat-icon>
+          <span>Clases virtuales o presenciales</span>
+        </div>
+        <div class="feature-item">
+          <mat-icon>work_off</mat-icon>
+          <span>Sin jefes, sin complicaciones</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button mat-raised-button color="primary" class="primary-cta" (click)="navigateToFullForm()">
+          <mat-icon>school</mat-icon>
+          Empieza ahora
+        </button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="tutor-illustration">
+        <mat-icon class="large-icon">laptop_mac</mat-icon>
+        <div class="language-bubbles">
+          <span class="bubble">¡Hola!</span>
+          <span class="bubble">Hello!</span>
+          <span class="bubble">Bonjour!</span>
+          <span class="bubble">Hallo!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Beneficios Rápidos -->
+<section class="benefits-section">
+  <div class="container">
+    <h2 class="section-title">¿Por qué enseñar en My Tutors?</h2>
+    <div class="benefits-grid">
+      <mat-card *ngFor="let benefit of benefits" class="benefit-card">
+        <mat-card-content>
+          <div class="benefit-icon">
+            <mat-icon>{{ benefit.icon }}</mat-icon>
+          </div>
+          <h3>{{ benefit.title }}</h3>
+          <p>{{ benefit.description }}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</section>
+
+<!-- Cómo Funciona -->
+<section class="how-it-works-section">
+  <div class="container">
+    <h2 class="section-title">¿Cómo funciona para ti como tutor?</h2>
+    <div class="steps-container">
+      <div *ngFor="let step of howItWorks; let i = index" class="step-item">
+        <div class="step-number">{{ i + 1 }}</div>
+        <div class="step-icon">
+          <mat-icon>{{ step.icon }}</mat-icon>
+        </div>
+        <h4>{{ step.title }}</h4>
+        <p>{{ step.description }}</p>
+        <div *ngIf="i < howItWorks.length - 1" class="step-connector"></div>
+      </div>
+    </div>
+    <p class="steps-footer">
+      Simple, directo y sin tener que buscar estudiantes tú mismo.
+    </p>
+  </div>
+</section>
+
+<!-- Testimonios -->
+<section class="testimonials-section">
+  <div class="container">
+    <h2 class="section-title">Lo que dicen nuestros tutores</h2>
+    <div class="testimonials-grid">
+      <mat-card *ngFor="let testimonial of testimonials" class="testimonial-card">
+        <mat-card-content>
+          <mat-icon class="quote-icon">format_quote</mat-icon>
+          <p class="testimonial-text">{{ testimonial.text }}</p>
+          <div class="testimonial-author">
+            <strong>{{ testimonial.author }}</strong>
+            <span>{{ testimonial.role }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</section>
+
+<!-- Requisitos -->
+<section class="requirements-section">
+  <div class="container">
+    <h2 class="section-title">¿Qué necesitas para unirte?</h2>
+    <p class="requirements-subtitle">
+      No necesitas título universitario. Solo pasión, experiencia y compromiso.
+    </p>
+    <mat-card class="requirements-card">
+      <mat-card-content>
+        <div class="requirements-list">
+          <div *ngFor="let requirement of requirements" class="requirement-item">
+            <mat-icon class="check-icon">check_circle</mat-icon>
+            <span>{{ requirement }}</span>
+          </div>
+        </div>
+        <div class="requirements-action">
+          <button mat-raised-button color="accent" (click)="navigateToFullForm()">
+            Postúlate ahora
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div class="container">
+    <h2 class="section-title">Preguntas frecuentes</h2>
+    <mat-accordion class="faq-accordion">
+      <mat-expansion-panel *ngFor="let faq of faqs">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            {{ faq.question }}
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <p>{{ faq.answer }}</p>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer-section">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <h3>My Tutors</h3>
+        <p>Conectando tutores con estudiantes de todo el mundo</p>
+      </div>
+      <!-- <div class="footer-links">
+        <a href="#" mat-button>Términos</a>
+        <a href="#" mat-button>Política de Privacidad</a>
+        <a href="#" mat-button>Contacto</a>
+      </div> -->
+    </div>
+    <mat-divider></mat-divider>
+    <div class="footer-cta">
+      <button mat-raised-button color="primary" (click)="navigateToFullForm()">
+        Postúlate como tutor ahora
+      </button>
+    </div>
+  </div>
+</footer>
