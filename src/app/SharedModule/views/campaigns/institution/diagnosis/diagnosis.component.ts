@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
+import { MetaService } from '../../../../../services/meta.service';
+import { generatePageMetaTags } from '../../../../../constants/meta.constants';
 
 @Component({
   selector: 'app-campaign-institution-diagnosis',
@@ -18,7 +20,8 @@ import { MatDividerModule } from '@angular/material/divider';
   templateUrl: './diagnosis.component.html',
   styleUrl: './diagnosis.component.scss'
 })
-export class CampaignInstitutionDiagnosisComponent {
+export class CampaignInstitutionDiagnosisComponent implements OnInit, OnDestroy {
+  private metaService = inject(MetaService);
   
   whyWeDoThis = [
     {
@@ -40,6 +43,19 @@ export class CampaignInstitutionDiagnosisComponent {
 
   tutorFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSeOy2RjCbHBAs01zjE-AQhZM-sQjE4C10CEIZaTrqiKhdzmhQ/viewform?usp=header';
   institutionFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSeUVRbftUlxdTofB4T6dUjjtaPQAbvYaiIsdwnukz8GExyxDQ/viewform?usp=header';
+
+  ngOnInit(): void {
+    this.setMetaTags();
+  }
+
+  ngOnDestroy(): void {
+    this.metaService.clearMetaTags();
+  }
+
+  private setMetaTags(): void {
+    const metaData = generatePageMetaTags('INSTITUTION_DIAGNOSIS');
+    this.metaService.setAllMetaTags(metaData);
+  }
 
   scrollToSection(sectionId: string): void {
     const element = document.getElementById(sectionId);

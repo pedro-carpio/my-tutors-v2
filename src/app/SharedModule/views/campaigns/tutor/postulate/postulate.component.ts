@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,6 +13,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatGridListModule } from '@angular/material/grid-list';
+import { MetaService } from '../../../../../services/meta.service';
+import { generatePageMetaTags } from '../../../../../constants/meta.constants';
 
 @Component({
   selector: 'app-campaign-tutor-postulate',
@@ -35,10 +37,11 @@ import { MatGridListModule } from '@angular/material/grid-list';
   templateUrl: './postulate.component.html',
   styleUrl: './postulate.component.scss'
 })
-export class CampaignTutorPostulateComponent {
+export class CampaignTutorPostulateComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private metaService = inject(MetaService);
 
   preRegistrationForm: FormGroup = this.fb.group({
     fullName: ['', [Validators.required, Validators.minLength(2)]],
@@ -132,6 +135,19 @@ export class CampaignTutorPostulateComponent {
     { value: 'yes', label: 'Sí, tengo experiencia' },
     { value: 'no', label: 'No, pero tengo ganas de aprender' }
   ];
+
+  ngOnInit(): void {
+    this.setMetaTags();
+  }
+
+  ngOnDestroy(): void {
+    this.metaService.clearMetaTags();
+  }
+
+  private setMetaTags(): void {
+    const metaData = generatePageMetaTags('TUTOR_POSTULATE');
+    this.metaService.setAllMetaTags(metaData);
+  }
 
   navigateToFullForm(): void {
     this.router.navigate(['/forms/tutor/postular']);

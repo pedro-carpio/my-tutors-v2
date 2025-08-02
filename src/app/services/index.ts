@@ -23,6 +23,7 @@ export * from './job-posting.service'; // Nuevo servicio de convocatorias
 export * from './tutor-postulation.service'; // Nuevo servicio de postulaciones
 export * from './i18n.service'; // Servicio de internacionalización
 export * from './tutor-language.service'; // Servicio de idiomas de tutores
+export * from './meta.service'; // Servicio de meta tags
 
 // Export types explicitly to avoid conflicts
 export type {
