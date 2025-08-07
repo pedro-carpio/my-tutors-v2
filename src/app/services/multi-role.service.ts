@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
-import { Observable, BehaviorSubject, combineLatest, map, switchMap, of } from 'rxjs';
-import { Auth, user } from '@angular/fire/auth';
+import { Injectable, inject, DestroyRef } from '@angular/core';
+import { Observable, BehaviorSubject, combineLatest, map, firstValueFrom } from 'rxjs';
+import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { UserService } from './user.service';
 import { UserRole } from '../types/firestore.types';
 
@@ -10,38 +10,72 @@ import { UserRole } from '../types/firestore.types';
 export class MultiRoleService {
   private auth = inject(Auth);
   private userService = inject(UserService);
+  private destroyRef = inject(DestroyRef);
   
   private currentRoleSubject = new BehaviorSubject<UserRole | null>(null);
   public currentRole$ = this.currentRoleSubject.asObservable();
 
-  // Observable con todos los roles del usuario actual
-  public userRoles$: Observable<UserRole[]> = user(this.auth).pipe(
-    switchMap(authUser => {
-      if (authUser) {
-        return this.userService.getUserRoles(authUser.uid);
-      }
-      return of([]);
-    })
-  );
+  // BehaviorSubject for user roles to avoid injection context issues
+  private userRolesSubject = new BehaviorSubject<UserRole[]>([]);
+  public userRoles$ = this.userRolesSubject.asObservable();
 
   // Observable con el rol activo actual
-  public activeRole$: Observable<UserRole | null> = combineLatest([
-    this.userRoles$,
-    this.currentRole$
-  ]).pipe(
-    map(([roles, currentRole]) => {
-      if (roles.length === 0) return null;
-      
-      // Si no hay rol seleccionado o el rol seleccionado no está en la lista, usar el primero
-      if (!currentRole || !roles.includes(currentRole)) {
-        const firstRole = roles[0];
-        this.currentRoleSubject.next(firstRole);
-        return firstRole;
+  public activeRole$: Observable<UserRole | null>;
+
+  constructor() {
+    // Use onAuthStateChanged instead of user() observable to avoid injection context issues
+    const unsubscribe = onAuthStateChanged(this.auth, async (authUser) => {
+      if (authUser) {
+        try {
+          // Get user roles directly using the service method
+          const roles = await this.getUserRolesDirectly(authUser.uid);
+          this.userRolesSubject.next(roles);
+        } catch (error) {
+          console.error('Error getting user roles:', error);
+          this.userRolesSubject.next([]);
+        }
+      } else {
+        this.userRolesSubject.next([]);
       }
-      
-      return currentRole;
-    })
-  );
+    });
+
+    // Clean up the auth state listener when the service is destroyed
+    this.destroyRef.onDestroy(() => {
+      unsubscribe();
+    });
+
+    // Initialize activeRole$
+    this.activeRole$ = combineLatest([
+      this.userRoles$,
+      this.currentRole$
+    ]).pipe(
+      map(([roles, currentRole]) => {
+        if (roles.length === 0) return null;
+        
+        // Si no hay rol seleccionado o el rol seleccionado no está en la lista, usar el primero
+        if (!currentRole || !roles.includes(currentRole)) {
+          const firstRole = roles[0];
+          this.currentRoleSubject.next(firstRole);
+          return firstRole;
+        }
+        
+        return currentRole;
+      })
+    );
+  }
+
+  // Private method to get user roles directly without causing injection context issues
+  private async getUserRolesDirectly(userId: string): Promise<UserRole[]> {
+    try {
+      // Convert the Observable to Promise to avoid injection context issues
+      const roles$ = this.userService.getUserRoles(userId);
+      const roles = await firstValueFrom(roles$);
+      return roles;
+    } catch (error) {
+      console.error('Error getting user roles:', error);
+      return [];
+    }
+  }
 
   // Cambiar el rol activo
   switchRole(role: UserRole): void {
@@ -93,29 +127,11 @@ export class MultiRoleService {
 
   // Obtener el rol principal del usuario (primary_role o el primero de la lista)
   getPrimaryRole(): Observable<UserRole | null> {
-    return user(this.auth).pipe(
-      switchMap(authUser => {
-        if (authUser) {
-          return this.userService.getUser(authUser.uid).pipe(
-            map(userData => {
-              if (!userData) return null;
-              
-              // Primero intentar usar primary_role
-              if (userData.primary_role) {
-                return userData.primary_role;
-              }
-              
-              // Si no existe, usar el primer rol de la lista
-              if (userData.roles && userData.roles.length > 0) {
-                return userData.roles[0];
-              }
-              
-              // No hay rol disponible
-              return null;
-            })
-          );
-        }
-        return of(null);
+    return this.userRoles$.pipe(
+      map(roles => {
+        if (!roles || roles.length === 0) return null;
+        // Return the first role as primary (we could enhance this logic later)
+        return roles[0];
       })
     );
   }

@@ -1,0 +1,256 @@
+.institution-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+
+  mat-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+  }
+
+  .profile-header {
+    .header-content {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      
+      .institution-logo {
+        flex-shrink: 0;
+        
+        img {
+          width: 100px;
+          height: 100px;
+          border-radius: 8px;
+          object-fit: cover;
+          border: 2px solid #e0e0e0;
+        }
+      }
+      
+      .basic-info {
+        flex: 1;
+        
+        h1 {
+          margin: 0 0 16px 0;
+          color: #333;
+          font-size: 28px;
+          font-weight: 500;
+        }
+      }
+      
+      .actions {
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      mat-icon {
+        color: #666;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+      
+      span, a {
+        color: #666;
+      }
+      
+      a {
+        text-decoration: none;
+        
+        &:hover {
+          text-decoration: underline;
+          color: #1976d2;
+        }
+      }
+    }
+  }
+
+  .profile-content {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 20px;
+    
+    .left-column, .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+  }
+
+  .description {
+    p {
+      margin: 0;
+      line-height: 1.6;
+      color: #666;
+    }
+  }
+
+  .languages-offered {
+    mat-chip-set {
+      mat-chip {
+        margin: 4px;
+        background-color: #e3f2fd;
+        color: #1976d2;
+      }
+    }
+  }
+
+  .statistics {
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      
+      .stat-item {
+        text-align: center;
+        padding: 16px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: #fafafa;
+        
+        .stat-number {
+          font-size: 24px;
+          font-weight: 600;
+          color: #1976d2;
+          margin-bottom: 4px;
+        }
+        
+        .stat-label {
+          font-size: 12px;
+          color: #666;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+    }
+  }
+
+  .subscription {
+    .plan-info {
+      display: flex;
+      justify-content: center;
+      
+      mat-chip {
+        font-weight: 500;
+        
+        &.plan-basic {
+          background-color: #e8f5e8;
+          color: #2e7d32;
+        }
+        
+        &.plan-premium {
+          background-color: #fff3e0;
+          color: #ef6c00;
+        }
+        
+        &.plan-enterprise {
+          background-color: #f3e5f5;
+          color: #7b1fa2;
+        }
+      }
+    }
+  }
+
+  .recent-tutors, .recent-students {
+    mat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .card-actions {
+        margin-left: auto;
+      }
+    }
+    
+    .tutor-item, .student-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      mat-icon {
+        color: #666;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+      
+      span {
+        color: #666;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .no-data {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .no-profile {
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        color: #ccc;
+        margin-bottom: 16px;
+      }
+      
+      h2 {
+        color: #666;
+        margin-bottom: 20px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .institution-profile {
+    padding: 16px;
+    
+    .profile-header .header-content {
+      flex-direction: column;
+      text-align: center;
+      
+      .institution-logo {
+        align-self: center;
+      }
+    }
+    
+    .profile-content {
+      grid-template-columns: 1fr;
+    }
+    
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .statistics .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+}

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Color Palette (matching brand colors)
 $primary: #4b6c80;
 $secondary: #17a9ff;
@@ -62,8 +64,8 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
 // Header Section
 .header-section {
   background: linear-gradient(135deg, $white 0%, $light-gray 100%);
-  @include section-padding;
   min-height: 80vh;
+  @include section-padding;
   @include flex-center;
 }
 
@@ -92,7 +94,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
     font-size: 1.25rem;
     line-height: 1.6;
     margin-bottom: 1.5rem;
-    color: lighten($text-primary, 20%);
+    color: color.adjust($text-primary, $lightness: 20%);
     
     @media (max-width: 768px) {
       font-size: 1.1rem;
@@ -158,7 +160,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
     }
     
     &:hover {
-      background-color: darken($secondary, 10%) !important;
+      background-color: color.adjust($secondary, $lightness: -10%) !important;
       transform: translateY(-2px);
       box-shadow: 0 8px 16px rgba($secondary, 0.3);
     }
@@ -198,7 +200,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
     }
     
     &:hover {
-      background-color: darken($accent, 10%) !important;
+      background-color: color.adjust($accent, $lightness: -10%) !important;
       transform: translateY(-2px);
       box-shadow: 0 8px 16px rgba($accent, 0.3);
     }
@@ -207,8 +209,8 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
 
 // Why Section
 .why-section {
-  @include section-padding;
   background-color: $info-background;
+  @include section-padding;
 }
 
 .why-grid {
@@ -241,7 +243,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
       @include flex-center;
       width: 80px;
       height: 80px;
-      background: linear-gradient(135deg, $primary, lighten($primary, 10%));
+      background: linear-gradient(135deg, $primary, color.adjust($primary, $lightness: 10%));
       border-radius: 50%;
       margin: 0 auto 1.5rem;
       overflow: hidden;
@@ -266,7 +268,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
     }
     
     p {
-      color: lighten($text-primary, 20%);
+      color: color.adjust($text-primary, $lightness: 20%);
       line-height: 1.6;
     }
   }
@@ -302,11 +304,11 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
       }
       
       .tutor-avatar {
-        background: linear-gradient(135deg, $secondary, lighten($secondary, 10%));
+        background: linear-gradient(135deg, $secondary, color.adjust($secondary, $lightness: 10%));
       }
       
       .institution-avatar {
-        background: linear-gradient(135deg, $accent, lighten($accent, 10%));
+        background: linear-gradient(135deg, $accent, color.adjust($accent, $lightness: 10%));
       }
       
       mat-card-title {
@@ -321,7 +323,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
       
       mat-card-subtitle {
         font-size: 1rem;
-        color: lighten($text-primary, 30%);
+        color: color.adjust($text-primary, $lightness: 30%);
       }
     }
     
@@ -351,7 +353,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
           
           span {
             font-style: italic;
-            color: lighten($text-primary, 15%);
+            color: color.adjust($text-primary, $lightness: 15%);
             line-height: 1.5;
           }
         }
@@ -376,7 +378,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
           
           li {
             margin-bottom: 0.5rem;
-            color: lighten($text-primary, 20%);
+            color: color.adjust($text-primary, $lightness: 20%);
             line-height: 1.4;
             
             &:last-child {
@@ -419,7 +421,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
         }
         
         &:hover {
-          background-color: darken($secondary, 10%) !important;
+          background-color: color.adjust($secondary, $lightness: -10%) !important;
           transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba($secondary, 0.3);
         }
@@ -453,7 +455,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
         }
         
         &:hover {
-          background-color: darken($accent, 10%) !important;
+          background-color: color.adjust($accent, $lightness: -10%) !important;
           transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba($accent, 0.3);
         }
@@ -473,7 +475,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
 // Closing Section
 .closing-section {
   @include section-padding;
-  background: linear-gradient(135deg, $primary 0%, darken($primary, 10%) 100%);
+  background: linear-gradient(135deg, $primary 0%, color.adjust($primary, $lightness: -10%) 100%);
   color: $white;
   text-align: center;
 }
@@ -545,7 +547,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
     }
     
     &:hover {
-      background-color: lighten($secondary, 10%) !important;
+      background-color: color.adjust($secondary, $lightness: 10%) !important;
       transform: translateY(-1px);
     }
   }
@@ -578,7 +580,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
     }
     
     &:hover {
-      background-color: lighten($accent, 10%) !important;
+      background-color: color.adjust($accent, $lightness: 10%) !important;
       transform: translateY(-1px);
     }
   }

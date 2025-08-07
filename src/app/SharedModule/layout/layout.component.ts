@@ -69,6 +69,14 @@ export class LayoutComponent implements OnInit, OnDestroy {
           url: '/dashboard',
           matIcon: 'home',
           roles: ['student', 'tutor', 'institution', 'admin']
+        },
+        {
+          title: 'navigation.profile',
+          translationKey: 'navigation.profile',
+          type: 'item',
+          url: '/profile',
+          matIcon: 'account_circle',
+          roles: ['student', 'tutor', 'institution', 'admin']
         }
       ]
     },

@@ -1,0 +1,262 @@
+<h2 mat-dialog-title>
+  <mat-icon>edit</mat-icon>
+  {{ 'profile.editTutorProfile' | translate }}
+</h2>
+
+<form [formGroup]="tutorForm" (ngSubmit)="onSave()">
+  <mat-dialog-content>
+    <mat-stepper orientation="vertical" #stepper>
+      <!-- Paso 1: Información básica -->
+      <mat-step [stepControl]="tutorForm.get('basicInfo')!" label="{{ 'profile.basicInfo' | translate }}">
+        <div formGroupName="basicInfo" class="form-section">
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.fullName' | translate }}</mat-label>
+              <input matInput formControlName="full_name" required>
+              <mat-error *ngIf="tutorForm.get('basicInfo.full_name')?.hasError('required')">
+                {{ 'validation.required' | translate }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.phone' | translate }}</mat-label>
+              <input matInput formControlName="phone">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.country' | translate }}</mat-label>
+              <input matInput formControlName="country" required>
+              <mat-error *ngIf="tutorForm.get('basicInfo.country')?.hasError('required')">
+                {{ 'validation.required' | translate }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.birthLanguage' | translate }}</mat-label>
+              <input matInput formControlName="birth_language">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.birthDate' | translate }}</mat-label>
+              <input matInput [matDatepicker]="birthDatePicker" formControlName="birth_date">
+              <mat-datepicker-toggle matIconSuffix [for]="birthDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #birthDatePicker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.photoUrl' | translate }}</mat-label>
+              <input matInput formControlName="photo_url" placeholder="https://...">
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- Paso 2: Información profesional -->
+      <mat-step [stepControl]="tutorForm.get('professionalInfo')!" label="{{ 'profile.professionalInfo' | translate }}">
+        <div formGroupName="professionalInfo" class="form-section">
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.experienceLevel' | translate }}</mat-label>
+              <mat-select formControlName="experience_level" required>
+                <mat-option *ngFor="let level of experienceLevels" [value]="level">
+                  {{ ('experienceLevel.' + level) | translate }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.hourlyRate' | translate }}</mat-label>
+              <input matInput type="number" formControlName="hourly_rate" required min="1">
+              <mat-error *ngIf="tutorForm.get('professionalInfo.hourly_rate')?.hasError('required')">
+                {{ 'validation.required' | translate }}
+              </mat-error>
+              <mat-error *ngIf="tutorForm.get('professionalInfo.hourly_rate')?.hasError('min')">
+                {{ 'validation.min' | translate }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.currency' | translate }}</mat-label>
+              <mat-select formControlName="hourly_rate_currency">
+                <mat-option value="USD">USD</mat-option>
+                <mat-option value="EUR">EUR</mat-option>
+                <mat-option value="GBP">GBP</mat-option>
+                <mat-option value="BOB">BOB</mat-option>
+                <mat-option value="COP">COP</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.maxHoursPerWeek' | translate }}</mat-label>
+              <input matInput type="number" formControlName="max_hours_per_week" required min="1">
+              <mat-error *ngIf="tutorForm.get('professionalInfo.max_hours_per_week')?.hasError('required')">
+                {{ 'validation.required' | translate }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.linkedinProfile' | translate }}</mat-label>
+              <input matInput formControlName="linkedin_profile" placeholder="https://linkedin.com/in/...">
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.timezone' | translate }}</mat-label>
+              <input matInput formControlName="timezone" placeholder="America/La_Paz">
+            </mat-form-field>
+          </div>
+
+          <mat-form-field class="full-width">
+            <mat-label>{{ 'profile.biography' | translate }}</mat-label>
+            <textarea matInput formControlName="bio" rows="4"></textarea>
+          </mat-form-field>
+        </div>
+      </mat-step>
+
+      <!-- Paso 3: Idiomas -->
+      <mat-step label="{{ 'profile.languages' | translate }}">
+        <div class="form-section">
+          <div class="section-header">
+            <h3>{{ 'profile.languagesManagement' | translate }}</h3>
+            <button type="button" mat-raised-button color="primary" (click)="addLanguage()">
+              <mat-icon>add</mat-icon>
+              {{ 'profile.addLanguage' | translate }}
+            </button>
+          </div>
+
+          <div formArrayName="languages" class="dynamic-list">
+            <div *ngFor="let language of languagesArray.controls; let i = index" 
+                 [formGroupName]="i" class="dynamic-item">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>{{ 'profile.language' | translate }}</mat-label>
+                  <mat-select formControlName="language_id" required>
+                    <mat-option *ngFor="let lang of availableLanguages" [value]="lang.code">
+                      {{ lang.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>{{ 'profile.level' | translate }}</mat-label>
+                  <mat-select formControlName="level_cefr" required>
+                    <mat-option value="A1">A1</mat-option>
+                    <mat-option value="A2">A2</mat-option>
+                    <mat-option value="B1">B1</mat-option>
+                    <mat-option value="B2">B2</mat-option>
+                    <mat-option value="C1">C1</mat-option>
+                    <mat-option value="C2">C2</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <button type="button" mat-icon-button color="warn" (click)="removeLanguage(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- Paso 4: Certificaciones -->
+      <mat-step label="{{ 'profile.certifications' | translate }}">
+        <div class="form-section">
+          <div class="section-header">
+            <h3>{{ 'profile.certificationsManagement' | translate }}</h3>
+            <button type="button" mat-raised-button color="primary" (click)="addCertification()">
+              <mat-icon>add</mat-icon>
+              {{ 'profile.addCertification' | translate }}
+            </button>
+          </div>
+
+          <div formArrayName="certifications" class="dynamic-list">
+            <div *ngFor="let cert of certificationsArray.controls; let i = index" 
+                 [formGroupName]="i" class="dynamic-item">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>{{ 'profile.certificationName' | translate }}</mat-label>
+                  <input matInput formControlName="name" required>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>{{ 'profile.issuer' | translate }}</mat-label>
+                  <input matInput formControlName="issuer">
+                </mat-form-field>
+
+                <button type="button" mat-icon-button color="warn" (click)="removeCertification(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- Paso 5: Disponibilidad -->
+      <mat-step label="{{ 'profile.availability' | translate }}">
+        <div class="form-section">
+          <div class="section-header">
+            <h3>{{ 'profile.availabilityManagement' | translate }}</h3>
+            <button type="button" mat-raised-button color="primary" (click)="addAvailability()">
+              <mat-icon>add</mat-icon>
+              {{ 'profile.addAvailability' | translate }}
+            </button>
+          </div>
+
+          <div formArrayName="availability" class="dynamic-list">
+            <div *ngFor="let avail of availabilityArray.controls; let i = index" 
+                 [formGroupName]="i" class="dynamic-item">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>{{ 'profile.weekDay' | translate }}</mat-label>
+                  <mat-select formControlName="week_day" required>
+                    <mat-option value="Monday">{{ 'weekDays.monday' | translate }}</mat-option>
+                    <mat-option value="Tuesday">{{ 'weekDays.tuesday' | translate }}</mat-option>
+                    <mat-option value="Wednesday">{{ 'weekDays.wednesday' | translate }}</mat-option>
+                    <mat-option value="Thursday">{{ 'weekDays.thursday' | translate }}</mat-option>
+                    <mat-option value="Friday">{{ 'weekDays.friday' | translate }}</mat-option>
+                    <mat-option value="Saturday">{{ 'weekDays.saturday' | translate }}</mat-option>
+                    <mat-option value="Sunday">{{ 'weekDays.sunday' | translate }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>{{ 'profile.hours' | translate }}</mat-label>
+                  <input matInput formControlName="hours" 
+                         placeholder="9,10,14,15" 
+                         matTooltip="{{ 'profile.hoursTooltip' | translate }}"
+                         required>
+                </mat-form-field>
+
+                <button type="button" mat-icon-button color="warn" (click)="removeAvailability(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-step>
+    </mat-stepper>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button type="button" mat-button (click)="onCancel()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" mat-raised-button color="primary" 
+            [disabled]="tutorForm.invalid || isLoading">
+      <mat-icon *ngIf="isLoading">
+        <mat-spinner diameter="16"></mat-spinner>
+      </mat-icon>
+      <mat-icon *ngIf="!isLoading">save</mat-icon>
+      {{ 'common.save' | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>

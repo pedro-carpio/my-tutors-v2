@@ -1,0 +1,263 @@
+.institution-profile {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.profile-card {
+  mat-card-header {
+    position: relative;
+    
+    .edit-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+    }
+    
+    div[mat-card-avatar] {
+      mat-icon {
+        font-size: 40px;
+        width: 40px;
+        height: 40px;
+      }
+      
+      img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+    }
+  }
+}
+
+.info-section {
+  margin: 24px 0;
+  
+  h3 {
+    color: #333;
+    margin-bottom: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+  
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    
+    mat-icon {
+      color: #666;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+    
+    span, a {
+      font-size: 14px;
+      color: #333;
+      text-decoration: none;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+      color: #1976d2;
+    }
+  }
+}
+
+.description-text {
+  line-height: 1.6;
+  color: #555;
+  background-color: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 0;
+}
+
+.languages-container {
+  margin-top: 12px;
+  
+  mat-chip-set {
+    mat-chip {
+      margin: 4px;
+      
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #1976d2;
+    
+    mat-icon {
+      color: #1976d2;
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+    
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+      
+      .stat-number {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        line-height: 1;
+      }
+      
+      .stat-label {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+      }
+    }
+  }
+}
+
+.tutors-list,
+.students-list {
+  .tutor-item,
+  .student-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    
+    mat-icon {
+      color: #666;
+    }
+    
+    .tutor-info,
+    .student-info {
+      display: flex;
+      flex-direction: column;
+      
+      .tutor-name,
+      .student-name {
+        font-weight: 500;
+        color: #333;
+      }
+      
+      .tutor-details,
+      .student-details {
+        font-size: 12px;
+        color: #666;
+      }
+    }
+  }
+  
+  .view-all-button {
+    margin-top: 8px;
+    width: 100%;
+  }
+}
+
+.subscription-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  
+  mat-icon {
+    color: #1976d2;
+  }
+  
+  span {
+    font-weight: 500;
+    color: #1976d2;
+  }
+}
+
+.no-data {
+  color: #999;
+  font-style: italic;
+  margin: 0;
+  padding: 16px;
+  text-align: center;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  
+  mat-progress-spinner {
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: #666;
+    margin: 0;
+  }
+}
+
+mat-divider {
+  margin: 20px 0;
+}
+
+mat-card-actions {
+  padding: 16px 24px 24px;
+  
+  button {
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .profile-card {
+    margin: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

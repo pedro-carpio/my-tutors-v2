@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Color Palette
 $background: #f5f5f5;
 $text-primary: #1b1b1b;
@@ -13,9 +15,11 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
 
 // Mixins
 @mixin flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  & {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 @mixin section-padding {
@@ -61,8 +65,11 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
 .hero-section {
   background: linear-gradient(135deg, $white 0%, $light-gray 100%);
   @include section-padding;
-  min-height: 80vh;
   @include flex-center;
+  
+  & {
+    min-height: 80vh;
+  }
 }
 
 .hero-container {
@@ -99,7 +106,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
     font-size: 1.25rem;
     line-height: 1.6;
     margin-bottom: 2rem;
-    color: lighten($text-primary, 20%);
+    color: color.adjust($text-primary, $lightness: 20%);
   }
   
   .hero-features {
@@ -145,7 +152,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
       }
       
       &:hover {
-        background-color: darken($accent, 10%) !important;
+        background-color: color.adjust($accent, $lightness: -10%) !important;
         transform: translateY(-2px);
         box-shadow: 0 8px 16px rgba($accent, 0.3);
       }
@@ -215,8 +222,8 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
 
 // Benefits Section
 .benefits-section {
-  @include section-padding;
   background-color: $white;
+  @include section-padding;
 }
 
 .benefits-grid {
@@ -240,7 +247,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
       @include flex-center;
       width: 80px;
       height: 80px;
-      background: linear-gradient(135deg, $accent, lighten($accent, 10%));
+      background: linear-gradient(135deg, $accent, color.adjust($accent, $lightness: 10%));
       border-radius: 50%;
       margin: 0 auto 1.5rem;
       overflow: hidden;
@@ -265,7 +272,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
     }
     
     p {
-      color: lighten($text-primary, 20%);
+      color: color.adjust($text-primary, $lightness: 20%);
       line-height: 1.6;
     }
   }
@@ -273,8 +280,8 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
 
 // How It Works Section
 .how-it-works-section {
-  @include section-padding;
   background-color: $light-gray;
+  @include section-padding;
 }
 
 .steps-container {
@@ -320,7 +327,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
     }
     
     p {
-      color: lighten($text-primary, 20%);
+      color: color.adjust($text-primary, $lightness: 20%);
     }
   }
 }
@@ -334,8 +341,8 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
 
 // Testimonials Section
 .testimonials-section {
-  @include section-padding;
   background-color: $white;
+  @include section-padding;
 }
 
 .testimonials-grid {
@@ -374,7 +381,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
       }
       
       span {
-        color: lighten($text-primary, 30%);
+        color: color.adjust($text-primary, $lightness: 30%);
         font-size: 0.9rem;
       }
     }
@@ -383,9 +390,9 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
 
 // Requirements Section
 .requirements-section {
-  @include section-padding;
   background-color: $light-gray;
   overflow-x: hidden;
+  @include section-padding;
   
   .container {
     @media (max-width: 768px) {
@@ -398,7 +405,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
   text-align: center;
   font-size: 1.25rem;
   margin-bottom: 2rem;
-  color: lighten($text-primary, 20%);
+  color: color.adjust($text-primary, $lightness: 20%);
   
   @media (max-width: 768px) {
     font-size: 1.1rem;
@@ -540,7 +547,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
     
     p {
       line-height: 1.6;
-      color: lighten($text-primary, 20%);
+      color: color.adjust($text-primary, $lightness: 20%);
     }
   }
 }
@@ -571,7 +578,7 @@ $font-family: 'Inter', 'Poppins', 'Rubik', sans-serif;
       }
       
       p {
-        color: lighten($text-primary, 60%);
+        color: color.adjust($text-primary, $lightness: 60%);
       }
     }
     

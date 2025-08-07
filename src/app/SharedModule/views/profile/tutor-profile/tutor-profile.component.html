@@ -1,0 +1,150 @@
+<div class="tutor-profile" *ngIf="tutor$ | async as tutor; else loadingTemplate">
+  <mat-card class="profile-card">
+    <mat-card-header>
+      <div mat-card-avatar>
+        <mat-icon *ngIf="!tutor.photo_url">school</mat-icon>
+        <img *ngIf="tutor.photo_url" [src]="tutor.photo_url" [alt]="tutor.full_name">
+      </div>
+      <mat-card-title>{{ tutor.full_name }}</mat-card-title>
+      <mat-card-subtitle>{{ 'roles.tutor' | translate }}</mat-card-subtitle>
+      <button mat-icon-button class="edit-button" (click)="openEditDialog()">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Información básica -->
+      <div class="info-section">
+        <h3>{{ 'profile.basicInfo' | translate }}</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ tutor.country || 'No especificado' }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon>phone</mat-icon>
+            <span>{{ tutor.phone || 'No especificado' }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon>cake</mat-icon>
+            <span>{{ tutor.birth_date | date:'mediumDate' }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon>language</mat-icon>
+            <span>{{ tutor.birth_language || 'No especificado' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Información profesional -->
+      <div class="info-section">
+        <h3>{{ 'profile.professionalInfo' | translate }}</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <mat-icon>trending_up</mat-icon>
+            <span>{{ 'profile.experience' | translate }}: {{ getExperienceLevelText(tutor.experience_level) }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon>attach_money</mat-icon>
+            <span>{{ tutor.hourly_rate }} {{ tutor.hourly_rate_currency || 'USD' }}/{{ 'profile.hour' | translate }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon>schedule</mat-icon>
+            <span>{{ 'profile.maxHours' | translate }}: {{ tutor.max_hours_per_week }}/{{ 'profile.week' | translate }}</span>
+          </div>
+          <div class="info-item" *ngIf="tutor.timezone">
+            <mat-icon>access_time</mat-icon>
+            <span>{{ tutor.timezone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Biografía -->
+      <div class="info-section" *ngIf="tutor.bio">
+        <h3>{{ 'profile.biography' | translate }}</h3>
+        <p class="bio-text">{{ tutor.bio }}</p>
+      </div>
+
+      <mat-divider *ngIf="tutor.bio"></mat-divider>
+
+      <!-- Disponibilidad -->
+      <div class="info-section" *ngIf="tutor.availability && tutor.availability.length > 0">
+        <h3>{{ 'profile.availability' | translate }}</h3>
+        <div class="availability-grid">
+          <mat-chip-set>
+            <mat-chip *ngFor="let day of tutor.availability">
+              <mat-icon matChipAvatar>today</mat-icon>
+              {{ day.week_day }}: {{ day.hours.join(', ') }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+      </div>
+
+      <mat-divider *ngIf="tutor.availability && tutor.availability.length > 0"></mat-divider>
+
+      <!-- Idiomas -->
+      <div class="info-section">
+        <h3>{{ 'profile.languages' | translate }}</h3>
+        <div class="languages-container" *ngIf="tutorLanguages$ | async as languages; else noLanguages">
+          <mat-chip-set>
+            <mat-chip *ngFor="let lang of languages">
+              <mat-icon matChipAvatar>translate</mat-icon>
+              {{ lang.language_id }} - {{ lang.level_cefr }}
+              <mat-icon *ngIf="lang.is_native" matChipTrailingIcon>star</mat-icon>
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+        <ng-template #noLanguages>
+          <p class="no-data">{{ 'profile.noLanguages' | translate }}</p>
+        </ng-template>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Certificaciones -->
+      <div class="info-section" *ngIf="tutor.certifications && tutor.certifications.length > 0">
+        <h3>{{ 'profile.certifications' | translate }}</h3>
+        <div class="certifications-list">
+          <mat-chip-set>
+            <mat-chip *ngFor="let cert of tutor.certifications">
+              <mat-icon matChipAvatar>verified</mat-icon>
+              {{ cert.name }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+      </div>
+
+      <!-- LinkedIn Profile -->
+      <div class="info-section" *ngIf="tutor.linkedin_profile">
+        <h3>{{ 'profile.socialProfiles' | translate }}</h3>
+        <div class="social-links">
+          <a [href]="tutor.linkedin_profile" target="_blank" mat-button>
+            <mat-icon>link</mat-icon>
+            LinkedIn
+          </a>
+        </div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-raised-button color="primary" (click)="openEditDialog()">
+        <mat-icon>edit</mat-icon>
+        {{ 'profile.editInfo' | translate }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
+
+<ng-template #loadingTemplate>
+  <div class="loading-container">
+    <mat-progress-spinner 
+      mode="indeterminate" 
+      diameter="60">
+    </mat-progress-spinner>
+    <p>{{ 'common.loading' | translate }}</p>
+  </div>
+</ng-template>

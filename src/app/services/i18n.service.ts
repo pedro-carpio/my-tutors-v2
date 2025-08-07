@@ -82,6 +82,7 @@ export class I18nService {
         navigation: {
           dashboard: 'General',
           home: 'Inicio',
+          profile: 'Perfil',
           student: 'Estudiante',
           myClasses: 'Mis Clases',
           findTutors: 'Buscar Tutores',
@@ -663,6 +664,120 @@ export class I18nService {
           minutes: 'minutos',
           students: 'estudiantes',
           subtitle: 'Gestiona las convocatorias de trabajo para tutores'
+        },
+
+        // Sistema de Perfiles
+        profile: {
+          title: 'Perfil',
+          viewProfile: 'Ver perfil como',
+          activeRole: 'Rol activo',
+          currentRole: 'Rol actual',
+          syncWithActiveRole: 'Sincronizar con rol activo',
+          noSpecificProfile: 'No tienes un perfil específico para mostrar',
+          
+          // Información básica
+          basicInfo: 'Información Básica',
+          fullName: 'Nombre completo',
+          phone: 'Teléfono',
+          country: 'País',
+          birthDate: 'Fecha de nacimiento',
+          birthLanguage: 'Idioma nativo',
+          photoUrl: 'URL de foto',
+          
+          // Información profesional (tutores)
+          professionalInfo: 'Información Profesional',
+          experience: 'Experiencia',
+          experienceLevel: 'Nivel de experiencia',
+          hourlyRate: 'Tarifa por hora',
+          hour: 'hora',
+          maxHours: 'Máximo',
+          maxHoursPerWeek: 'Máximo horas por semana',
+          week: 'semana',
+          weeklyHours: 'horas semanales',
+          biography: 'Biografía',
+          availability: 'Disponibilidad',
+          languages: 'Idiomas',
+          noLanguages: 'No hay idiomas configurados',
+          certifications: 'Certificaciones',
+          socialProfiles: 'Perfiles sociales',
+          linkedinProfile: 'Perfil de LinkedIn',
+          timezone: 'Zona horaria',
+          
+          // Información institucional
+          institutionName: 'Nombre de la institución',
+          contactPerson: 'Persona de contacto',
+          contactEmail: 'Email de contacto',
+          website: 'Sitio web',
+          address: 'Dirección',
+          description: 'Descripción',
+          languagesOffered: 'Idiomas ofrecidos',
+          statistics: 'Estadísticas',
+          tutors: 'Tutores',
+          students: 'Estudiantes',
+          maxTutors: 'Máximo tutores',
+          maxStudents: 'Máximo estudiantes',
+          recentTutors: 'Tutores recientes',
+          recentStudents: 'Estudiantes recientes',
+          viewAllTutors: 'Ver todos los tutores',
+          viewAllStudents: 'Ver todos los estudiantes',
+          noTutors: 'No hay tutores registrados',
+          noStudents: 'No hay estudiantes registrados',
+          subscriptionPlan: 'Plan de suscripción',
+          logoUrl: 'URL del logo',
+          
+          // Edición
+          editInfo: 'Editar información',
+          editTutorProfile: 'Editar perfil de tutor',
+          editInstitutionProfile: 'Editar perfil de institución',
+          servicesAndPlan: 'Servicios y plan',
+          languagesManagement: 'Gestión de idiomas',
+          addLanguage: 'Agregar idioma',
+          addFirstLanguage: 'Agregar primer idioma',
+          noLanguagesAdded: 'No se han agregado idiomas',
+          language: 'Idioma',
+          level: 'Nivel',
+          certificationsManagement: 'Gestión de certificaciones',
+          addCertification: 'Agregar certificación',
+          certificationName: 'Nombre de la certificación',
+          issuer: 'Emisor',
+          availabilityManagement: 'Gestión de disponibilidad',
+          addAvailability: 'Agregar disponibilidad',
+          weekDay: 'Día de la semana',
+          hours: 'Horas',
+          hoursTooltip: 'Ingrese las horas separadas por comas (ej: 9,10,14,15)',
+          currency: 'Moneda'
+        },
+
+        // Días de la semana
+        weekDays: {
+          monday: 'Lunes',
+          tuesday: 'Martes',
+          wednesday: 'Miércoles',
+          thursday: 'Jueves',
+          friday: 'Viernes',
+          saturday: 'Sábado',
+          sunday: 'Domingo'
+        },
+
+        // Niveles de experiencia
+        experienceLevel: {
+          beginner: 'Principiante',
+          intermediate: 'Intermedio',
+          advanced: 'Avanzado',
+          expert: 'Experto'
+        },
+
+        // Planes de suscripción
+        plans: {
+          basic: 'Básico',
+          premium: 'Premium',
+          enterprise: 'Empresarial'
+        },
+
+        // Validaciones
+        validation: {
+          required: 'Este campo es obligatorio',
+          min: 'Valor mínimo no alcanzado'
         }
       },
       
@@ -683,6 +798,7 @@ export class I18nService {
         navigation: {
           dashboard: 'Dashboard',
           home: 'Home',
+          profile: 'Profile',
           student: 'Student',
           myClasses: 'My Classes',
           findTutors: 'Find Tutors',
@@ -877,6 +993,120 @@ export class I18nService {
             connectionError: 'Error connecting with Google',
             registerError: 'Error registering with Google'
           }
+        },
+
+        // Sistema de Perfiles
+        profile: {
+          title: 'Profile',
+          viewProfile: 'View profile as',
+          activeRole: 'Active role',
+          currentRole: 'Current role',
+          syncWithActiveRole: 'Sync with active role',
+          noSpecificProfile: 'You don\'t have a specific profile to show',
+          
+          // Información básica
+          basicInfo: 'Basic Information',
+          fullName: 'Full name',
+          phone: 'Phone',
+          country: 'Country',
+          birthDate: 'Birth date',
+          birthLanguage: 'Native language',
+          photoUrl: 'Photo URL',
+          
+          // Información profesional (tutores)
+          professionalInfo: 'Professional Information',
+          experience: 'Experience',
+          experienceLevel: 'Experience level',
+          hourlyRate: 'Hourly rate',
+          hour: 'hour',
+          maxHours: 'Max',
+          maxHoursPerWeek: 'Max hours per week',
+          week: 'week',
+          weeklyHours: 'weekly hours',
+          biography: 'Biography',
+          availability: 'Availability',
+          languages: 'Languages',
+          noLanguages: 'No languages configured',
+          certifications: 'Certifications',
+          socialProfiles: 'Social profiles',
+          linkedinProfile: 'LinkedIn profile',
+          timezone: 'Timezone',
+          
+          // Información institucional
+          institutionName: 'Institution name',
+          contactPerson: 'Contact person',
+          contactEmail: 'Contact email',
+          website: 'Website',
+          address: 'Address',
+          description: 'Description',
+          languagesOffered: 'Languages offered',
+          statistics: 'Statistics',
+          tutors: 'Tutors',
+          students: 'Students',
+          maxTutors: 'Max tutors',
+          maxStudents: 'Max students',
+          recentTutors: 'Recent tutors',
+          recentStudents: 'Recent students',
+          viewAllTutors: 'View all tutors',
+          viewAllStudents: 'View all students',
+          noTutors: 'No tutors registered',
+          noStudents: 'No students registered',
+          subscriptionPlan: 'Subscription plan',
+          logoUrl: 'Logo URL',
+          
+          // Edición
+          editInfo: 'Edit information',
+          editTutorProfile: 'Edit tutor profile',
+          editInstitutionProfile: 'Edit institution profile',
+          servicesAndPlan: 'Services and plan',
+          languagesManagement: 'Languages management',
+          addLanguage: 'Add language',
+          addFirstLanguage: 'Add first language',
+          noLanguagesAdded: 'No languages added',
+          language: 'Language',
+          level: 'Level',
+          certificationsManagement: 'Certifications management',
+          addCertification: 'Add certification',
+          certificationName: 'Certification name',
+          issuer: 'Issuer',
+          availabilityManagement: 'Availability management',
+          addAvailability: 'Add availability',
+          weekDay: 'Week day',
+          hours: 'Hours',
+          hoursTooltip: 'Enter hours separated by commas (e.g: 9,10,14,15)',
+          currency: 'Currency'
+        },
+
+        // Días de la semana
+        weekDays: {
+          monday: 'Monday',
+          tuesday: 'Tuesday',
+          wednesday: 'Wednesday',
+          thursday: 'Thursday',
+          friday: 'Friday',
+          saturday: 'Saturday',
+          sunday: 'Sunday'
+        },
+
+        // Niveles de experiencia
+        experienceLevel: {
+          beginner: 'Beginner',
+          intermediate: 'Intermediate',
+          advanced: 'Advanced',
+          expert: 'Expert'
+        },
+
+        // Planes de suscripción
+        plans: {
+          basic: 'Basic',
+          premium: 'Premium',
+          enterprise: 'Enterprise'
+        },
+
+        // Validaciones
+        validation: {
+          required: 'This field is required',
+          min: 'Minimum value not reached'
         },
         
         // Languages

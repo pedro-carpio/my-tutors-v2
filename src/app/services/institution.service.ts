@@ -12,6 +12,7 @@ import {
   query,
   where,
   orderBy,
+  serverTimestamp,
 } from '@angular/fire/firestore';
 import { Institution } from '../types/firestore.types';
 
@@ -26,7 +27,15 @@ export class InstitutionService {
   async createInstitution(institutionData: Institution): Promise<void> {
     try {
       const docRef = doc(this.firestore, this.collectionName, institutionData.user_id);
-      await setDoc(docRef, institutionData);
+      
+      // Add timestamps
+      const dataWithTimestamps = {
+        ...institutionData,
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      };
+      
+      await setDoc(docRef, dataWithTimestamps);
     } catch (error) {
       console.error('Error creating institution:', error);
       throw error;
@@ -74,7 +83,17 @@ export class InstitutionService {
   async updateInstitution(userId: string, institutionData: Partial<Institution>): Promise<void> {
     try {
       const docRef = doc(this.firestore, this.collectionName, userId);
-      await updateDoc(docRef, institutionData);
+      console.log('Updating institution:', userId, institutionData);
+      console.log('Document reference:', docRef);
+      
+      // Add updated timestamp
+      const dataWithTimestamp = {
+        ...institutionData,
+        updated_at: serverTimestamp(),
+      };
+      
+      // Use setDoc with merge to create document if it doesn't exist or update if it does
+      await setDoc(docRef, dataWithTimestamp, { merge: true });
     } catch (error) {
       console.error('Error updating institution:', error);
       throw error;

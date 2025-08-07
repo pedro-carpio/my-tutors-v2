@@ -109,7 +109,9 @@ export interface Institution {
 export interface Language {
   id: string;
   code: string; // ISO 639‑1
-  name: string;
+  name: string; // Default name (English)
+  name_es?: string; // Spanish translation
+  name_en?: string; // English translation (fallback)
   is_active?: boolean; // TODO: Sistema de activación/desactivación de idiomas en admin panel
   created_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
 }

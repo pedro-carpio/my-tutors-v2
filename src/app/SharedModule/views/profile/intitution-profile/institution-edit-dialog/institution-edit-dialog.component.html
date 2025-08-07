@@ -1,0 +1,168 @@
+<h2 mat-dialog-title>
+  <mat-icon>edit</mat-icon>
+  {{ 'profile.editInstitutionProfile' | translate }}
+</h2>
+
+<form [formGroup]="institutionForm" (ngSubmit)="onSave()">
+  <mat-dialog-content>
+    <mat-stepper orientation="vertical" #stepper>
+      <!-- Paso 1: Información básica -->
+      <mat-step [stepControl]="institutionForm.get('basicInfo')!" label="{{ 'profile.basicInfo' | translate }}">
+        <div formGroupName="basicInfo" class="form-section">
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.institutionName' | translate }}</mat-label>
+              <input matInput formControlName="name" required>
+              <mat-error *ngIf="institutionForm.get('basicInfo.name')?.hasError('required')">
+                {{ 'validation.required' | translate }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.country' | translate }}</mat-label>
+              <input matInput formControlName="country" required>
+              <mat-error *ngIf="institutionForm.get('basicInfo.country')?.hasError('required')">
+                {{ 'validation.required' | translate }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.phone' | translate }}</mat-label>
+              <input matInput formControlName="phone" required>
+              <mat-error *ngIf="institutionForm.get('basicInfo.phone')?.hasError('required')">
+                {{ 'validation.required' | translate }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.contactEmail' | translate }}</mat-label>
+              <input matInput type="email" formControlName="contact_email">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.website' | translate }}</mat-label>
+              <input matInput formControlName="website_url" placeholder="https://...">
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.contactPerson' | translate }}</mat-label>
+              <input matInput formControlName="contact_person">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.address' | translate }}</mat-label>
+              <input matInput formControlName="address">
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.logoUrl' | translate }}</mat-label>
+              <input matInput formControlName="logo_url" placeholder="https://...">
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- Paso 2: Descripción y servicios -->
+      <mat-step [stepControl]="institutionForm.get('services')!" label="{{ 'profile.servicesAndPlan' | translate }}">
+        <div formGroupName="services" class="form-section">
+          <mat-form-field class="full-width">
+            <mat-label>{{ 'profile.description' | translate }}</mat-label>
+            <textarea matInput formControlName="description" rows="4"></textarea>
+          </mat-form-field>
+
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.subscriptionPlan' | translate }}</mat-label>
+              <mat-select formControlName="subscription_plan">
+                <mat-option value="basic">{{ 'plans.basic' | translate }}</mat-option>
+                <mat-option value="premium">{{ 'plans.premium' | translate }}</mat-option>
+                <mat-option value="enterprise">{{ 'plans.enterprise' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>{{ 'profile.maxTutors' | translate }}</mat-label>
+              <input matInput type="number" formControlName="max_tutors" min="1">
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.maxStudents' | translate }}</mat-label>
+              <input matInput type="number" formControlName="max_students" min="1">
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- Paso 3: Idiomas ofrecidos -->
+      <mat-step label="{{ 'profile.languagesOffered' | translate }}">
+        <div class="form-section">
+          <div class="section-header">
+            <h3>{{ 'profile.languagesManagement' | translate }}</h3>
+            <button type="button" mat-raised-button color="primary" (click)="addLanguage()">
+              <mat-icon>add</mat-icon>
+              {{ 'profile.addLanguage' | translate }}
+            </button>
+          </div>
+
+          <div formArrayName="languages_offered" class="dynamic-list">
+            <div *ngFor="let language of languagesOfferedArray.controls; let i = index" 
+                 class="dynamic-item">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>{{ 'profile.language' | translate }}</mat-label>
+                  <mat-select [formControlName]="i" required>
+                    <mat-option *ngFor="let lang of availableLanguages" [value]="lang">
+                      {{ lang }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="language.hasError('required')">
+                    {{ 'validation.required' | translate }}
+                  </mat-error>
+                </mat-form-field>
+
+                <button type="button" mat-icon-button color="warn" (click)="removeLanguage(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="languagesOfferedArray.length === 0" class="no-languages">
+              <p>{{ 'profile.noLanguagesAdded' | translate }}</p>
+              <button type="button" mat-raised-button color="primary" (click)="addLanguage()">
+                <mat-icon>add</mat-icon>
+                {{ 'profile.addFirstLanguage' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </mat-step>
+    </mat-stepper>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <!-- Debug button - remove in production -->
+    <button type="button" mat-button color="accent" (click)="debugFormState()">
+      Debug Form
+    </button>
+    
+    <button type="button" mat-button (click)="onCancel()">
+      Hola
+    </button>
+    <button type="submit" mat-raised-button color="primary" 
+            [disabled]="!isFormValid || isLoading">
+      <mat-icon *ngIf="isLoading">
+        <mat-spinner diameter="16"></mat-spinner>
+      </mat-icon>
+      <mat-icon *ngIf="!isLoading">save</mat-icon>
+      {{ 'common.save' | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>

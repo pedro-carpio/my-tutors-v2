@@ -1,0 +1,126 @@
+.tutor-edit-dialog {
+  max-width: 600px;
+  min-width: 500px;
+
+  .step-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 0;
+    
+    mat-form-field {
+      width: 100%;
+    }
+    
+    .hourly-rate-group {
+      display: flex;
+      gap: 16px;
+      
+      mat-form-field {
+        flex: 1;
+      }
+    }
+  }
+
+  .step-actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    
+    h3 {
+      margin: 0;
+      color: #333;
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    
+    p {
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+  }
+
+  .languages-list,
+  .certifications-list,
+  .availability-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .language-item,
+  .certification-item,
+  .availability-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fafafa;
+    
+    mat-form-field {
+      flex: 1;
+    }
+    
+    button[mat-icon-button] {
+      flex-shrink: 0;
+    }
+  }
+
+  ::ng-deep {
+    .mat-stepper-horizontal .mat-stepper-header-container {
+      margin-bottom: 20px;
+    }
+    
+    .mat-step-header .mat-step-icon {
+      background-color: #e0e0e0;
+      color: #333;
+    }
+    
+    .mat-step-header .mat-step-icon-selected {
+      background-color: #1976d2;
+      color: white;
+    }
+    
+    .mat-step-header .mat-step-icon-state-done {
+      background-color: #4caf50;
+      color: white;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .tutor-edit-dialog {
+    min-width: 100%;
+    max-width: 100%;
+    
+    .hourly-rate-group {
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .language-item,
+    .certification-item,
+    .availability-item {
+      flex-direction: column;
+      align-items: stretch;
+      
+      button[mat-icon-button] {
+        align-self: flex-end;
+      }
+    }
+  }
+}

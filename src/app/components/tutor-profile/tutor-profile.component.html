@@ -1,0 +1,164 @@
+<div class="tutor-profile">
+  <div *ngIf="tutorData$ | async as tutor; else noData">
+    <!-- Header con información básica y foto -->
+    <mat-card class="profile-header">
+      <mat-card-content>
+        <div class="header-content">
+          <div class="profile-photo">
+            <img [src]="tutor.photo_url || '/assets/default-avatar.png'" 
+                 [alt]="tutor.full_name" 
+                 onerror="this.src='/assets/default-avatar.png'">
+          </div>
+          <div class="basic-info">
+            <h1>{{ tutor.full_name || ('common.notSpecified' | translate) }}</h1>
+            <div class="info-grid">
+              <div class="info-item">
+                <mat-icon>phone</mat-icon>
+                <span>{{ tutor.phone || ('common.notSpecified' | translate) }}</span>
+              </div>
+              <div class="info-item">
+                <mat-icon>location_on</mat-icon>
+                <span>{{ tutor.country || ('common.notSpecified' | translate) }}</span>
+              </div>
+              <div class="info-item">
+                <mat-icon>cake</mat-icon>
+                <span>{{ tutor.birth_date || ('common.notSpecified' | translate) }}</span>
+              </div>
+              <div class="info-item">
+                <mat-icon>language</mat-icon>
+                <span>{{ 
+                  tutor.birth_language ? 
+                    (('languages.' + tutor.birth_language) | translate) : 
+                    ('common.notSpecified' | translate) 
+                }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button mat-raised-button color="primary" (click)="openEditDialog()">
+              <mat-icon>edit</mat-icon>
+              {{ 'profile.editInfo' | translate }}
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Información profesional -->
+    <mat-card class="professional-info">
+      <mat-card-header>
+        <mat-card-title>{{ 'profile.professionalInfo' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <strong>{{ 'profile.experienceLevel' | translate }}:</strong>
+            <span>{{ 
+              tutor.experience_level ? 
+                (('experienceLevel.' + tutor.experience_level) | translate) : 
+                ('common.notSpecified' | translate) 
+            }}</span>
+          </div>
+          <div class="info-item">
+            <strong>{{ 'profile.hourlyRate' | translate }}:</strong>
+            <span>
+              {{ tutor.hourly_rate || 0 }} USD / {{ 'profile.hour' | translate }}
+            </span>
+          </div>
+          <div class="info-item">
+            <strong>{{ 'profile.maxHoursPerWeek' | translate }}:</strong>
+            <span>{{ tutor.max_hours_per_week || 0 }} {{ 'profile.week' | translate }}</span>
+          </div>
+          <div class="info-item">
+            <strong>{{ 'profile.timezone' | translate }}:</strong>
+            <span>{{ tutor.timezone || ('common.notSpecified' | translate) }}</span>
+          </div>
+        </div>
+        
+        <div *ngIf="tutor.bio" class="biography">
+          <strong>{{ 'profile.biography' | translate }}:</strong>
+          <p>{{ tutor.bio }}</p>
+        </div>
+        
+        <div *ngIf="tutor.linkedin_profile" class="linkedin">
+          <strong>{{ 'profile.linkedinProfile' | translate }}:</strong>
+          <a [href]="tutor.linkedin_profile" target="_blank" mat-button color="primary">
+            <mat-icon>link</mat-icon>
+            LinkedIn
+          </a>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Disponibilidad -->
+    <mat-card class="availability">
+      <mat-card-header>
+        <mat-card-title>{{ 'profile.availability' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="tutor.availability && tutor.availability.length > 0; else noAvailability">
+          <div class="availability-item" *ngFor="let av of tutor.availability">
+            <mat-chip-set>
+              <mat-chip>{{ ('weekDays.' + av.week_day) | translate }}</mat-chip>
+              <mat-chip *ngFor="let hour of av.hours">{{ hour }}</mat-chip>
+            </mat-chip-set>
+          </div>
+        </div>
+        <ng-template #noAvailability>
+          <p class="no-data">{{ 'common.notSpecified' | translate }}</p>
+        </ng-template>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Idiomas -->
+    <mat-card class="languages">
+      <mat-card-header>
+        <mat-card-title>{{ 'profile.languages' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="tutor.languages && tutor.languages.length > 0; else noLanguages">
+          <mat-chip-set>
+            <mat-chip *ngFor="let lang of tutor.languages">
+              {{ ('languages.' + lang.language_id) | translate }} ({{ lang.level_cefr }})
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+        <ng-template #noLanguages>
+          <p class="no-data">{{ 'profile.noLanguages' | translate }}</p>
+        </ng-template>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Certificaciones -->
+    <mat-card class="certifications">
+      <mat-card-header>
+        <mat-card-title>{{ 'profile.certifications' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="tutor.certifications && tutor.certifications.length > 0; else noCertifications">
+          <div class="certification-item" *ngFor="let cert of tutor.certifications">
+            <h4>{{ cert.name }}</h4>
+            <p *ngIf="cert.issuer">{{ 'profile.issuer' | translate }}: {{ cert.issuer }}</p>
+          </div>
+        </div>
+        <ng-template #noCertifications>
+          <p class="no-data">{{ 'common.notSpecified' | translate }}</p>
+        </ng-template>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <ng-template #noData>
+    <mat-card class="no-profile">
+      <mat-card-content>
+        <div class="empty-state">
+          <mat-icon>person_outline</mat-icon>
+          <h2>{{ 'profile.noSpecificProfile' | translate }}</h2>
+          <button mat-raised-button color="primary" (click)="openEditDialog()">
+            {{ 'profile.editTutorProfile' | translate }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-template>
+</div>

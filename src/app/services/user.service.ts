@@ -500,12 +500,14 @@ export class UserService {
 
   // Método para obtener todos los roles de un usuario
   getUserRoles(userId: string): Observable<UserRole[]> {
-    return this.getUser(userId).pipe(
-      map(userData => {
+    const docRef = doc(this.firestore, this.collectionName, userId);
+    return docData(docRef, { idField: 'id' }).pipe(
+      map((userData) => {
         if (!userData) return [];
-        return userData.roles || [];
+        const user = userData as User;
+        return user.roles || [];
       })
-    );
+    ) as Observable<UserRole[]>;
   }
 
   // Método para verificar si un usuario tiene un rol específico

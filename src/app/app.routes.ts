@@ -4,6 +4,12 @@ import { GuestGuard } from './guards/guest.guard';
 import { RoleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
+  // Temporary route for language seeder (remove in production)
+  {
+    path: 'language-seeder',
+    loadComponent: () => import('./components/language-seeder/language-seeder.component').then(m => m.LanguageSeederComponent),
+  },
+  
   // Rutas públicas (solo para usuarios no autenticados)
   {
     path: 'login',

@@ -1,1 +1,59 @@
-<p>profile works!</p>
+<app-layout>
+  <app-toolbar 
+    slot="toolbar"
+    [title]="'profile.title' | translate"
+    [showLogout]="true"
+    [showMenuButton]="true"
+    [showRoleSelector]="true"
+    (logout)="onLogout()"
+    (menuToggle)="toggleMenu()">
+  </app-toolbar>
+
+  <div class="profile-container">
+    <ng-container *ngIf="currentUser$ | async as user">
+      <mat-card class="profile-header">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>account_circle</mat-icon>
+            {{ 'profile.title' | translate }}
+          </mat-card-title>
+          <mat-card-subtitle>{{ user.email }}</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+
+      <!-- Mostrar perfil según el rol seleccionado -->
+      <div class="profile-content">
+        <app-tutor-profile 
+          *ngIf="showingRole === 'tutor'">
+        </app-tutor-profile>
+        
+        <app-institution-profile 
+          *ngIf="showingRole === 'institution'">
+        </app-institution-profile>
+        
+        <!-- Mensaje si no tiene roles de perfil específicos -->
+        <mat-card *ngIf="!showingRole || (showingRole !== 'tutor' && showingRole !== 'institution')">
+          <mat-card-content>
+            <div class="no-profile-message">
+              <mat-icon>info</mat-icon>
+              <p>{{ 'profile.noSpecificProfile' | translate }}</p>
+              <p *ngIf="activeRole$ | async as activeRole" class="current-role-info">
+                {{ 'profile.currentRole' | translate }}: {{ ('roles.' + activeRole) | translate }}
+              </p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </ng-container>
+    
+    <!-- Loading state -->
+    <mat-card *ngIf="(currentUser$ | async) === null" class="loading-card">
+      <mat-card-content>
+        <div class="loading-state">
+          <mat-icon>hourglass_empty</mat-icon>
+          <p>{{ 'common.loading' | translate }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</app-layout>

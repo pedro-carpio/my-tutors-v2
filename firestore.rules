@@ -43,5 +43,23 @@ service cloud.firestore {
     match /job_postings/{jobId} {
       allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
     }
+    
+    // TEMPORARY: Allow read access to students collection for debugging
+    // TODO: Implement proper authentication and authorization rules
+    match /students/{studentId} {
+      allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
+    }
+    
+    // TEMPORARY: Allow read access to institutions collection for debugging
+    // TODO: Implement proper authentication and authorization rules
+    match /institutions/{institutionId} {
+      allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
+    }
+    
+    // TEMPORARY: Allow read/write access to languages collection for debugging
+    // TODO: Implement proper authentication and authorization rules
+    match /languages/{languageId} {
+      allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
+    }
   }
 }
