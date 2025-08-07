@@ -17,7 +17,7 @@ import { Institution } from '../../../../../types/firestore.types';
 import { TranslatePipe } from '../../../../../pipes/translate.pipe';
 
 export interface InstitutionEditDialogData {
-  institution: Institution;
+  institution: Institution | null;
 }
 
 @Component({
@@ -59,7 +59,7 @@ export class InstitutionEditDialogComponent implements OnInit {
   }
 
   private initializeForm(): void {
-    const institution = this.data.institution;
+    const institution = this.data.institution || {} as Partial<Institution>; // Use empty object with Institution type if null
     
     this.institutionForm = this.fb.group({
       // Información básica
@@ -99,7 +99,7 @@ export class InstitutionEditDialogComponent implements OnInit {
 
   private initializeLanguagesOffered(): void {
     const languagesArray = this.institutionForm.get('languages_offered') as FormArray;
-    if (this.data.institution.languages_offered) {
+    if (this.data.institution && this.data.institution.languages_offered) {
       this.data.institution.languages_offered.forEach(language => {
         languagesArray.push(this.fb.control(language, [Validators.required]));
       });
@@ -152,17 +152,30 @@ export class InstitutionEditDialogComponent implements OnInit {
           languages_offered: formValue.languages_offered.filter((lang: string) => lang.trim() !== '')
         };
 
-        // Actualizar institución usando el ID real del usuario
-        await this.institutionService.updateInstitution(currentUser.uid, institutionData);
-
-        this.snackBar.open('Perfil actualizado exitosamente', 'Cerrar', {
-          duration: 3000
-        });
+        if (this.data.institution) {
+          // Actualizar institución existente
+          await this.institutionService.updateInstitution(currentUser.uid, institutionData);
+          this.snackBar.open('Perfil actualizado exitosamente', 'Cerrar', {
+            duration: 3000
+          });
+        } else {
+          // Crear nueva institución - incluir user_id
+          const newInstitutionData = {
+            ...institutionData,
+            user_id: currentUser.uid
+          } as Institution;
+          
+          await this.institutionService.createInstitution(newInstitutionData);
+          this.snackBar.open('Perfil de institución creado exitosamente', 'Cerrar', {
+            duration: 3000
+          });
+        }
 
         this.dialogRef.close(true);
       } catch (error) {
-        console.error('Error updating institution profile:', error);
-        this.snackBar.open('Error al actualizar el perfil', 'Cerrar', {
+        console.error('Error saving institution profile:', error);
+        const message = this.data.institution ? 'Error al actualizar el perfil' : 'Error al crear el perfil';
+        this.snackBar.open(message, 'Cerrar', {
           duration: 3000
         });
       } finally {

@@ -11,12 +11,12 @@ import { takeUntil, switchMap, map } from 'rxjs/operators';
 import { Auth, user, signOut } from '@angular/fire/auth';
 import { MultiRoleService } from '../../../services/multi-role.service';
 import { UserService } from '../../../services/user.service';
-import { TutorProfileComponent } from '../../../components/tutor-profile/tutor-profile.component';
-import { InstitutionProfileComponent } from '../../../components/institution-profile/institution-profile.component';
+import { TutorProfileComponent } from './tutor-profile/tutor-profile.component';
 import { LayoutComponent } from '../../layout/layout.component';
 import { ToolbarComponent } from '../../toolbar/toolbar.component';
 import { UserRole, User } from '../../../types/firestore.types';
 import { TranslatePipe } from '../../../pipes/translate.pipe';
+import { InstitutionProfileComponent } from './intitution-profile/institution-profile.component';
 
 @Component({
   selector: 'app-profile',

@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import {
   doc,
   docData,
@@ -13,6 +14,7 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  limit,
 } from '@angular/fire/firestore';
 import { Institution } from '../types/firestore.types';
 
@@ -44,8 +46,43 @@ export class InstitutionService {
 
   // Get institution by user ID
   getInstitution(userId: string): Observable<Institution | undefined> {
+    console.log('🔍 InstitutionService: Buscando institución para userId:', userId);
+    
+    // First try to get by document ID (direct lookup)
     const docRef = doc(this.firestore, this.collectionName, userId);
-    return docData(docRef) as Observable<Institution | undefined>;
+    const directLookup$ = docData(docRef).pipe(
+      map(data => {
+        console.log('📄 InstitutionService: Búsqueda directa resultado:', data ? 'ENCONTRADO' : 'NO ENCONTRADO');
+        return data as Institution | undefined;
+      })
+    );
+    
+    // If not found by document ID, try querying by user_id field
+    const queryLookup$ = directLookup$.pipe(
+      switchMap(institution => {
+        if (institution) {
+          console.log('✅ InstitutionService: Institución encontrada por ID directo');
+          return of(institution);
+        }
+        
+        console.log('🔍 InstitutionService: No encontrado por ID directo, intentando query por user_id');
+        const q = query(
+          collection(this.firestore, this.collectionName),
+          where('user_id', '==', userId),
+          limit(1)
+        );
+        
+        return collectionData(q).pipe(
+          map((institutions) => {
+            const typedInstitutions = institutions as Institution[];
+            console.log('📋 InstitutionService: Query por user_id resultado:', typedInstitutions.length, 'instituciones');
+            return typedInstitutions.length > 0 ? typedInstitutions[0] : undefined;
+          })
+        );
+      })
+    );
+    
+    return queryLookup$;
   }
 
   // Get all institutions

@@ -201,24 +201,40 @@ export interface Payment {
 }
 
 export interface TeachingCertification {
+  id?: string; // Identificador único de la certificación
+  user_id?: string; // ID del usuario propietario
   name: string;
-  description: string;
+  description?: string;
+  image_url?: string; // URL de imagen de la certificación
+  image_link?: string; // TODO: Mantener compatibilidad, deprecar por image_url
   link?: string;
-  issuer?: string; // TODO: Validación de emisores de certificaciones
-  issue_date?: Date; // TODO: Fechas de certificaciones en formularios
-  expiry_date?: Date; // TODO: Validación de certificaciones vigentes
+  issuer?: string; // Emisor de la certificación
+  issue_date?: Date; // Fecha de emisión
+  credential_id?: string; // ID de credencial
   is_verified?: boolean; // TODO: Sistema de verificación de certificaciones
+  created_at?: FieldValue | Timestamp;
+  updated_at?: FieldValue | Timestamp;
 }
 
 export interface LanguageCertification {
+  id?: string; // Identificador único de la certificación
+  user_id?: string; // ID del usuario propietario
+  language_code: string; // Código ISO del idioma
   name: string;
+  image_url?: string; // URL de imagen de la certificación
+  image_link?: string; // TODO: Mantener compatibilidad, deprecar por image_url
   link?: string;
-  level?: LevelCEFR; // TODO: Relacionar certificaciones con niveles CEFR
-  language?: string; // TODO: Especificar idioma de la certificación
-  issuer?: string; // TODO: Validación de emisores de certificaciones
-  issue_date?: Date; // TODO: Fechas de certificaciones en formularios
-  expiry_date?: Date; // TODO: Validación de certificaciones vigentes
+  level_cefr?: LevelCEFR; // Nivel CEFR de la certificación
+  level?: LevelCEFR; // TODO: Mantener compatibilidad, deprecar por level_cefr
+  language?: string; // TODO: Mantener compatibilidad, deprecar por language_code
+  issuer?: string; // Emisor de la certificación
+  issue_date?: Date; // Fecha de emisión
+  credential_id?: string; // ID de credencial
+  score?: number; // Puntuación obtenida
+  description?: string; // Descripción adicional
   is_verified?: boolean; // TODO: Sistema de verificación de certificaciones
+  created_at?: FieldValue | Timestamp;
+  updated_at?: FieldValue | Timestamp;
 }
 
 export interface Reference {

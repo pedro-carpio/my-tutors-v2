@@ -48,6 +48,36 @@
     margin-bottom: 12px;
     border-left: 4px solid #1976d2;
     
+    &.language-card {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-left-color: #28a745;
+    }
+    
+    .language-options {
+      margin-top: 8px;
+      gap: 24px;
+      align-items: center;
+      
+      .language-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        
+        .checkbox-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          color: #666;
+          margin-right: 4px;
+        }
+      }
+    }
+    
+    .language-divider {
+      margin: 16px 0;
+      background-color: #dee2e6;
+    }
+    
     &:last-child {
       margin-bottom: 0;
     }

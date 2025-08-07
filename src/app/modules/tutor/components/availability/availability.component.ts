@@ -4,7 +4,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SetAvailabilityDialogComponent } from './set-availability-dialog/set-availability-dialog.component';
 import { Availability } from '../../../../types/firestore.types';
@@ -89,7 +89,7 @@ export class AvailabilityComponent implements OnInit {
     const isMobile = window.innerWidth <= 768;
     const isSmallMobile = window.innerWidth <= 480;
     
-    let dialogConfig: any = {
+    const dialogConfig: MatDialogConfig = {
       data: { 
         availability: [...this.availability] // Copiar para no mutar el original
       },
@@ -168,62 +168,70 @@ export class AvailabilityComponent implements OnInit {
   }
 
   private getRelevantHours(): number[] {
-    const allHours = new Set<number>();
+    const availableHours = new Set<number>();
     
     // Collect all hours that have availability on any day
     this.availability.forEach(day => {
-      day.hours.forEach(hour => allHours.add(hour));
+      day.hours.forEach(hour => availableHours.add(hour));
     });
 
-    if (allHours.size === 0) {
+    if (availableHours.size === 0) {
       return [];
     }
 
     // Convert to sorted array
-    const sortedHours = Array.from(allHours).sort((a, b) => a - b);
+    const sortedAvailableHours = Array.from(availableHours).sort((a, b) => a - b);
     
-    // Find continuous ranges
-    const ranges: number[][] = [];
-    let currentRange: number[] = [sortedHours[0]];
+    // Find the full range from min to max hour
+    const minHour = sortedAvailableHours[0];
+    const maxHour = sortedAvailableHours[sortedAvailableHours.length - 1];
     
-    for (let i = 1; i < sortedHours.length; i++) {
-      if (sortedHours[i] === sortedHours[i-1] + 1) {
-        // Continuous hour, add to current range
-        currentRange.push(sortedHours[i]);
-      } else {
-        // Gap found, start new range
-        ranges.push(currentRange);
-        currentRange = [sortedHours[i]];
-      }
+    // Generate all hours in the range (including gaps for unavailable hours)
+    const fullRange: number[] = [];
+    for (let hour = minHour; hour <= maxHour; hour++) {
+      fullRange.push(hour);
     }
-    ranges.push(currentRange);
 
-    // Return all hours from all ranges
-    return ranges.flat();
+    return fullRange;
   }
 
   private addSeparators(hours: number[]): (number | string)[] {
     if (hours.length === 0) return [];
     
     const result: (number | string)[] = [];
-    let currentRange: number[] = [hours[0]];
+    let i = 0;
     
-    for (let i = 1; i < hours.length; i++) {
-      if (hours[i] === hours[i-1] + 1) {
-        // Continuous hour
-        currentRange.push(hours[i]);
-      } else {
-        // Gap found, add current range and separator
-        result.push(...currentRange);
-        result.push('...');
-        currentRange = [hours[i]];
+    while (i < hours.length) {
+      const currentHour = hours[i];
+      const isAvailableAnyDay = this.isHourAvailableAnyDay(currentHour);
+      
+      // Find the end of the current consecutive range (available or unavailable)
+      let rangeEnd = i;
+      while (rangeEnd < hours.length && 
+             this.isHourAvailableAnyDay(hours[rangeEnd]) === isAvailableAnyDay) {
+        rangeEnd++;
       }
+      rangeEnd--; // Go back to last valid index
+      
+      // If it's a single hour, just add it
+      if (i === rangeEnd) {
+        result.push(currentHour);
+      } else {
+        // It's a range of consecutive hours
+        result.push(currentHour); // First hour of range
+        // Mark separator with availability status
+        result.push(isAvailableAnyDay ? 'available-range' : 'unavailable-range');
+        result.push(hours[rangeEnd]); // Last hour of range
+      }
+      
+      i = rangeEnd + 1; // Move to next range
     }
     
-    // Add the last range
-    result.push(...currentRange);
-    
     return result;
+  }
+
+  private isHourAvailableAnyDay(hour: number): boolean {
+    return this.availability.some(day => day.hours.includes(hour));
   }
 
   isHour(item: number | string): boolean {
@@ -231,10 +239,14 @@ export class AvailabilityComponent implements OnInit {
   }
 
   isSeparator(item: number | string): boolean {
-    return item === '...';
+    return item === 'available-range' || item === 'unavailable-range';
   }
 
-  trackByDisplayItem(index: number, item: number | string): any {
+  isSeparatorAvailable(item: number | string): boolean {
+    return item === 'available-range';
+  }
+
+  trackByDisplayItem(index: number, item: number | string): string | number {
     return typeof item === 'string' ? `sep-${index}` : item;
   }
 
@@ -247,7 +259,7 @@ export class AvailabilityComponent implements OnInit {
   }
 
   getDayShortName(dayName: string): string {
-    const shortNames: { [key: string]: string } = {
+    const shortNames: Record<string, string> = {
       'Lunes': 'L',
       'Martes': 'M',
       'Miércoles': 'X',

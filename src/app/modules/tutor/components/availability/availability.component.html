@@ -38,7 +38,7 @@
               class="time-slot"
               [class.separator]="isSeparator(item)">
               <span *ngIf="isHour(item)">{{ formatHourForItem(item) }}</span>
-              <span *ngIf="isSeparator(item)" class="separator-text">{{ item }}</span>
+              <span *ngIf="isSeparator(item)" class="separator-text">...</span>
             </div>
           </div>
 
@@ -50,7 +50,8 @@
               *ngFor="let item of displayHours; trackBy: trackByDisplayItem" 
               class="hour-slot"
               [class.available]="isAvailableForItem(item, day.key)"
-              [class.separator]="isSeparator(item)">
+              [class.separator]="isSeparator(item)"
+              [class.separator-available]="isSeparatorAvailable(item)">
             </div>
           </div>
         </div>

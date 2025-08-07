@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>
-  <mat-icon>edit</mat-icon>
-  {{ 'profile.editTutorProfile' | translate }}
+  <mat-icon>{{ data.tutor ? 'edit' : 'person_add' }}</mat-icon>
+  {{ (data.tutor ? 'profile.editTutorProfile' : 'profile.createTutorProfile') | translate }}
 </h2>
 
 <form [formGroup]="tutorForm" (ngSubmit)="onSave()">
@@ -133,7 +133,9 @@
 
           <div formArrayName="languages" class="dynamic-list">
             <div *ngFor="let language of languagesArray.controls; let i = index" 
-                 [formGroupName]="i" class="dynamic-item">
+                 [formGroupName]="i" class="dynamic-item language-card">
+              
+              <!-- Fila 1: Idioma y Nivel -->
               <div class="form-row">
                 <mat-form-field>
                   <mat-label>{{ 'profile.language' | translate }}</mat-label>
@@ -153,92 +155,26 @@
                     <mat-option value="B2">B2</mat-option>
                     <mat-option value="C1">C1</mat-option>
                     <mat-option value="C2">C2</mat-option>
+                    <mat-option value="native">{{ 'profile.native' | translate }}</mat-option>
                   </mat-select>
                 </mat-form-field>
 
-                <button type="button" mat-icon-button color="warn" (click)="removeLanguage(i)">
+                <button type="button" mat-icon-button color="warn" (click)="removeLanguage(i)"
+                        matTooltip="{{ 'profile.removeLanguage' | translate }}">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      </mat-step>
 
-      <!-- Paso 4: Certificaciones -->
-      <mat-step label="{{ 'profile.certifications' | translate }}">
-        <div class="form-section">
-          <div class="section-header">
-            <h3>{{ 'profile.certificationsManagement' | translate }}</h3>
-            <button type="button" mat-raised-button color="primary" (click)="addCertification()">
-              <mat-icon>add</mat-icon>
-              {{ 'profile.addCertification' | translate }}
-            </button>
-          </div>
-
-          <div formArrayName="certifications" class="dynamic-list">
-            <div *ngFor="let cert of certificationsArray.controls; let i = index" 
-                 [formGroupName]="i" class="dynamic-item">
-              <div class="form-row">
-                <mat-form-field>
-                  <mat-label>{{ 'profile.certificationName' | translate }}</mat-label>
-                  <input matInput formControlName="name" required>
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>{{ 'profile.issuer' | translate }}</mat-label>
-                  <input matInput formControlName="issuer">
-                </mat-form-field>
-
-                <button type="button" mat-icon-button color="warn" (click)="removeCertification(i)">
-                  <mat-icon>delete</mat-icon>
-                </button>
+              <!-- Fila 2: Opciones de configuración -->
+              <div class="form-row language-options">
+                <mat-checkbox formControlName="is_teaching" class="language-checkbox">
+                  <mat-icon class="checkbox-icon">school</mat-icon>
+                  {{ 'profile.canTeachThisLanguage' | translate }}
+                </mat-checkbox>
               </div>
-            </div>
-          </div>
-        </div>
-      </mat-step>
 
-      <!-- Paso 5: Disponibilidad -->
-      <mat-step label="{{ 'profile.availability' | translate }}">
-        <div class="form-section">
-          <div class="section-header">
-            <h3>{{ 'profile.availabilityManagement' | translate }}</h3>
-            <button type="button" mat-raised-button color="primary" (click)="addAvailability()">
-              <mat-icon>add</mat-icon>
-              {{ 'profile.addAvailability' | translate }}
-            </button>
-          </div>
-
-          <div formArrayName="availability" class="dynamic-list">
-            <div *ngFor="let avail of availabilityArray.controls; let i = index" 
-                 [formGroupName]="i" class="dynamic-item">
-              <div class="form-row">
-                <mat-form-field>
-                  <mat-label>{{ 'profile.weekDay' | translate }}</mat-label>
-                  <mat-select formControlName="week_day" required>
-                    <mat-option value="Monday">{{ 'weekDays.monday' | translate }}</mat-option>
-                    <mat-option value="Tuesday">{{ 'weekDays.tuesday' | translate }}</mat-option>
-                    <mat-option value="Wednesday">{{ 'weekDays.wednesday' | translate }}</mat-option>
-                    <mat-option value="Thursday">{{ 'weekDays.thursday' | translate }}</mat-option>
-                    <mat-option value="Friday">{{ 'weekDays.friday' | translate }}</mat-option>
-                    <mat-option value="Saturday">{{ 'weekDays.saturday' | translate }}</mat-option>
-                    <mat-option value="Sunday">{{ 'weekDays.sunday' | translate }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>{{ 'profile.hours' | translate }}</mat-label>
-                  <input matInput formControlName="hours" 
-                         placeholder="9,10,14,15" 
-                         matTooltip="{{ 'profile.hoursTooltip' | translate }}"
-                         required>
-                </mat-form-field>
-
-                <button type="button" mat-icon-button color="warn" (click)="removeAvailability(i)">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
+              <!-- Separador visual -->
+              <mat-divider *ngIf="i < languagesArray.length - 1" class="language-divider"></mat-divider>
             </div>
           </div>
         </div>

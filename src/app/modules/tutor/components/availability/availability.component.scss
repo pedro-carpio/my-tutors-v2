@@ -82,7 +82,7 @@
 .calendar-body {
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
-  min-height: 600px;
+  min-height: fit-content;
 }
 
 .time-column {
@@ -130,6 +130,22 @@
       border-bottom: 1px solid #ccc;
       height: 30px;
       cursor: default;
+
+      &.separator-available {
+        background-color: #4caf50;
+        border-top: 1px solid #388e3c;
+        border-bottom: 1px solid #388e3c;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          right: 2px;
+          bottom: 2px;
+          border-radius: 2px;
+        }
+      }
     }
 
     &.available {

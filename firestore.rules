@@ -61,5 +61,17 @@ service cloud.firestore {
     match /languages/{languageId} {
       allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
     }
+    
+    // TEMPORARY: Allow read/write access to user_languages collection for debugging
+    // TODO: Implement proper authentication and authorization rules
+    match /user_languages/{userLanguageId} {
+      allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
+    }
+    
+    // TEMPORARY: Allow read/write access to tutor_languages collection for debugging
+    // TODO: Implement proper authentication and authorization rules
+    match /tutor_languages/{tutorLanguageId} {
+      allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
+    }
   }
 }

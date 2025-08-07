@@ -22,7 +22,7 @@ import { UserLanguage, LevelCEFR } from '../types/firestore.types';
 })
 export class UserLanguageService {
   private firestore: Firestore = inject(Firestore);
-  private collectionName = 'tutor_languages';
+  private collectionName = 'user_languages';
 
   // Create a new tutor-language relationship
   async createUserLanguage(userLanguageData: UserLanguage): Promise<string> {
@@ -39,7 +39,29 @@ export class UserLanguageService {
   getLanguagesByTutor(tutorId: string): Observable<UserLanguage[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
-      where('tutor_id', '==', tutorId),
+      where('user_id', '==', tutorId),
+      orderBy('level_cefr', 'desc')
+    );
+    return collectionData(q, { idField: 'id' }) as Observable<UserLanguage[]>;
+  }
+
+  // Get teaching languages for a specific tutor
+  getTeachingLanguagesByTutor(tutorId: string): Observable<UserLanguage[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('user_id', '==', tutorId),
+      where('is_teaching', '==', true),
+      orderBy('level_cefr', 'desc')
+    );
+    return collectionData(q, { idField: 'id' }) as Observable<UserLanguage[]>;
+  }
+
+  // Get spoken languages for a specific tutor (non-teaching)
+  getSpokenLanguagesByTutor(tutorId: string): Observable<UserLanguage[]> {
+    const q = query(
+      collection(this.firestore, this.collectionName),
+      where('user_id', '==', tutorId),
+      where('is_teaching', '!=', true), // This includes null, undefined, and false
       orderBy('level_cefr', 'desc')
     );
     return collectionData(q, { idField: 'id' }) as Observable<UserLanguage[]>;
@@ -74,7 +96,7 @@ export class UserLanguageService {
   getUserLanguage(tutorId: string, languageId: string): Observable<UserLanguage[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
-      where('tutor_id', '==', tutorId),
+      where('user_id', '==', tutorId),
       where('language_id', '==', languageId)
     );
     return collectionData(q, { idField: 'id' }) as Observable<UserLanguage[]>;
@@ -107,7 +129,7 @@ export class UserLanguageService {
     try {
       const q = query(
         collection(this.firestore, this.collectionName),
-        where('tutor_id', '==', tutorId)
+        where('user_id', '==', tutorId)
       );
       const snapshot = await getDocs(q);
       
@@ -124,7 +146,7 @@ export class UserLanguageService {
     try {
       const q = query(
         collection(this.firestore, this.collectionName),
-        where('tutor_id', '==', tutorId),
+        where('user_id', '==', tutorId),
         where('language_id', '==', languageId)
       );
       const snapshot = await getDocs(q);
@@ -139,7 +161,7 @@ export class UserLanguageService {
   getAllUserLanguages(): Observable<UserLanguage[]> {
     const q = query(
       collection(this.firestore, this.collectionName),
-      orderBy('tutor_id', 'asc')
+      orderBy('user_id', 'asc')
     );
     return collectionData(q, { idField: 'id' }) as Observable<UserLanguage[]>;
   }

@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>
-  <mat-icon>edit</mat-icon>
-  {{ 'profile.editInstitutionProfile' | translate }}
+  <mat-icon>{{ data.institution ? 'edit' : 'add_business' }}</mat-icon>
+  {{ (data.institution ? 'profile.editInstitutionProfile' : 'profile.createInstitutionProfile') | translate }}
 </h2>
 
 <form [formGroup]="institutionForm" (ngSubmit)="onSave()">
@@ -154,7 +154,7 @@
     </button>
     
     <button type="button" mat-button (click)="onCancel()">
-      Hola
+      {{ 'common.cancel' | translate }}
     </button>
     <button type="submit" mat-raised-button color="primary" 
             [disabled]="!isFormValid || isLoading">

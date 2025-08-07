@@ -7,7 +7,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
-import { Subject, Observable, of } from 'rxjs';
+import { Subject, Observable, of, combineLatest, switchMap, map } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { Auth, user } from '@angular/fire/auth';
 import { InstitutionService } from '../../../../services/institution.service';
 import { TutorService } from '../../../../services/tutor.service';
 import { StudentService } from '../../../../services/student.service';
@@ -15,8 +17,15 @@ import { Institution, Tutor, Student } from '../../../../types/firestore.types';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
 import { InstitutionEditDialogComponent } from './institution-edit-dialog/institution-edit-dialog.component';
 
+interface InstitutionStats {
+  tutorsCount: number;
+  studentsCount: number;
+  recentTutors: Tutor[];
+  recentStudents: Student[];
+}
+
 @Component({
-  selector: 'app-intitution-profile',
+  selector: 'app-institution-profile',
   imports: [
     CommonModule,
     MatCardModule,
@@ -31,23 +40,26 @@ import { InstitutionEditDialogComponent } from './institution-edit-dialog/instit
   styleUrl: './intitution-profile.component.scss'
 })
 export class IntitutionProfileComponent implements OnInit, OnDestroy {
-  @Input() userId!: string;
+  @Input() userId?: string; // Opcional: si no se proporciona, usa el usuario autenticado
   
   private destroy$ = new Subject<void>();
+  private auth = inject(Auth);
   private institutionService = inject(InstitutionService);
   private tutorService = inject(TutorService);
   private studentService = inject(StudentService);
   private dialog = inject(MatDialog);
 
   institution$: Observable<Institution | undefined> = of(undefined);
-  tutors$: Observable<Tutor[]> = of([]);
-  students$: Observable<Student[]> = of([]);
-  isLoading = false;
+  stats$: Observable<InstitutionStats> = of({
+    tutorsCount: 0,
+    studentsCount: 0,
+    recentTutors: [],
+    recentStudents: []
+  });
+  isLoading = true;
 
   ngOnInit(): void {
-    if (this.userId) {
-      this.loadInstitutionProfile();
-    }
+    this.loadInstitutionData();
   }
 
   ngOnDestroy(): void {
@@ -55,19 +67,41 @@ export class IntitutionProfileComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadInstitutionProfile(): void {
+  private loadInstitutionData(): void {
     this.isLoading = true;
     
+    // Determinar el ID del usuario (Input o usuario autenticado)
+    const targetUserId$ = this.userId 
+      ? of(this.userId) 
+      : user(this.auth).pipe(map(authUser => authUser?.uid || ''));
+
     // Cargar perfil de la institución
-    this.institution$ = this.institutionService.getInstitution(this.userId);
+    this.institution$ = targetUserId$.pipe(
+      switchMap(userId => userId ? this.institutionService.getInstitution(userId) : of(undefined)),
+      takeUntil(this.destroy$)
+    );
     
-    // Cargar tutores de la institución
-    this.tutors$ = this.tutorService.getTutorsByInstitution(this.userId);
+    // Cargar estadísticas combinadas
+    this.stats$ = targetUserId$.pipe(
+      switchMap(userId => {
+        if (!userId) return of({ tutorsCount: 0, studentsCount: 0, recentTutors: [], recentStudents: [] });
+        
+        return combineLatest([
+          this.tutorService.getTutorsByInstitution(userId),
+          this.studentService.getStudentsByInstitution(userId)
+        ]).pipe(
+          map(([tutors, students]) => ({
+            tutorsCount: tutors.length,
+            studentsCount: students.length,
+            recentTutors: tutors.slice(0, 5),
+            recentStudents: students.slice(0, 5)
+          }))
+        );
+      }),
+      takeUntil(this.destroy$)
+    );
     
-    // Cargar estudiantes de la institución
-    this.students$ = this.studentService.getStudentsByInstitution(this.userId);
-    
-    // Simular carga completa
+    // Simular carga completa (remover en producción)
     setTimeout(() => {
       this.isLoading = false;
     }, 1000);
@@ -86,7 +120,7 @@ export class IntitutionProfileComponent implements OnInit, OnDestroy {
         dialogRef.afterClosed().subscribe(result => {
           if (result) {
             // Recargar el perfil después de editar
-            this.loadInstitutionProfile();
+            this.loadInstitutionData();
           }
         });
       }

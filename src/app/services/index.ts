@@ -5,6 +5,8 @@ export * from './tutor.service';
 export * from './student.service';
 export * from './institution.service';
 export * from './language.service';
+export * from './teaching-certification.service'; // Servicio de certificaciones de enseñanza
+export * from './language-certification.service'; // Servicio de certificaciones de idiomas
 export * from './class.service';
 export * from './class-instance.service'; // Nuevo servicio de instancias de clase
 export * from './course.service';

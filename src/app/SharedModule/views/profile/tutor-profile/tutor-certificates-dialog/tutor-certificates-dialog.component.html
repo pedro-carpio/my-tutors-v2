@@ -1,0 +1,285 @@
+<div class="certificates-dialog"></div>
+  <h2 mat-dialog-title>
+    <mat-icon>verified</mat-icon>
+    {{ 'profile.manageCertifications' | translate }}
+  </h2>
+
+  <mat-dialog-content>
+    <mat-tab-group class="certificates-tabs">
+      
+      <!-- Tab de Certificaciones de Enseñanza -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>school</mat-icon>
+          {{ 'profile.teachingCertifications' | translate }}
+        </ng-template>
+        
+        <div class="tab-content">
+          <div class="section-header">
+            <h3>{{ 'profile.teachingCertificationsManagement' | translate }}</h3>
+            <button type="button" mat-raised-button color="primary" (click)="addTeachingCertification()">
+              <mat-icon>add</mat-icon>
+              {{ 'profile.addTeachingCertification' | translate }}
+            </button>
+          </div>
+
+          <form [formGroup]="certificatesForm">
+            <div formArrayName="teachingCertifications" class="certifications-list">
+              <mat-card *ngFor="let cert of teachingCertificationsArray.controls; let i = index" 
+                        [formGroupName]="i" class="certification-card">
+                
+                <mat-card-header class="cert-header">
+                  <mat-card-title class="cert-title">
+                    {{ 'profile.teachingCertification' | translate }} {{ i + 1 }}
+                  </mat-card-title>
+                  <button type="button" mat-icon-button color="warn" 
+                          (click)="removeTeachingCertification(i)"
+                          matTooltip="{{ 'common.delete' | translate }}">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </mat-card-header>
+
+                <mat-card-content class="cert-content">
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.certificationName' | translate }}</mat-label>
+                      <input matInput formControlName="name" required>
+                      <mat-error *ngIf="cert.get('name')?.hasError('required')">
+                        {{ 'validation.required' | translate }}
+                      </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.issuer' | translate }}</mat-label>
+                      <input matInput formControlName="issuer" required>
+                      <mat-error *ngIf="cert.get('issuer')?.hasError('required')">
+                        {{ 'validation.required' | translate }}
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.issueDate' | translate }}</mat-label>
+                      <input matInput [matDatepicker]="issuePicker" formControlName="issue_date">
+                      <mat-datepicker-toggle matIconSuffix [for]="issuePicker"></mat-datepicker-toggle>
+                      <mat-datepicker #issuePicker></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.credentialId' | translate }}</mat-label>
+                      <input matInput formControlName="credential_id">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field class="full-width">
+                      <mat-label>{{ 'profile.certificationImageUrl' | translate }}</mat-label>
+                      <input matInput formControlName="image_url" 
+                             (input)="onImageUrlChange($event, 'teaching', i)"
+                             placeholder="https://...">
+                    </mat-form-field>
+                  </div>
+
+                  <!-- Vista previa de imagen -->
+                  <div class="image-preview" *ngIf="cert.get('image_url')?.value">
+                    <h4>{{ 'profile.imagePreview' | translate }}</h4>
+                    <div class="preview-container">
+                      <img [src]="cert.get('image_url')?.value" 
+                           [alt]="cert.get('name')?.value"
+                           (load)="onImageLoad('teaching', i)"
+                           (error)="onImageError('teaching', i)"
+                           class="preview-image">
+                      
+                      <div class="preview-overlay" *ngIf="imageLoadingStates.teaching[i]">
+                        <mat-spinner diameter="24"></mat-spinner>
+                      </div>
+                      
+                      <div class="preview-error" *ngIf="imageErrorStates.teaching[i]">
+                        <mat-icon>broken_image</mat-icon>
+                        <span>{{ 'profile.imageLoadError' | translate }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field class="full-width">
+                      <mat-label>{{ 'profile.description' | translate }}</mat-label>
+                      <textarea matInput formControlName="description" rows="3"></textarea>
+                    </mat-form-field>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <div *ngIf="teachingCertificationsArray.length === 0" class="empty-state">
+              <mat-icon>school</mat-icon>
+              <p>{{ 'profile.noTeachingCertifications' | translate }}</p>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- Tab de Certificaciones de Idiomas -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>translate</mat-icon>
+          {{ 'profile.languageCertifications' | translate }}
+        </ng-template>
+        
+        <div class="tab-content">
+          <div class="section-header">
+            <h3>{{ 'profile.languageCertificationsManagement' | translate }}</h3>
+            <button type="button" mat-raised-button color="primary" (click)="addLanguageCertification()">
+              <mat-icon>add</mat-icon>
+              {{ 'profile.addLanguageCertification' | translate }}
+            </button>
+          </div>
+
+          <form [formGroup]="certificatesForm">
+            <div formArrayName="languageCertifications" class="certifications-list">
+              <mat-card *ngFor="let cert of languageCertificationsArray.controls; let i = index" 
+                        [formGroupName]="i" class="certification-card">
+                
+                <mat-card-header class="cert-header">
+                  <mat-card-title class="cert-title">
+                    {{ 'profile.languageCertification' | translate }} {{ i + 1 }}
+                  </mat-card-title>
+                  <button type="button" mat-icon-button color="warn" 
+                          (click)="removeLanguageCertification(i)"
+                          matTooltip="{{ 'common.delete' | translate }}">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </mat-card-header>
+
+                <mat-card-content class="cert-content">
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.language' | translate }}</mat-label>
+                      <mat-select formControlName="language_code" required>
+                        <mat-option *ngFor="let lang of availableLanguages" [value]="lang.code">
+                          {{ lang.name }}
+                        </mat-option>
+                      </mat-select>
+                      <mat-error *ngIf="cert.get('language_code')?.hasError('required')">
+                        {{ 'validation.required' | translate }}
+                      </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.certificationName' | translate }}</mat-label>
+                      <input matInput formControlName="name" required>
+                      <mat-error *ngIf="cert.get('name')?.hasError('required')">
+                        {{ 'validation.required' | translate }}
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.level' | translate }}</mat-label>
+                      <mat-select formControlName="level_cefr" required>
+                        <mat-option *ngFor="let level of cefrLevels" [value]="level">
+                          {{ level }}
+                        </mat-option>
+                      </mat-select>
+                      <mat-error *ngIf="cert.get('level_cefr')?.hasError('required')">
+                        {{ 'validation.required' | translate }}
+                      </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.issuer' | translate }}</mat-label>
+                      <input matInput formControlName="issuer" required>
+                      <mat-error *ngIf="cert.get('issuer')?.hasError('required')">
+                        {{ 'validation.required' | translate }}
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.issueDate' | translate }}</mat-label>
+                      <input matInput [matDatepicker]="langIssuePicker" formControlName="issue_date">
+                      <mat-datepicker-toggle matIconSuffix [for]="langIssuePicker"></mat-datepicker-toggle>
+                      <mat-datepicker #langIssuePicker></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.credentialId' | translate }}</mat-label>
+                      <input matInput formControlName="credential_id">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>{{ 'profile.score' | translate }}</mat-label>
+                      <input matInput type="number" formControlName="score" min="0">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field class="full-width">
+                      <mat-label>{{ 'profile.certificationImageUrl' | translate }}</mat-label>
+                      <input matInput formControlName="image_url" 
+                             (input)="onImageUrlChange($event, 'language', i)"
+                             placeholder="https://...">
+                    </mat-form-field>
+                  </div>
+
+                  <!-- Vista previa de imagen -->
+                  <div class="image-preview" *ngIf="cert.get('image_url')?.value">
+                    <h4>{{ 'profile.imagePreview' | translate }}</h4>
+                    <div class="preview-container">
+                      <img [src]="cert.get('image_url')?.value" 
+                           [alt]="cert.get('name')?.value"
+                           (load)="onImageLoad('language', i)"
+                           (error)="onImageError('language', i)"
+                           class="preview-image">
+                      
+                      <div class="preview-overlay" *ngIf="imageLoadingStates.language[i]">
+                        <mat-spinner diameter="24"></mat-spinner>
+                      </div>
+                      
+                      <div class="preview-error" *ngIf="imageErrorStates.language[i]">
+                        <mat-icon>broken_image</mat-icon>
+                        <span>{{ 'profile.imageLoadError' | translate }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field class="full-width">
+                      <mat-label>{{ 'profile.description' | translate }}</mat-label>
+                      <textarea matInput formControlName="description" rows="3"></textarea>
+                    </mat-form-field>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <div *ngIf="languageCertificationsArray.length === 0" class="empty-state">
+              <mat-icon>translate</mat-icon>
+              <p>{{ 'profile.noLanguageCertifications' | translate }}</p>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button type="button" mat-button (click)="onCancel()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="button" mat-raised-button color="primary" 
+            [disabled]="!hasValidCertifications() || isLoading"
+            (click)="onSave()">
+      <mat-icon *ngIf="isLoading">
+        <mat-spinner diameter="16"></mat-spinner>
+      </mat-icon>
+      <mat-icon *ngIf="!isLoading">save</mat-icon>
+      {{ 'common.save' | translate }}
+    </button>
+  </mat-dialog-actions>

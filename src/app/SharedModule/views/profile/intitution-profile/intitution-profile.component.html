@@ -1,178 +1,141 @@
-<div class="institution-profile" *ngIf="institution$ | async as institution; else loadingTemplate">
-  <mat-card class="profile-card">
-    <mat-card-header>
-      <div mat-card-avatar>
-        <mat-icon *ngIf="!institution.logo_url">business</mat-icon>
-        <img *ngIf="institution.logo_url" [src]="institution.logo_url" [alt]="institution.name">
-      </div>
-      <mat-card-title>{{ institution.name }}</mat-card-title>
-      <mat-card-subtitle>{{ 'roles.institution' | translate }}</mat-card-subtitle>
-      <button mat-icon-button class="edit-button" (click)="openEditDialog()">
-        <mat-icon>edit</mat-icon>
-      </button>
-    </mat-card-header>
-
-    <mat-card-content>
-      <!-- Información básica -->
-      <div class="info-section">
-        <h3>{{ 'profile.basicInfo' | translate }}</h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <mat-icon>location_on</mat-icon>
-            <span>{{ institution.country }}</span>
-          </div>
-          <div class="info-item">
-            <mat-icon>phone</mat-icon>
-            <span>{{ institution.phone }}</span>
-          </div>
-          <div class="info-item" *ngIf="institution.contact_email">
-            <mat-icon>email</mat-icon>
-            <span>{{ institution.contact_email }}</span>
-          </div>
-          <div class="info-item" *ngIf="institution.website_url">
-            <mat-icon>language</mat-icon>
-            <a [href]="institution.website_url" target="_blank">{{ institution.website_url }}</a>
-          </div>
-          <div class="info-item" *ngIf="institution.contact_person">
-            <mat-icon>person</mat-icon>
-            <span>{{ 'profile.contactPerson' | translate }}: {{ institution.contact_person }}</span>
-          </div>
-          <div class="info-item" *ngIf="institution.address">
-            <mat-icon>place</mat-icon>
-            <span>{{ institution.address }}</span>
-          </div>
-        </div>
-      </div>
-
-      <mat-divider></mat-divider>
-
-      <!-- Descripción -->
-      <div class="info-section" *ngIf="institution.description">
-        <h3>{{ 'profile.description' | translate }}</h3>
-        <p class="description-text">{{ institution.description }}</p>
-      </div>
-
-      <mat-divider *ngIf="institution.description"></mat-divider>
-
-      <!-- Idiomas ofrecidos -->
-      <div class="info-section" *ngIf="institution.languages_offered && institution.languages_offered.length > 0">
-        <h3>{{ 'profile.languagesOffered' | translate }}</h3>
-        <div class="languages-container">
-          <mat-chip-set>
-            <mat-chip *ngFor="let language of institution.languages_offered">
-              <mat-icon matChipAvatar>translate</mat-icon>
-              {{ language }}
-            </mat-chip>
-          </mat-chip-set>
-        </div>
-      </div>
-
-      <mat-divider *ngIf="institution.languages_offered && institution.languages_offered.length > 0"></mat-divider>
-
-      <!-- Estadísticas -->
-      <div class="info-section">
-        <h3>{{ 'profile.statistics' | translate }}</h3>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <mat-icon>school</mat-icon>
-            <div class="stat-content">
-              <span class="stat-number" *ngIf="tutors$ | async as tutors">{{ tutors.length }}</span>
-              <span class="stat-label">{{ 'profile.tutors' | translate }}</span>
-            </div>
-          </div>
-          <div class="stat-item">
-            <mat-icon>people</mat-icon>
-            <div class="stat-content">
-              <span class="stat-number" *ngIf="students$ | async as students">{{ students.length }}</span>
-              <span class="stat-label">{{ 'profile.students' | translate }}</span>
-            </div>
-          </div>
-          <div class="stat-item" *ngIf="institution.max_tutors">
-            <mat-icon>trending_up</mat-icon>
-            <div class="stat-content">
-              <span class="stat-number">{{ institution.max_tutors }}</span>
-              <span class="stat-label">{{ 'profile.maxTutors' | translate }}</span>
-            </div>
-          </div>
-          <div class="stat-item" *ngIf="institution.max_students">
-            <mat-icon>group_add</mat-icon>
-            <div class="stat-content">
-              <span class="stat-number">{{ institution.max_students }}</span>
-              <span class="stat-label">{{ 'profile.maxStudents' | translate }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <mat-divider></mat-divider>
-
-      <!-- Tutores recientes -->
-      <div class="info-section" *ngIf="tutors$ | async as tutors">
-        <h3>{{ 'profile.recentTutors' | translate }}</h3>
-        <div class="tutors-list" *ngIf="tutors.length > 0; else noTutors">
-          <div class="tutor-item" *ngFor="let tutor of tutors.slice(0, 3)">
-            <mat-icon>person</mat-icon>
-            <div class="tutor-info">
-              <span class="tutor-name">{{ tutor.full_name }}</span>
-              <span class="tutor-details">{{ tutor.birth_language }} • ${{ tutor.hourly_rate }}/h</span>
-            </div>
-          </div>
-          <button mat-text-button *ngIf="tutors.length > 3" class="view-all-button">
-            {{ 'profile.viewAllTutors' | translate }} ({{ tutors.length }})
-          </button>
-        </div>
-        <ng-template #noTutors>
-          <p class="no-data">{{ 'profile.noTutors' | translate }}</p>
-        </ng-template>
-      </div>
-
-      <mat-divider></mat-divider>
-
-      <!-- Estudiantes recientes -->
-      <div class="info-section" *ngIf="students$ | async as students">
-        <h3>{{ 'profile.recentStudents' | translate }}</h3>
-        <div class="students-list" *ngIf="students.length > 0; else noStudents">
-          <div class="student-item" *ngFor="let student of students.slice(0, 3)">
-            <mat-icon>school</mat-icon>
-            <div class="student-info">
-              <span class="student-name">{{ student.full_name }}</span>
-              <span class="student-details">{{ student.level_cefr }} • {{ student.target_language }}</span>
-            </div>
-          </div>
-          <button mat-text-button *ngIf="students.length > 3" class="view-all-button">
-            {{ 'profile.viewAllStudents' | translate }} ({{ students.length }})
-          </button>
-        </div>
-        <ng-template #noStudents>
-          <p class="no-data">{{ 'profile.noStudents' | translate }}</p>
-        </ng-template>
-      </div>
-
-      <!-- Plan de suscripción -->
-      <div class="info-section" *ngIf="institution.subscription_plan">
-        <h3>{{ 'profile.subscriptionPlan' | translate }}</h3>
-        <div class="subscription-info">
-          <mat-icon>card_membership</mat-icon>
-          <span>{{ institution.subscription_plan }}</span>
-        </div>
-      </div>
-    </mat-card-content>
-
-    <mat-card-actions>
-      <button mat-raised-button color="primary" (click)="openEditDialog()">
-        <mat-icon>edit</mat-icon>
-        {{ 'profile.editInfo' | translate }}
-      </button>
-    </mat-card-actions>
-  </mat-card>
-</div>
-
-<ng-template #loadingTemplate>
-  <div class="loading-container">
-    <mat-progress-spinner 
-      mode="indeterminate" 
-      diameter="60">
-    </mat-progress-spinner>
-    <p>{{ 'common.loading' | translate }}</p>
+<div class="institution-profile-container">
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p class="loading-text">{{'profile.loading' | translate}}</p>
   </div>
-</ng-template>
+
+  <!-- Institution Profile Content -->
+  <div *ngIf="!isLoading" class="profile-content">
+    <ng-container *ngIf="institution$ | async as institution">
+      
+      <!-- Header Section with Professional Layout -->
+      <mat-card class="institution-header-card">
+        <mat-card-header class="institution-header">
+          <div class="institution-logo">
+            <img 
+              *ngIf="institution.logo_url; else defaultLogo"
+              [src]="institution.logo_url" 
+              [alt]="institution.name"
+              class="logo-image">
+            <ng-template #defaultLogo>
+              <div class="default-logo">
+                <mat-icon>business</mat-icon>
+              </div>
+            </ng-template>
+          </div>
+          
+          <div class="institution-info">
+            <mat-card-title class="institution-name">
+              {{ institution.name }}
+            </mat-card-title>
+            
+            <mat-card-subtitle class="institution-subtitle">
+              <div class="subtitle-row">
+                <span class="institution-type">
+                  <mat-icon>school</mat-icon>
+                  Institution
+                </span>
+                
+                <span class="location" *ngIf="institution.country">
+                  <mat-icon>location_on</mat-icon>
+                  {{ institution.country }}
+                </span>
+              </div>
+              
+              <!-- Contact Information Row -->
+              <div class="contact-row" *ngIf="getContactInfo(institution).length > 0">
+                <mat-chip-listbox class="contact-chips">
+                  <mat-chip *ngFor="let contact of getContactInfo(institution)" class="contact-chip">
+                    {{ contact }}
+                  </mat-chip>
+                </mat-chip-listbox>
+              </div>
+            </mat-card-subtitle>
+          </div>
+          
+          <!-- Actions -->
+          <div class="institution-actions" *ngIf="!userId">
+            <button 
+              mat-raised-button 
+              color="primary" 
+              class="edit-button"
+              (click)="openEditDialog()">
+              <mat-icon>edit</mat-icon>
+              {{'profile.edit' | translate}}
+            </button>
+          </div>
+        </mat-card-header>
+        
+        <!-- Description -->
+        <mat-card-content *ngIf="institution.description" class="institution-description">
+          <mat-divider></mat-divider>
+          <p class="description-text">{{ institution.description }}</p>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Statistics Section -->
+      <div class="stats-section" *ngIf="stats$ | async as stats">
+        <div class="stats-grid">
+          
+          <!-- Tutors Stats Card -->
+          <mat-card class="stat-card tutors-card">
+            <mat-card-header>
+              <mat-card-title class="stat-title">
+                <mat-icon class="stat-icon">person</mat-icon>
+                {{'profile.tutors' | translate}}
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="stat-number">{{ stats.tutorsCount }}</div>
+              <div class="recent-list" *ngIf="stats.recentTutors.length > 0">
+                <div class="recent-title">{{'profile.recent' | translate}}:</div>
+                <div class="recent-items">
+                  <span 
+                    *ngFor="let tutor of stats.recentTutors; let last = last" 
+                    class="recent-name">
+                    {{ tutor.full_name }}{{ !last ? ',' : '' }}
+                  </span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Students Stats Card -->
+          <mat-card class="stat-card students-card">
+            <mat-card-header>
+              <mat-card-title class="stat-title">
+                <mat-icon class="stat-icon">school</mat-icon>
+                {{'profile.students' | translate}}
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="stat-number">{{ stats.studentsCount }}</div>
+              <div class="recent-list" *ngIf="stats.recentStudents.length > 0">
+                <div class="recent-title">{{'profile.recent' | translate}}:</div>
+                <div class="recent-items">
+                  <span 
+                    *ngFor="let student of stats.recentStudents; let last = last" 
+                    class="recent-name">
+                    {{ student.full_name }}{{ !last ? ',' : '' }}
+                  </span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- Empty State -->
+    <mat-card *ngIf="(institution$ | async) === null" class="empty-state-card">
+      <mat-card-content class="empty-state">
+        <mat-icon class="empty-icon">business</mat-icon>
+        <h3>{{'profile.not_found' | translate}}</h3>
+        <p>{{'profile.not_found_description' | translate}}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
