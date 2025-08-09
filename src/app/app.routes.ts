@@ -243,6 +243,22 @@ export const routes: Routes = [
     ]
   },
 
+  // ✅ NUEVO: Rutas de testing (solo para desarrollo/debug)
+  {
+    path: 'testing',
+    children: [
+      {
+        path: 'timezones',
+        loadComponent: () => import('./components/testing/timezone-calculator/timezone-calculator.component').then(m => m.TimezoneCalculatorComponent),
+      },
+      {
+        path: '',
+        redirectTo: 'timezones',
+        pathMatch: 'full'
+      }
+    ]
+  },
+
   // Ruta por defecto
   {
     path: '',

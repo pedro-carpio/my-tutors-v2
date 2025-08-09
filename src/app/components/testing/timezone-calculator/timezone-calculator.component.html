@@ -1,0 +1,244 @@
+<app-layout>
+  <app-toolbar></app-toolbar>
+  
+  <div class="timezone-calculator-container">
+    <!-- Título y estadísticas -->
+    <mat-card class="header-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>schedule</mat-icon>
+          {{ 'testing.timezoneCalculator.title' | translate }}
+        </mat-card-title>
+        <mat-card-subtitle>{{ 'testing.timezoneCalculator.subtitle' | translate }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-number">{{ testingStats.totalLocations }}</span>
+            <span class="stat-label">{{ 'testing.stats.totalLocations' | translate }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ testingStats.supportedCountries }}</span>
+            <span class="stat-label">{{ 'testing.stats.supportedCountries' | translate }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ testingStats.multiTimezoneStates }}</span>
+            <span class="stat-label">{{ 'testing.stats.multiTimezoneStates' | translate }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ testingStats.dstAwareLocations }}</span>
+            <span class="stat-label">{{ 'testing.stats.dstAwareLocations' | translate }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Controles principales -->
+    <div class="controls-row">
+      <!-- Selector de fecha/hora -->
+      <mat-card class="control-card">
+        <mat-card-header>
+          <mat-card-title>{{ 'testing.timezoneCalculator.dateTimeControl' | translate }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="calculatorForm" class="datetime-form">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'testing.timezoneCalculator.testDateTime' | translate }}</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="testDateTime" 
+                     (dateChange)="onDateTimeChange()">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+
+            <div class="action-buttons">
+              <button mat-raised-button color="primary" (click)="onDateTimeChange()">
+                <mat-icon>refresh</mat-icon>
+                {{ 'testing.timezoneCalculator.updateConversions' | translate }}
+              </button>
+              
+              <button mat-button (click)="testDSTTransitions()">
+                <mat-icon>wb_sunny</mat-icon>
+                {{ 'testing.timezoneCalculator.testDST' | translate }}
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Selector de ubicaciones -->
+      <mat-card class="control-card">
+        <mat-card-header>
+          <mat-card-title>{{ 'testing.timezoneCalculator.locationControl' | translate }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="locationForm" class="location-form">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'testing.timezoneCalculator.selectLocation' | translate }}</mat-label>
+              <mat-select formControlName="selectedLocation">
+                <mat-option value="">{{ 'common.select' | translate }}</mat-option>
+                <mat-option *ngFor="let location of availableLocations" 
+                           [value]="getLocationValue(location)">
+                  {{ location.display }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="action-buttons">
+              <button mat-raised-button color="accent" (click)="addLocation()"
+                      [disabled]="!locationForm.get('selectedLocation')?.value">
+                <mat-icon>add</mat-icon>
+                {{ 'testing.timezoneCalculator.addLocation' | translate }}
+              </button>
+              
+              <button mat-button (click)="addSampleLocations()">
+                <mat-icon>science</mat-icon>
+                {{ 'testing.timezoneCalculator.addSamples' | translate }}
+              </button>
+              
+              <button mat-button color="warn" (click)="clearAllLocations()" 
+                      [disabled]="selectedLocations.length === 0">
+                <mat-icon>clear_all</mat-icon>
+                {{ 'testing.timezoneCalculator.clearAll' | translate }}
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Ubicaciones seleccionadas -->
+    <mat-card class="selected-locations-card" *ngIf="selectedLocations.length > 0">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>location_on</mat-icon>
+          {{ 'testing.timezoneCalculator.selectedLocations' | translate }}
+          ({{ selectedLocations.length }})
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-chip-set>
+          <mat-chip *ngFor="let location of selectedLocations; let i = index" 
+                    [removable]="true" (removed)="removeLocation(i)">
+            {{ location.display }}
+            <mat-icon matChipRemove>cancel</mat-icon>
+          </mat-chip>
+        </mat-chip-set>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Resultados de conversión -->
+    <mat-card class="results-card" *ngIf="conversionResults.length > 0">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>table_chart</mat-icon>
+          {{ 'testing.timezoneCalculator.conversionResults' | translate }}
+        </mat-card-title>
+        <mat-card-subtitle>
+          {{ 'testing.timezoneCalculator.resultsCount' | translate: {count: conversionResults.length} }}
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource]="conversionResults" class="conversion-table">
+            <!-- Columna Location -->
+            <ng-container matColumnDef="location">
+              <th mat-header-cell *matHeaderCellDef>{{ 'testing.timezoneCalculator.columns.location' | translate }}</th>
+              <td mat-cell *matCellDef="let result" class="location-cell">
+                <div class="location-info">
+                  <strong>{{ result.location }}</strong>
+                  <small>{{ result.timezone }}</small>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Columna Timezone -->
+            <ng-container matColumnDef="timezone">
+              <th mat-header-cell *matHeaderCellDef>{{ 'testing.timezoneCalculator.columns.timezone' | translate }}</th>
+              <td mat-cell *matCellDef="let result" class="timezone-cell">
+                <span class="timezone-code">{{ result.timezone }}</span>
+                <span class="utc-offset">{{ result.utcOffset }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Columna Local DateTime -->
+            <ng-container matColumnDef="localDateTime">
+              <th mat-header-cell *matHeaderCellDef>{{ 'testing.timezoneCalculator.columns.localDateTime' | translate }}</th>
+              <td mat-cell *matCellDef="let result" class="datetime-cell">
+                {{ result.localDateTime }}
+              </td>
+            </ng-container>
+
+            <!-- Columna UTC DateTime -->
+            <ng-container matColumnDef="utcDateTime">
+              <th mat-header-cell *matHeaderCellDef>{{ 'testing.timezoneCalculator.columns.utcDateTime' | translate }}</th>
+              <td mat-cell *matCellDef="let result" class="datetime-cell">
+                {{ result.utcDateTime }}
+              </td>
+            </ng-container>
+
+            <!-- Columna DST Status -->
+            <ng-container matColumnDef="isDST">
+              <th mat-header-cell *matHeaderCellDef>{{ 'testing.timezoneCalculator.columns.dstStatus' | translate }}</th>
+              <td mat-cell *matCellDef="let result" class="dst-cell">
+                <mat-icon [class.dst-active]="result.isDST" [class.dst-inactive]="!result.isDST">
+                  {{ result.isDST ? 'wb_sunny' : 'brightness_3' }}
+                </mat-icon>
+                <span [class.dst-active]="result.isDST" [class.dst-inactive]="!result.isDST">
+                  {{ result.isDST ? ('testing.timezoneCalculator.dstActive' | translate) : ('testing.timezoneCalculator.dstInactive' | translate) }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Columna Actions -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>{{ 'testing.timezoneCalculator.columns.actions' | translate }}</th>
+              <td mat-cell *matCellDef="let result; let i = index" class="actions-cell">
+                <button mat-icon-button [matMenuTriggerFor]="menu" class="action-menu">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                  <button mat-menu-item (click)="exportResults()">
+                    <mat-icon>file_download</mat-icon>
+                    {{ 'testing.timezoneCalculator.export' | translate }}
+                  </button>
+                </mat-menu>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+
+        <!-- Acciones de la tabla -->
+        <div class="table-actions">
+          <button mat-raised-button color="primary" (click)="exportResults()">
+            <mat-icon>file_download</mat-icon>
+            {{ 'testing.timezoneCalculator.exportResults' | translate }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Panel de información adicional -->
+    <mat-expansion-panel class="info-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>info</mat-icon>
+          {{ 'testing.timezoneCalculator.additionalInfo.title' | translate }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="info-content">
+        <h3>{{ 'testing.timezoneCalculator.additionalInfo.dstRules' | translate }}</h3>
+        <ul>
+          <li>{{ 'testing.timezoneCalculator.additionalInfo.dstRule1' | translate }}</li>
+          <li>{{ 'testing.timezoneCalculator.additionalInfo.dstRule2' | translate }}</li>
+          <li>{{ 'testing.timezoneCalculator.additionalInfo.dstRule3' | translate }}</li>
+        </ul>
+        
+        <h3>{{ 'testing.timezoneCalculator.additionalInfo.multiTimezoneStates' | translate }}</h3>
+        <p>{{ 'testing.timezoneCalculator.additionalInfo.multiTimezoneInfo' | translate }}</p>
+      </div>
+    </mat-expansion-panel>
+  </div>
+</app-layout>

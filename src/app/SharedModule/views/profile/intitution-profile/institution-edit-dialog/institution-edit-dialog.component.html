@@ -75,29 +75,6 @@
             <mat-label>{{ 'profile.description' | translate }}</mat-label>
             <textarea matInput formControlName="description" rows="4"></textarea>
           </mat-form-field>
-
-          <div class="form-row">
-            <mat-form-field>
-              <mat-label>{{ 'profile.subscriptionPlan' | translate }}</mat-label>
-              <mat-select formControlName="subscription_plan">
-                <mat-option value="basic">{{ 'plans.basic' | translate }}</mat-option>
-                <mat-option value="premium">{{ 'plans.premium' | translate }}</mat-option>
-                <mat-option value="enterprise">{{ 'plans.enterprise' | translate }}</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field>
-              <mat-label>{{ 'profile.maxTutors' | translate }}</mat-label>
-              <input matInput type="number" formControlName="max_tutors" min="1">
-            </mat-form-field>
-
-            <mat-form-field>
-              <mat-label>{{ 'profile.maxStudents' | translate }}</mat-label>
-              <input matInput type="number" formControlName="max_students" min="1">
-            </mat-form-field>
-          </div>
         </div>
       </mat-step>
 

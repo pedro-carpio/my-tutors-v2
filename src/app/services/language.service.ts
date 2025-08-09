@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   doc,
@@ -23,9 +23,12 @@ import { I18nService } from './i18n.service';
   providedIn: 'root',
 })
 export class LanguageService {
-  private firestore: Firestore = inject(Firestore);
-  private i18nService: I18nService = inject(I18nService);
   private collectionName = 'languages';
+
+  constructor(
+    private firestore: Firestore,
+    private i18nService: I18nService
+  ) {}
 
   // Create a new language
   async createLanguage(languageData: Omit<Language, 'id'>): Promise<string> {

@@ -24,8 +24,8 @@
       </div>
     </div>
 
-    <!-- Filtros -->
-    <mat-card class="filters-card">
+    <!-- Filtros - Solo visible para instituciones y admins -->
+    <mat-card class="filters-card" *ngIf="currentUserRole !== 'tutor'">
       <mat-card-content>
         <div class="filters-row">
           <!-- Búsqueda -->
@@ -81,8 +81,8 @@
     <!-- Lista de trabajos -->
     <div class="job-cards-container" *ngIf="!isLoading">
       <!-- Vista de tarjetas para móvil/tablet -->
-      <div class="mobile-view" *ngIf="filteredJobPostings.length > 0">
-        <mat-card class="job-card" *ngFor="let job of filteredJobPostings">
+      <div class="mobile-view" *ngIf="(displayedJobPostings?.length || filteredJobPostings.length) > 0">
+        <mat-card class="job-card" *ngFor="let job of (displayedJobPostings?.length ? displayedJobPostings : filteredJobPostings)">
           <mat-card-header>
             <div mat-card-avatar class="job-avatar">
               <mat-icon>{{ getModalityIcon(job.modality) }}</mat-icon>
@@ -102,6 +102,14 @@
                 <button mat-menu-item *ngIf="canEditJobPosting(job)" (click)="editJobPosting(job)">
                   <mat-icon>edit</mat-icon>
                   {{ 'jobPostings.actions.edit' | translate }}
+                </button>
+                <button mat-menu-item *ngIf="canPublishJob(job)" (click)="publishJob(job)">
+                  <mat-icon>publish</mat-icon>
+                  {{ 'jobPostings.actions.publish' | translate }}
+                </button>
+                <button mat-menu-item *ngIf="canHideJob(job)" (click)="hideJob(job)">
+                  <mat-icon>visibility_off</mat-icon>
+                  {{ 'jobPostings.actions.hide' | translate }}
                 </button>
                 <button mat-menu-item *ngIf="canApplyToJob(job)" (click)="applyToJob(job)">
                   <mat-icon>send</mat-icon>
@@ -171,7 +179,7 @@
       </div>
 
       <!-- Mensaje cuando no hay resultados -->
-      <div class="no-results" *ngIf="filteredJobPostings.length === 0">
+      <div class="no-results" *ngIf="(displayedJobPostings?.length || filteredJobPostings.length) === 0">
         <mat-icon>work_off</mat-icon>
         <h3>{{ 'jobPostings.noResults' | translate }}</h3>
         <p>{{ 'jobPostings.noResultsDescription' | translate }}</p>

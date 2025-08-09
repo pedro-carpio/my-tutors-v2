@@ -2,8 +2,8 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil, switchMap } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { takeUntil, switchMap, catchError } from 'rxjs/operators';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -73,7 +73,8 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
   currentUserRole: UserRole | null = null;
   jobPostings: JobPosting[] = [];
   filteredJobPostings: JobPosting[] = [];
-  userPostulations: Map<string, TutorPostulation> = new Map(); // Para tutores: sus postulaciones por job
+  displayedJobPostings: JobPosting[] = []; // Jobs que se muestran después de todos los filtros
+  userPostulations = new Map<string, TutorPostulation>(); // Para tutores: sus postulaciones por job
   
   // Filtros
   statusFilter: JobPostingStatus | '' = '';
@@ -110,15 +111,36 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (jobPostings) => {
-        this.jobPostings = jobPostings;
-        this.applyFilters();
+        console.log('🎯 JobPostings: Jobs recibidos en setupSubscriptions:', {
+          role: this.currentUserRole,
+          count: jobPostings.length,
+          jobIds: jobPostings.map(job => job.id)
+        });
         
-        // Si es tutor, cargar sus postulaciones
+        this.jobPostings = jobPostings;
+        
+        // Para todos los roles, mostrar todos los jobs sin filtro de ubicación/idiomas
+        this.filteredJobPostings = jobPostings;
+        this.displayedJobPostings = jobPostings;
+        
+        // Cargar postulaciones si es tutor
         if (this.currentUserRole === 'tutor') {
           this.loadUserPostulations();
         }
         
+        // Aplicar filtros de UI solo para instituciones y admins
+        if (this.currentUserRole !== 'tutor') {
+          this.applyFilters();
+        }
+        
         this.isLoading = false;
+        
+        console.log('✅ JobPostings: Jobs finales mostrados:', {
+          role: this.currentUserRole,
+          totalJobs: this.displayedJobPostings.length,
+          filteredJobs: this.filteredJobPostings.length,
+          jobIds: this.displayedJobPostings.map(job => job.id)
+        });
       },
       error: (error) => {
         console.error('Error loading job postings:', error);
@@ -137,19 +159,43 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
 
   private loadUserPostulations(): void {
     const currentUser = this.sessionService.currentUser;
-    if (!currentUser?.uid) return;
+    if (!currentUser?.uid) {
+      console.log('🚨 JobPostings: No hay usuario autenticado para cargar postulaciones');
+      return;
+    }
+
+    console.log('📄 JobPostings: Cargando postulaciones del tutor:', currentUser.uid);
 
     this.tutorPostulationService.getPostulationsByTutor(currentUser.uid).pipe(
-      takeUntil(this.destroy$)
+      takeUntil(this.destroy$),
+      catchError((error) => {
+        console.error('🚨 JobPostings: Error loading user postulations:', error);
+        
+        // Manejo específico de errores de permisos de Firebase
+        if (error.code === 'permission-denied' || error.message.includes('insufficient permissions')) {
+          console.warn('⚠️ JobPostings: Error de permisos - Posiblemente faltan reglas de Firestore para tutor_postulations');
+          console.warn('💡 JobPostings: Continuando sin postulaciones - funcionalidad limitada');
+          
+          // Retornar array vacío para continuar con funcionalidad limitada
+          return of([]);
+        }
+        
+        // Para otros errores, también continuar pero loggear más información
+        console.warn('⚠️ JobPostings: Error no relacionado con permisos, continuando con array vacío:', error);
+        return of([]);
+      })
     ).subscribe({
       next: (postulations) => {
+        console.log('✅ JobPostings: Postulaciones cargadas exitosamente:', postulations.length);
         this.userPostulations.clear();
         postulations.forEach(postulation => {
           this.userPostulations.set(postulation.job_posting_id, postulation);
         });
+        console.log('📋 JobPostings: Map de postulaciones actualizado:', this.userPostulations.size, 'entries');
       },
       error: (error) => {
-        console.error('Error loading user postulations:', error);
+        // Este error no debería ocurrir debido al catchError, pero por si acaso
+        console.error('🚨 JobPostings: Error final no capturado:', error);
       }
     });
   }
@@ -173,60 +219,113 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
   }
 
   private loadJobPostings(): Promise<JobPosting[]> {
+    console.log('Loading job postings for role:', this.currentUserRole);
     this.isLoading = true;
     
     return new Promise((resolve, reject) => {
       let jobPostings$;
       
       switch (this.currentUserRole) {
-        case 'institution':
+        case 'institution': {
           // Para instituciones: sus propias convocatorias
           const currentUser = this.sessionService.currentUser;
           if (currentUser?.uid) {
+            console.log('Loading job postings for institution:', currentUser.uid);
             jobPostings$ = this.jobPostingService.getJobPostingsByInstitution(currentUser.uid);
           } else {
+            console.log('No current user, loading all job postings');
             jobPostings$ = this.jobPostingService.getAllJobPostings();
           }
           break;
+        }
           
-        case 'tutor':
-          // Para tutores: trabajos disponibles y asignados
-          jobPostings$ = this.jobPostingService.getAvailableJobPostings();
+        case 'tutor': {
+          // Para tutores: trabajos personalizados basados en su perfil
+          const currentUser = this.sessionService.currentUser;
+          if (currentUser?.uid) {
+            console.log('🎯 JobPostings: Cargando trabajos personalizados para tutor:', currentUser.uid);
+            jobPostings$ = this.jobPostingService.getPersonalizedJobPostingsForTutor(currentUser.uid);
+          } else {
+            console.log('⚠️ JobPostings: No hay usuario - cargando trabajos disponibles');
+            jobPostings$ = this.jobPostingService.getAvailableJobPostings();
+          }
           break;
+        }
           
         case 'admin':
           // Para admins: todas las convocatorias
+          console.log('Loading all job postings for admin');
           jobPostings$ = this.jobPostingService.getAllJobPostings();
           break;
           
         default:
+          console.log('Loading all job postings for default role');
           jobPostings$ = this.jobPostingService.getAllJobPostings();
       }
 
       jobPostings$.pipe(takeUntil(this.destroy$)).subscribe({
-        next: (jobPostings) => resolve(jobPostings),
-        error: (error) => reject(error)
+        next: (jobPostings) => {
+          console.log('📊 JobPostings: Jobs cargados desde backend:', {
+            role: this.currentUserRole,
+            count: jobPostings.length,
+            jobs: jobPostings.map(job => ({
+              id: job.id,
+              title: job.title,
+              status: job.status,
+              modality: job.modality,
+              location_country: job.location_country,
+              location_state: job.location_state
+            }))
+          });
+          resolve(jobPostings);
+        },
+        error: (error) => {
+          console.error('🚨 JobPostings: Error cargando jobs desde backend:', error);
+          reject(error);
+        }
       });
     });
   }
 
-  // Métodos de filtrado
+  // Métodos de filtrado - Solo habilitados para instituciones y admins
   applyFilters(): void {
-    let filtered = [...this.jobPostings];
+    if (this.currentUserRole === 'tutor') {
+      console.log('� JobPostings: Filtros deshabilitados para tutores - usando filtro automático por ubicación e idiomas');
+      return;
+    }
+
+    console.log('�🔍 JobPostings: Aplicando filtros', {
+      currentUserRole: this.currentUserRole,
+      totalJobPostings: this.jobPostings.length,
+      statusFilter: this.statusFilter,
+      typeFilter: this.typeFilter,
+      modalityFilter: this.modalityFilter,
+      searchTerm: this.searchTerm
+    });
+
+    // Para otros roles, empezar con todas las ofertas
+    const baseJobs = [...this.jobPostings];
+
+    console.log('📋 JobPostings: Base de trabajos para filtros:', baseJobs.length);
+
+    let filtered = [...baseJobs];
 
     // Filtro por estado
     if (this.statusFilter) {
       filtered = filtered.filter(job => job.status === this.statusFilter);
+      console.log(`📊 JobPostings: Después de filtro de status (${this.statusFilter}):`, filtered.length);
     }
 
     // Filtro por tipo
     if (this.typeFilter) {
       filtered = filtered.filter(job => job.class_type === this.typeFilter);
+      console.log(`📊 JobPostings: Después de filtro de tipo (${this.typeFilter}):`, filtered.length);
     }
 
     // Filtro por modalidad
     if (this.modalityFilter) {
       filtered = filtered.filter(job => job.modality === this.modalityFilter);
+      console.log(`📊 JobPostings: Después de filtro de modalidad (${this.modalityFilter}):`, filtered.length);
     }
 
     // Filtro por búsqueda de texto
@@ -237,24 +336,44 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
         job.program.toLowerCase().includes(term) ||
         job.students.some(student => student.name.toLowerCase().includes(term))
       );
+      console.log(`📊 JobPostings: Después de filtro de búsqueda (${this.searchTerm}):`, filtered.length);
     }
 
     this.filteredJobPostings = filtered;
+    this.displayedJobPostings = filtered;
+
+    console.log('✅ JobPostings: Filtros aplicados - Jobs a mostrar:', this.displayedJobPostings.length);
   }
 
   onStatusFilterChange(): void {
+    if (this.currentUserRole === 'tutor') {
+      console.log('� JobPostings: Filtro de status deshabilitado para tutores');
+      return;
+    }
     this.applyFilters();
   }
 
   onTypeFilterChange(): void {
+    if (this.currentUserRole === 'tutor') {
+      console.log('🚫 JobPostings: Filtro de tipo deshabilitado para tutores');
+      return;
+    }
     this.applyFilters();
   }
 
   onModalityFilterChange(): void {
+    if (this.currentUserRole === 'tutor') {
+      console.log('🚫 JobPostings: Filtro de modalidad deshabilitado para tutores');
+      return;
+    }
     this.applyFilters();
   }
 
   onSearchChange(): void {
+    if (this.currentUserRole === 'tutor') {
+      console.log('🚫 JobPostings: Filtro de búsqueda deshabilitado para tutores');
+      return;
+    }
     this.applyFilters();
   }
 
@@ -328,6 +447,38 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
       const currentUser = this.sessionService.currentUser;
       return jobPosting.assigned_tutor_id === currentUser?.uid && 
              jobPosting.status === 'assigned';
+    }
+    
+    return false;
+  }
+
+  canPublishJob(jobPosting: JobPosting): boolean {
+    // Solo se puede publicar si está en estado 'draft'
+    if (jobPosting.status !== 'draft') return false;
+    
+    // Los administradores pueden publicar cualquier convocatoria
+    if (this.currentUserRole === 'admin') return true;
+    
+    // Las instituciones pueden publicar sus propias convocatorias
+    if (this.currentUserRole === 'institution') {
+      const currentUser = this.sessionService.currentUser;
+      return jobPosting.institution_id === currentUser?.uid;
+    }
+    
+    return false;
+  }
+
+  canHideJob(jobPosting: JobPosting): boolean {
+    // Solo se puede esconder si está en estado 'published'
+    if (jobPosting.status !== 'published') return false;
+    
+    // Los administradores pueden esconder cualquier convocatoria
+    if (this.currentUserRole === 'admin') return true;
+    
+    // Las instituciones pueden esconder sus propias convocatorias
+    if (this.currentUserRole === 'institution') {
+      const currentUser = this.sessionService.currentUser;
+      return jobPosting.institution_id === currentUser?.uid;
     }
     
     return false;
@@ -444,7 +595,15 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         // Si se creó una clase, actualizar la lista
-        this.loadJobPostings();
+        this.isLoading = true;
+        this.loadJobPostings().then((jobPostings) => {
+          this.jobPostings = jobPostings;
+          this.applyFilters();
+          this.isLoading = false;
+        }).catch(error => {
+          console.error('Error loading job postings:', error);
+          this.isLoading = false;
+        });
       }
     });
   }
@@ -477,10 +636,18 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         // Si se asignó un tutor exitosamente, actualizar la lista
-        this.loadJobPostings();
-        this.snackBar.open('Tutor asignado exitosamente', 'Cerrar', { 
-          duration: 3000,
-          panelClass: ['success-snackbar']
+        this.isLoading = true;
+        this.loadJobPostings().then((jobPostings) => {
+          this.jobPostings = jobPostings;
+          this.applyFilters();
+          this.isLoading = false;
+          this.snackBar.open('Tutor asignado exitosamente', 'Cerrar', { 
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+        }).catch(error => {
+          console.error('Error loading job postings:', error);
+          this.isLoading = false;
         });
       }
     });
@@ -492,14 +659,23 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
       return;
     }
     
+    this.isLoading = true;
     console.log('Complete job:', jobPosting);
     this.jobPostingService.updateJobPostingStatus(jobPosting.id, 'completed')
       .then(() => {
+        this.showSuccess('Convocatoria completada exitosamente');
         // Actualizar la lista
-        this.loadJobPostings();
+        return this.loadJobPostings();
+      })
+      .then((jobPostings) => {
+        this.jobPostings = jobPostings;
+        this.applyFilters();
+        this.isLoading = false;
       })
       .catch(error => {
         console.error('Error completing job:', error);
+        this.showError('Error al completar la convocatoria');
+        this.isLoading = false;
       });
   }
 
@@ -509,14 +685,79 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
       return;
     }
     
+    this.isLoading = true;
     console.log('Cancel job:', jobPosting);
     this.jobPostingService.updateJobPostingStatus(jobPosting.id, 'cancelled')
       .then(() => {
+        this.showSuccess('Convocatoria cancelada exitosamente');
         // Actualizar la lista
-        this.loadJobPostings();
+        return this.loadJobPostings();
+      })
+      .then((jobPostings) => {
+        this.jobPostings = jobPostings;
+        this.applyFilters();
+        this.isLoading = false;
       })
       .catch(error => {
         console.error('Error cancelling job:', error);
+        this.showError('Error al cancelar la convocatoria');
+        this.isLoading = false;
+      });
+  }
+
+  publishJob(jobPosting: JobPosting): void {
+    if (!this.canPublishJob(jobPosting)) {
+      this.showError('No tienes permisos para publicar esta convocatoria');
+      return;
+    }
+    
+    console.log('Publishing job posting:', jobPosting.id);
+    this.isLoading = true;
+    this.jobPostingService.updateJobPostingStatus(jobPosting.id, 'published')
+      .then(() => {
+        console.log('Job posting published successfully');
+        this.showSuccess('Convocatoria publicada exitosamente');
+        // Actualizar la lista
+        return this.loadJobPostings();
+      })
+      .then((jobPostings) => {
+        console.log('Loaded job postings after publish:', jobPostings.length);
+        this.jobPostings = jobPostings;
+        this.applyFilters();
+        this.isLoading = false;
+      })
+      .catch(error => {
+        console.error('Error publishing job:', error);
+        this.showError('Error al publicar la convocatoria');
+        this.isLoading = false;
+      });
+  }
+
+  hideJob(jobPosting: JobPosting): void {
+    if (!this.canHideJob(jobPosting)) {
+      this.showError('No tienes permisos para esconder esta convocatoria');
+      return;
+    }
+    
+    console.log('Hiding job posting:', jobPosting.id);
+    this.isLoading = true;
+    this.jobPostingService.updateJobPostingStatus(jobPosting.id, 'draft')
+      .then(() => {
+        console.log('Job posting hidden successfully');
+        this.showSuccess('Convocatoria escondida exitosamente');
+        // Actualizar la lista
+        return this.loadJobPostings();
+      })
+      .then((jobPostings) => {
+        console.log('Loaded job postings after hide:', jobPostings.length);
+        this.jobPostings = jobPostings;
+        this.applyFilters();
+        this.isLoading = false;
+      })
+      .catch(error => {
+        console.error('Error hiding job:', error);
+        this.showError('Error al esconder la convocatoria');
+        this.isLoading = false;
       });
   }
 

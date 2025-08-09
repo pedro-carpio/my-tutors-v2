@@ -73,5 +73,11 @@ service cloud.firestore {
     match /tutor_languages/{tutorLanguageId} {
       allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
     }
+    
+    // TEMPORARY: Allow read/write access to tutor_postulations collection for debugging
+    // TODO: Implement proper authentication and authorization rules
+    match /tutor_postulations/{postulationId} {
+      allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
+    }
   }
 }

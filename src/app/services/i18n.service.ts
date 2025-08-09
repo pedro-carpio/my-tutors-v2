@@ -92,10 +92,51 @@ export class I18nService {
           institution: 'Institución',
           manageTutors: 'Mis tutores',
           manageStudents: 'Mis estudiantes',
+          work: 'Trabajo',
+          jobPostings: 'Ofertas de Trabajo',
           admin: 'Administración',
           userManagement: 'Gestión de Usuarios',
           roleManagement: 'Gestión de Roles',
           systemSettings: 'Configuración del Sistema'
+        },
+
+        // Traducciones generales para opciones
+        languageOptions: {
+          english: 'Inglés',
+          spanish: 'Español',
+          french: 'Francés',
+          portuguese: 'Portugués',
+          italian: 'Italiano',
+          german: 'Alemán'
+        },
+
+        experienceLevels: {
+          beginner: 'Principiante',
+          intermediate: 'Intermedio',
+          advanced: 'Avanzado',
+          expert: 'Experto'
+        },
+
+        availabilityOptions: {
+          morning: 'Mañana',
+          afternoon: 'Tarde',
+          evening: 'Noche',
+          night: 'Madrugada',
+          weekends: 'Fines de semana',
+          flexible: 'Flexible'
+        },
+
+        dialectalVariants: {
+          argentino: 'Argentino',
+          boliviano: 'Boliviano',
+          chileno: 'Chileno',
+          colombiano: 'Colombiano',
+          ecuatoriano: 'Ecuatoriano',
+          español: 'Español (España)',
+          mexicano: 'Mexicano',
+          peruano: 'Peruano',
+          uruguayo: 'Uruguayo',
+          venezolano: 'Venezolano'
         },
         
         // Autenticación
@@ -402,7 +443,10 @@ export class I18nService {
           confirm: 'Confirmar',
           loading: 'Cargando...',
           switchRole: 'Cambiar rol',
-          currentRole: 'Rol actual'
+          currentRole: 'Rol actual',
+          to: 'a',
+          saving: 'Guardando...',
+          save_configuration: 'Guardar Configuración'
         },
 
         // Roles
@@ -473,6 +517,8 @@ export class I18nService {
               basicInfoDescription: 'Datos generales de la convocatoria de trabajo',
               classDetails: 'Detalles de la Clase',
               classDetailsDescription: 'Especificaciones de fecha, hora y duración',
+              tutorRequirements: 'Requisitos del Tutor',
+              tutorRequirementsDescription: 'Especifique los requisitos y preferencias para el tutor',
               students: 'Estudiantes',
               studentsDescription: 'Información de los estudiantes participantes',
               review: 'Revisión',
@@ -494,7 +540,12 @@ export class I18nService {
               videoCallLink: 'Enlace de videollamada',
               hourlyRate: 'Tarifa por hora',
               currency: 'Moneda',
-              isDividedByStudents: 'Dividir tiempo por estudiantes'
+              isDividedByStudents: 'Dividir tiempo por estudiantes',
+              // Nuevos campos para requisitos del tutor
+              requiredLanguages: 'Idiomas requeridos',
+              targetLanguage: 'Idioma objetivo',
+              requiredExperienceLevel: 'Nivel de experiencia requerido',
+              maxHourlyRate: 'Tarifa máxima por hora'
             },
             
             placeholders: {
@@ -504,7 +555,8 @@ export class I18nService {
               frequencyOther: 'Cada 15 días, mensual, etc.',
               location: 'Ej: 4445 Willard Ave, Ste 600 – Oficina 654, MD 20815',
               videoCallLink: 'https://zoom.us/j/...',
-              hourlyRate: '25.00'
+              hourlyRate: '25.00',
+              maxHourlyRate: 'Ej: 30.00'
             },
             
             options: {
@@ -535,6 +587,7 @@ export class I18nService {
               title: 'Resumen de la Convocatoria',
               basicInfo: 'Información Básica',
               classDetails: 'Detalles de la Clase',
+              tutorRequirements: 'Requisitos del Tutor',
               students: 'Estudiantes',
               studentCount: 'Número de estudiantes'
             },
@@ -555,7 +608,8 @@ export class I18nService {
               hourlyRate: 'Tarifa que se pagará al tutor',
               isDividedByStudents: 'Si se marca, el tiempo se dividirá entre los estudiantes',
               saveAsDraft: 'Los borradores no serán visibles para los tutores',
-              addStudentOptions: 'Puedes agregar estudiantes manualmente o buscar estudiantes ya registrados en el sistema'
+              addStudentOptions: 'Puedes agregar estudiantes manualmente o buscar estudiantes ya registrados en el sistema',
+              maxHourlyRate: 'Tarifa máxima que está dispuesto a pagar al tutor'
             },
             
             errors: {
@@ -583,6 +637,8 @@ export class I18nService {
             view: 'Ver',
             viewDetails: 'Ver Detalles',
             edit: 'Editar',
+            publish: 'Publicar',
+            hide: 'Esconder',
             apply: 'Aplicar',
             assignTutor: 'Asignar Tutor',
             complete: 'Completar',
@@ -782,6 +838,60 @@ export class I18nService {
           enterprise: 'Empresarial'
         },
 
+        // Configuración académica institucional
+        institution: {
+          academic_settings: {
+            title: 'Configuración Académica',
+            description: 'Configure los programas educativos, tipos de clases y grupos de estudiantes de su institución',
+            loading: 'Cargando configuración académica...',
+            
+            educational_programs: {
+              title: 'Programas Educativos',
+              description: 'Configure los programas que ofrece su institución',
+              program: 'Programa',
+              placeholder: 'Ej: Trial Class, DELE preparation',
+              add: 'Agregar Programa'
+            },
+            
+            class_types: {
+              title: 'Tipos de Clases',
+              description: 'Configure los tipos de clases que ofrece',
+              type: 'Tipo',
+              placeholder: 'Ej: Trial, Intensiva',
+              add: 'Agregar Tipo'
+            },
+            
+            student_countries: {
+              title: 'Países de Estudiantes',
+              description: 'Configure los países donde tienen estudiantes',
+              country: 'País',
+              states: 'Estados',
+              select_states: 'Seleccionar Estados',
+              select_all: 'Seleccionar Todos',
+              deselect_all: 'Deseleccionar Todos',
+              add: 'Agregar País'
+            },
+            
+            student_groups: {
+              title: 'Grupos de Estudiantes',
+              description: 'Configure los grupos/niveles por edades',
+              name: 'Nombre del Grupo',
+              name_placeholder: 'Ej: Madrid Musketeers',
+              group_description: 'Descripción (opcional)',
+              description_placeholder: 'Descripción del grupo o nivel',
+              active: 'Activo',
+              age_range: 'Rango de Edades',
+              age_range_optional: '(Opcional)',
+              min_age: 'Edad Mínima',
+              max_age: 'Edad Máxima',
+              age_optional: 'Opcional',
+              cefr_level: 'Nivel CEFR (opcional)',
+              no_specific_level: 'Sin nivel específico',
+              add: 'Agregar Grupo'
+            }
+          }
+        },
+
         // Validaciones
         validation: {
           required: 'Este campo es obligatorio',
@@ -816,10 +926,51 @@ export class I18nService {
           institution: 'Institution',
           manageTutors: 'My tutors',
           manageStudents: 'My students',
+          work: 'Work',
+          jobPostings: 'Job Postings',
           admin: 'Administration',
           userManagement: 'User Management',
           roleManagement: 'Role Management',
           systemSettings: 'System Settings'
+        },
+
+        // General options translations
+        languageOptions: {
+          english: 'English',
+          spanish: 'Spanish',
+          french: 'French',
+          portuguese: 'Portuguese',
+          italian: 'Italian',
+          german: 'German'
+        },
+
+        experienceLevels: {
+          beginner: 'Beginner',
+          intermediate: 'Intermediate',
+          advanced: 'Advanced',
+          expert: 'Expert'
+        },
+
+        availabilityOptions: {
+          morning: 'Morning',
+          afternoon: 'Afternoon',
+          evening: 'Evening',
+          night: 'Night',
+          weekends: 'Weekends',
+          flexible: 'Flexible'
+        },
+
+        dialectalVariants: {
+          argentino: 'Argentinian',
+          boliviano: 'Bolivian',
+          chileno: 'Chilean',
+          colombiano: 'Colombian',
+          ecuatoriano: 'Ecuadorian',
+          español: 'Spanish (Spain)',
+          mexicano: 'Mexican',
+          peruano: 'Peruvian',
+          uruguayo: 'Uruguayan',
+          venezolano: 'Venezuelan'
         },
         
         // Authentication
@@ -1119,6 +1270,60 @@ export class I18nService {
           enterprise: 'Enterprise'
         },
 
+        // Academic institution settings
+        institution: {
+          academic_settings: {
+            title: 'Academic Settings',
+            description: 'Configure educational programs, class types, and student groups for your institution',
+            loading: 'Loading academic settings...',
+            
+            educational_programs: {
+              title: 'Educational Programs',
+              description: 'Configure the programs offered by your institution',
+              program: 'Program',
+              placeholder: 'E.g: Trial Class, DELE preparation',
+              add: 'Add Program'
+            },
+            
+            class_types: {
+              title: 'Class Types',
+              description: 'Configure the types of classes you offer',
+              type: 'Type',
+              placeholder: 'E.g: Trial, Intensive',
+              add: 'Add Type'
+            },
+            
+            student_countries: {
+              title: 'Student Countries',
+              description: 'Configure the countries where you have students',
+              country: 'Country',
+              states: 'States',
+              select_states: 'Select States',
+              select_all: 'Select All',
+              deselect_all: 'Deselect All',
+              add: 'Add Country'
+            },
+            
+            student_groups: {
+              title: 'Student Groups',
+              description: 'Configure age-based groups/levels',
+              name: 'Group Name',
+              name_placeholder: 'E.g: Madrid Musketeers',
+              group_description: 'Description (optional)',
+              description_placeholder: 'Group or level description',
+              active: 'Active',
+              age_range: 'Age Range',
+              age_range_optional: '(Optional)',
+              min_age: 'Minimum Age',
+              max_age: 'Maximum Age',
+              age_optional: 'Optional',
+              cefr_level: 'CEFR Level (optional)',
+              no_specific_level: 'No specific level',
+              add: 'Add Group'
+            }
+          }
+        },
+
         // Validaciones
         validation: {
           required: 'This field is required',
@@ -1248,7 +1453,10 @@ export class I18nService {
           confirm: 'Confirm',
           loading: 'Loading...',
           switchRole: 'Switch role',
-          currentRole: 'Current role'
+          currentRole: 'Current role',
+          to: 'to',
+          saving: 'Saving...',
+          save_configuration: 'Save Configuration'
         },
 
         // Roles
@@ -1320,6 +1528,8 @@ export class I18nService {
               basicInfoDescription: 'General job posting data',
               classDetails: 'Class Details',
               classDetailsDescription: 'Date, time and duration specifications',
+              tutorRequirements: 'Tutor Requirements',
+              tutorRequirementsDescription: 'Specify tutor requirements and preferences',
               students: 'Students',
               studentsDescription: 'Participating students information',
               review: 'Review',
@@ -1341,7 +1551,12 @@ export class I18nService {
               videoCallLink: 'Video call link',
               hourlyRate: 'Hourly rate',
               currency: 'Currency',
-              isDividedByStudents: 'Divide time by students'
+              isDividedByStudents: 'Divide time by students',
+              // New tutor requirement fields
+              requiredLanguages: 'Required languages',
+              targetLanguage: 'Target language',
+              requiredExperienceLevel: 'Required experience level',
+              maxHourlyRate: 'Maximum hourly rate'
             },
             
             placeholders: {
@@ -1351,7 +1566,8 @@ export class I18nService {
               frequencyOther: 'Every 15 days, monthly, etc.',
               location: 'E.g: 4445 Willard Ave, Ste 600 – Office 654, MD 20815',
               videoCallLink: 'https://zoom.us/j/...',
-              hourlyRate: '25.00'
+              hourlyRate: '25.00',
+              maxHourlyRate: 'E.g: 30.00'
             },
             
             options: {
@@ -1382,6 +1598,7 @@ export class I18nService {
               title: 'Job Posting Summary',
               basicInfo: 'Basic Information',
               classDetails: 'Class Details',
+              tutorRequirements: 'Tutor Requirements',
               students: 'Students',
               studentCount: 'Number of students'
             },
@@ -1402,7 +1619,8 @@ export class I18nService {
               hourlyRate: 'Rate to be paid to the tutor',
               isDividedByStudents: 'If checked, time will be divided among students',
               saveAsDraft: 'Drafts will not be visible to tutors',
-              addStudentOptions: 'You can add students manually or search for students already registered in the system'
+              addStudentOptions: 'You can add students manually or search for students already registered in the system',
+              maxHourlyRate: 'Maximum rate you are willing to pay to the tutor'
             },
             
             errors: {
@@ -1430,6 +1648,8 @@ export class I18nService {
             view: 'View',
             viewDetails: 'View Details',
             edit: 'Edit',
+            publish: 'Publish',
+            hide: 'Hide',
             apply: 'Apply',
             assignTutor: 'Assign Tutor',
             complete: 'Complete',

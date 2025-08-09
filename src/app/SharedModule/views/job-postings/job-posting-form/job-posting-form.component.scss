@@ -361,3 +361,20 @@ button[disabled] {
     }
   }
 }
+
+// Estilos específicos para grupos de estudiantes dinámicos
+.group-age-info {
+  font-size: 0.875rem;
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+// Estilos para elementos de carga
+mat-form-field {
+  mat-hint {
+    color: #1976d2;
+    font-style: italic;
+    font-size: 0.75rem;
+  }
+}

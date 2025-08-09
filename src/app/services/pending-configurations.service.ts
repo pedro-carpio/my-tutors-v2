@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, combineLatest, map, switchMap, of } from 'rxjs';
+import { Observable, combineLatest, map, switchMap, of, filter } from 'rxjs';
 import { UserRole, User } from '../types/firestore.types';
 import { UserService, TutorService, StudentService, InstitutionService, MultiRoleService } from './index';
 import { Auth, user, User as FirebaseUser } from '@angular/fire/auth';
@@ -213,19 +213,27 @@ export class PendingConfigurationsService {
    * Ahora considera todos los roles del usuario, no solo uno
    */
   getPendingConfigurations(): Observable<PendingConfiguration[]> {
+    console.log('🚀 PendingConfigurationsService: getPendingConfigurations called');
     return user(this.auth).pipe(
       switchMap((authUser: FirebaseUser | null) => {
+        console.log('👤 PendingConfigurationsService: Auth user:', authUser?.uid);
         if (!authUser) return of([]);
         
         return this.multiRoleService.userRoles$.pipe(
+          // Filtrar arrays vacíos que pueden ocurrir durante la inicialización
+          filter((roles: UserRole[]) => {
+            console.log('🔍 PendingConfigurationsService: Filtering roles:', roles, 'length:', roles.length);
+            return roles.length > 0;
+          }),
           switchMap((roles: UserRole[]) => {
-            if (roles.length === 0) return of([]);
+            console.log('✅ PendingConfigurationsService: Processing roles:', roles);
             
             // Combinar configuraciones de todos los roles
             const allConfigurations: PendingConfiguration[] = [];
             
             roles.forEach(role => {
               const roleConfigurations = this.baseConfigurations[role] || [];
+              console.log(`📁 PendingConfigurationsService: Adding ${roleConfigurations.length} configurations for role: ${role}`);
               allConfigurations.push(...roleConfigurations);
             });
 
@@ -234,6 +242,7 @@ export class PendingConfigurationsService {
               index === self.findIndex(c => c.id === config.id)
             );
 
+            console.log(`🎯 PendingConfigurationsService: Total unique configurations: ${uniqueConfigurations.length}`);
             return this.evaluateMultiRoleConfigurations(uniqueConfigurations, roles, authUser.uid);
           })
         );

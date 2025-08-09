@@ -28,6 +28,7 @@ export interface Tutor {
   full_name: string;
   birth_date: Date;
   country: string;
+  state?: string; // Código del estado/provincia (ej: 'CA', 'TX') - para países que lo requieran
   phone?: string; // ✅ ACTUALMENTE EN USO - Formulario add-tutor-dialog
   photo_url?: string;
   max_hours_per_week: number;
@@ -102,6 +103,11 @@ export interface Institution {
   subscription_plan?: string; // TODO: Sistema de suscripciones/planes
   max_tutors?: number; // TODO: Límites basados en planes de suscripción
   max_students?: number; // TODO: Límites basados en planes de suscripción
+  // ✅ Nuevos campos para gestión académica
+  educational_programs?: string[]; // Programas educativos que ofrece la institución
+  class_types?: ClassType[]; // Tipos de clases que ofrece la institución
+  student_countries?: InstitutionCountry[]; // Países donde tienen estudiantes
+  student_level_groups?: StudentLevelGroup[]; // Grupos/niveles de estudiantes por edades
   created_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
   updated_at?: FieldValue | Timestamp; // ✅ Implementado en servicios
 }
@@ -425,12 +431,21 @@ export interface JobPosting {
   frequency: FrequencyType;
   frequency_other?: string; // si frequency === 'otro'
   location?: string; // para clases presenciales
+  location_country?: string; // Código del país donde se realizará la clase (ej: 'US', 'BO')
+  location_state?: string; // Código del estado/provincia (ej: 'CA', 'TX') - para clases presenciales
   location_latitude?: number;
   location_longitude?: number;
   video_call_link?: string; // para clases virtuales
   
   // Bloque 3 - Estudiantes & Logística
   students: StudentDetails[];
+  
+  // Bloque 4 - Requisitos del tutor (para matching personalizado)
+  required_languages?: string[]; // Idiomas requeridos (códigos ISO)
+  target_language: string; // Idioma principal que se va a enseñar
+  required_experience_level?: ExperienceLevel | number; // Nivel mínimo de experiencia
+  required_certifications?: string[]; // Certificaciones requeridas
+  max_hourly_rate?: number; // Tarifa máxima por hora
   
   // Gestión del trabajo
   status: JobPostingStatus;
@@ -474,4 +489,30 @@ export interface ClassInstance {
   notes?: string;
   created_at: FieldValue | Timestamp;
   updated_at?: FieldValue | Timestamp;
+}
+
+// Nuevas interfaces para gestión académica de instituciones
+
+export interface InstitutionCountry {
+  code: string; // Código del país (ej: 'US', 'ES')
+  name: string; // Nombre del país (ej: 'Estados Unidos', 'España')
+  states?: InstitutionState[]; // Estados/provincias (opcional)
+  timezones?: string[]; // Lista de zonas horarias disponibles para el país
+}
+
+export interface InstitutionState {
+  code: string; // Código del estado (ej: 'CA', 'TX', 'NY')
+  name: string; // Nombre del estado (ej: 'California', 'Texas', 'New York')
+}
+
+export interface StudentLevelGroup {
+  id: string; // Identificador único
+  name: string; // Nombre del grupo (ej: 'Madrid Musketeers')
+  description?: string; // Descripción opcional
+  age_range: {
+    min: number; // Edad mínima
+    max: number; // Edad máxima
+  };
+  level_cefr?: LevelCEFR; // Nivel CEFR asociado (opcional)
+  is_active: boolean; // Si el grupo está activo
 }

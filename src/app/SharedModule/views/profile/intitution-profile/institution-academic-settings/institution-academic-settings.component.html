@@ -1,0 +1,280 @@
+<div class="academic-settings-container">
+  <div class="settings-header">
+    <h2>{{ 'institution.academic_settings.title' | translate }}</h2>
+    <p class="header-description">
+      {{ 'institution.academic_settings.description' | translate }}
+    </p>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>{{ 'institution.academic_settings.loading' | translate }}</p>
+  </div>
+
+  <!-- Formulario Principal -->
+  <form *ngIf="!isLoading" [formGroup]="academicForm" (ngSubmit)="onSave()" class="academic-form">
+    
+    <!-- Programas Educativos -->
+    <mat-expansion-panel class="settings-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>school</mat-icon>
+          {{ 'institution.academic_settings.educational_programs.title' | translate }}
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ 'institution.academic_settings.educational_programs.description' | translate }}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      
+      <div class="panel-content">
+        <div formArrayName="educational_programs" class="programs-list">
+          <div *ngFor="let program of educationalProgramsArray.controls; let i = index" class="program-item">
+            <mat-form-field class="program-field">
+              <mat-label>{{ 'institution.academic_settings.educational_programs.program' | translate }} {{ i + 1 }}</mat-label>
+              <input matInput [formControlName]="i" placeholder="{{ 'institution.academic_settings.educational_programs.placeholder' | translate }}">
+              <mat-error>{{ getFormControlError('educational_programs.' + i) }}</mat-error>
+            </mat-form-field>
+            
+            <button 
+              type="button" 
+              mat-icon-button 
+              color="warn" 
+              (click)="removeEducationalProgram(i)"
+              [disabled]="educationalProgramsArray.length <= 1">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+        
+        <div class="add-button-container">
+          <button type="button" mat-raised-button color="primary" (click)="addEducationalProgram()">
+            <mat-icon>add</mat-icon>
+            {{ 'institution.academic_settings.educational_programs.add' | translate }}
+          </button>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Tipos de Clase -->
+    <mat-expansion-panel class="settings-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>event</mat-icon>
+          {{ 'institution.academic_settings.class_types.title' | translate }}
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ 'institution.academic_settings.class_types.description' | translate }}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      
+      <div class="panel-content">
+        <div formArrayName="class_types" class="class-types-list">
+          <div *ngFor="let classType of classTypesArray.controls; let i = index" class="class-type-item">
+            <mat-form-field class="class-type-field">
+              <mat-label>{{ 'institution.academic_settings.class_types.type' | translate }} {{ i + 1 }}</mat-label>
+              <input matInput [formControlName]="i" placeholder="{{ 'institution.academic_settings.class_types.placeholder' | translate }}">
+              <mat-error>{{ getFormControlError('class_types.' + i) }}</mat-error>
+            </mat-form-field>
+            
+            <button 
+              type="button" 
+              mat-icon-button 
+              color="warn" 
+              (click)="removeClassType(i)"
+              [disabled]="classTypesArray.length <= 1">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+        
+        <div class="add-button-container">
+          <button type="button" mat-raised-button color="primary" (click)="addClassType()">
+            <mat-icon>add</mat-icon>
+            {{ 'institution.academic_settings.class_types.add' | translate }}
+          </button>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Países de Estudiantes -->
+    <mat-expansion-panel class="settings-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>public</mat-icon>
+          {{ 'institution.academic_settings.student_countries.title' | translate }}
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ 'institution.academic_settings.student_countries.description' | translate }}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      
+      <div class="panel-content">
+        <div formArrayName="student_countries" class="countries-list">
+          <div *ngFor="let country of studentCountriesArray.controls; let i = index" 
+               [formGroupName]="i" 
+               class="country-item">
+            
+            <div class="country-header">
+              <mat-form-field class="country-field">
+                <mat-label>{{ 'institution.academic_settings.student_countries.country' | translate }}</mat-label>
+                <mat-select formControlName="code" (selectionChange)="onCountryChange(i)">
+                  <mat-option *ngFor="let country of availableCountries" [value]="country.code">
+                    {{ country.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+              
+              <button 
+                type="button" 
+                mat-icon-button 
+                color="warn" 
+                (click)="removeStudentCountry(i)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+
+            <!-- Estados/Provincias (multi-select) -->
+            <div *ngIf="getAvailableStatesForCountry(i).length > 0" class="states-section">
+              <div class="states-header">
+                <h4>{{ 'institution.academic_settings.student_countries.states' | translate }}</h4>
+                <button 
+                  type="button" 
+                  mat-button 
+                  color="primary" 
+                  (click)="toggleAllStates(i)">
+                  {{ areAllStatesSelected(i) ? 
+                    ('institution.academic_settings.student_countries.deselect_all' | translate) : 
+                    ('institution.academic_settings.student_countries.select_all' | translate) }}
+                </button>
+              </div>
+              
+              <mat-form-field class="states-field">
+                <mat-label>{{ 'institution.academic_settings.student_countries.select_states' | translate }}</mat-label>
+                <mat-select formControlName="states" multiple>
+                  <mat-option *ngFor="let state of getAvailableStatesForCountry(i)" [value]="state.code">
+                    {{ state.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+        
+        <div class="add-button-container">
+          <button type="button" mat-raised-button color="primary" (click)="addStudentCountry()">
+            <mat-icon>add</mat-icon>
+            {{ 'institution.academic_settings.student_countries.add' | translate }}
+          </button>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Grupos de Estudiantes -->
+    <mat-expansion-panel class="settings-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>groups</mat-icon>
+          {{ 'institution.academic_settings.student_groups.title' | translate }}
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ 'institution.academic_settings.student_groups.description' | translate }}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      
+      <div class="panel-content">
+        <div formArrayName="student_level_groups" class="groups-list">
+          <div *ngFor="let group of studentLevelGroupsArray.controls; let i = index" 
+               [formGroupName]="i" 
+               class="group-item">
+            
+            <mat-card class="group-card">
+              <mat-card-header>
+                <mat-card-title class="group-title">
+                  <mat-form-field class="group-name-field">
+                    <mat-label>{{ 'institution.academic_settings.student_groups.name' | translate }}</mat-label>
+                    <input matInput formControlName="name" placeholder="{{ 'institution.academic_settings.student_groups.name_placeholder' | translate }}">
+                  </mat-form-field>
+                  
+                  <mat-checkbox formControlName="is_active" class="active-checkbox">
+                    {{ 'institution.academic_settings.student_groups.active' | translate }}
+                  </mat-checkbox>
+                  
+                  <button 
+                    type="button" 
+                    mat-icon-button 
+                    color="warn" 
+                    (click)="removeStudentLevelGroup(i)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </mat-card-title>
+              </mat-card-header>
+              
+              <mat-card-content class="group-content">
+                <div class="group-fields">
+                  <mat-form-field class="description-field">
+                    <mat-label>{{ 'institution.academic_settings.student_groups.group_description' | translate }}</mat-label>
+                    <textarea matInput formControlName="description" rows="2" 
+                              placeholder="{{ 'institution.academic_settings.student_groups.description_placeholder' | translate }}"></textarea>
+                  </mat-form-field>
+                  
+                  <div formGroupName="age_range" class="age-range-section">
+                    <h4>{{ 'institution.academic_settings.student_groups.age_range' | translate }}</h4>
+                    <div class="age-fields">
+                      <mat-form-field class="age-field">
+                        <mat-label>{{ 'institution.academic_settings.student_groups.min_age' | translate }}</mat-label>
+                        <input matInput type="number" formControlName="min" min="3" max="100" placeholder="{{ 'institution.academic_settings.student_groups.age_optional' | translate }}">
+                      </mat-form-field>
+                      
+                      <span class="age-separator">{{ 'common.to' | translate }}</span>
+                      
+                      <mat-form-field class="age-field">
+                        <mat-label>{{ 'institution.academic_settings.student_groups.max_age' | translate }}</mat-label>
+                        <input matInput type="number" formControlName="max" min="3" max="100" placeholder="{{ 'institution.academic_settings.student_groups.age_optional' | translate }}">
+                      </mat-form-field>
+                    </div>
+                    <small class="age-hint">{{ 'institution.academic_settings.student_groups.age_range_optional' | translate }}</small>
+                  </div>
+                  
+                  <mat-form-field class="level-field">
+                    <mat-label>{{ 'institution.academic_settings.student_groups.cefr_level' | translate }}</mat-label>
+                    <mat-select formControlName="level_cefr">
+                      <mat-option value="">{{ 'institution.academic_settings.student_groups.no_specific_level' | translate }}</mat-option>
+                      <mat-option value="A1">A1</mat-option>
+                      <mat-option value="A2">A2</mat-option>
+                      <mat-option value="B1">B1</mat-option>
+                      <mat-option value="B2">B2</mat-option>
+                      <mat-option value="C1">C1</mat-option>
+                      <mat-option value="C2">C2</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+        
+        <div class="add-button-container">
+          <button type="button" mat-raised-button color="primary" (click)="addStudentLevelGroup()">
+            <mat-icon>add</mat-icon>
+            {{ 'institution.academic_settings.student_groups.add' | translate }}
+          </button>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Botones de Acción -->
+    <div class="form-actions">
+      <button 
+        type="submit" 
+        mat-raised-button 
+        color="primary" 
+        [disabled]="isSaving || !academicForm.valid"
+        class="save-button">
+        <mat-spinner *ngIf="isSaving" diameter="20" class="button-spinner"></mat-spinner>
+        <mat-icon *ngIf="!isSaving">save</mat-icon>
+        {{ isSaving ? ('common.saving' | translate) : ('common.save_configuration' | translate) }}
+      </button>
+    </div>
+  </form>
+</div>

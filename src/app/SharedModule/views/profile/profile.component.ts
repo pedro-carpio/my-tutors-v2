@@ -125,9 +125,4 @@ export class ProfileComponent implements OnInit, OnDestroy {
       console.error('Error during logout:', error);
     }
   }
-
-  toggleMenu(): void {
-    // Este método será manejado por el layout component
-    // No necesitamos implementar nada aquí
-  }
 }

@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import {
@@ -22,8 +22,9 @@ import { Institution } from '../types/firestore.types';
   providedIn: 'root',
 })
 export class InstitutionService {
-  private firestore: Firestore = inject(Firestore);
   private collectionName = 'institutions';
+
+  constructor(private firestore: Firestore) {}
 
   // Create or update institution profile
   async createInstitution(institutionData: Institution): Promise<void> {

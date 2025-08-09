@@ -27,19 +27,37 @@
           <div class="form-row">
             <mat-form-field>
               <mat-label>{{ 'profile.country' | translate }}</mat-label>
-              <input matInput formControlName="country" required>
+              <mat-select formControlName="country" required>
+                <mat-option *ngFor="let country of (availableCountries || []); trackBy: trackByCountryCode" [value]="country.code">
+                  {{ country.name }}
+                </mat-option>
+              </mat-select>
               <mat-error *ngIf="tutorForm.get('basicInfo.country')?.hasError('required')">
                 {{ 'validation.required' | translate }}
               </mat-error>
             </mat-form-field>
 
-            <mat-form-field>
+            <mat-form-field *ngIf="hasStates">
+              <mat-label>{{ 'profile.state' | translate }}</mat-label>
+              <mat-select formControlName="state">
+                <mat-option value="">{{ 'common.select' | translate }}</mat-option>
+                <mat-option *ngFor="let state of (availableStates || []); trackBy: trackByStateCode" [value]="state.code">
+                  {{ state.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field *ngIf="!hasStates">
               <mat-label>{{ 'profile.birthLanguage' | translate }}</mat-label>
               <input matInput formControlName="birth_language">
             </mat-form-field>
           </div>
 
           <div class="form-row">
+            <mat-form-field *ngIf="hasStates">
+              <mat-label>{{ 'profile.birthLanguage' | translate }}</mat-label>
+              <input matInput formControlName="birth_language">
+            </mat-form-field>
             <mat-form-field>
               <mat-label>{{ 'profile.birthDate' | translate }}</mat-label>
               <input matInput [matDatepicker]="birthDatePicker" formControlName="birth_date">
@@ -50,6 +68,36 @@
             <mat-form-field>
               <mat-label>{{ 'profile.photoUrl' | translate }}</mat-label>
               <input matInput formControlName="photo_url" placeholder="https://...">
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'profile.timezone' | translate }}</mat-label>
+              <!-- ✅ NUEVO: Selector condicional de timezone -->
+              <mat-select 
+                *ngIf="shouldShowTimezoneSelector(); else simpleTimezone"
+                formControlName="timezone" 
+                (selectionChange)="onTimezoneChange($event.value)"
+                [placeholder]="'profile.selectTimezone' | translate">
+                <mat-option 
+                  *ngFor="let tz of getTimezoneOptions()" 
+                  [value]="tz.timezone">
+                  {{ tz.display_name }} ({{ tz.utc_offset }})
+                  <span *ngIf="!tz.dst_aware" class="no-dst-indicator"> - No DST</span>
+                </mat-option>
+              </mat-select>
+              
+              <!-- Fallback para ubicaciones sin múltiples timezones -->
+              <ng-template #simpleTimezone>
+                <input 
+                  matInput 
+                  formControlName="timezone" 
+                  [placeholder]="'profile.timezoneAutoSet' | translate"
+                  readonly>
+              </ng-template>
+              
+              <mat-hint *ngIf="selectedLocationHasMultipleTimezones">
+                {{ 'profile.selectSpecificTimezone' | translate }}
+              </mat-hint>
             </mat-form-field>
           </div>
         </div>
@@ -105,11 +153,6 @@
             <mat-form-field>
               <mat-label>{{ 'profile.linkedinProfile' | translate }}</mat-label>
               <input matInput formControlName="linkedin_profile" placeholder="https://linkedin.com/in/...">
-            </mat-form-field>
-
-            <mat-form-field>
-              <mat-label>{{ 'profile.timezone' | translate }}</mat-label>
-              <input matInput formControlName="timezone" placeholder="America/La_Paz">
             </mat-form-field>
           </div>
 

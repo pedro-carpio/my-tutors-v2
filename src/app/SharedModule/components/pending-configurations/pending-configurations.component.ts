@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,7 +7,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, startWith } from 'rxjs/operators';
 import { PendingConfigurationsService, PendingConfiguration } from '../../../services/pending-configurations.service';
 import { I18nService } from '../../../services/i18n.service';
 
@@ -15,6 +15,7 @@ import { I18nService } from '../../../services/i18n.service';
   selector: 'app-pending-configurations',
   templateUrl: './pending-configurations.component.html',
   styleUrl: './pending-configurations.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     MatCardModule,
@@ -29,6 +30,7 @@ export class PendingConfigurationsComponent implements OnInit, OnDestroy {
   private pendingConfigService = inject(PendingConfigurationsService);
   private i18nService = inject(I18nService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   configurations: PendingConfiguration[] = [];
   completedCount = 0;
@@ -45,17 +47,31 @@ export class PendingConfigurationsComponent implements OnInit, OnDestroy {
   }
 
   private loadConfigurations(): void {
+    console.log('🔄 PendingConfigurationsComponent: loadConfigurations called');
     this.pendingConfigService.getPendingConfigurations().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (configs: PendingConfiguration[]) => {
+        console.log('📋 PendingConfigurationsComponent: Received configurations:', configs.length, configs);
         this.configurations = configs;
         this.totalCount = configs.length;
         this.completedCount = configs.filter(c => c.completed).length;
         this.progressPercentage = this.totalCount > 0 ? (this.completedCount / this.totalCount) * 100 : 0;
+        
+        console.log(`📊 PendingConfigurationsComponent: Stats - Total: ${this.totalCount}, Completed: ${this.completedCount}, Progress: ${this.progressPercentage}%`);
+        
+        // Forzar detección de cambios inmediatamente
+        this.cdr.detectChanges();
+        console.log('🔄 PendingConfigurationsComponent: Change detection triggered');
+        
+        // También intentar con un micro delay por si hay un problema de timing
+        setTimeout(() => {
+          this.cdr.detectChanges();
+          console.log('🔄 PendingConfigurationsComponent: Delayed change detection triggered');
+        }, 0);
       },
       error: (error) => {
-        console.error('Error loading configurations:', error);
+        console.error('❌ PendingConfigurationsComponent: Error loading configurations:', error);
       }
     });
   }

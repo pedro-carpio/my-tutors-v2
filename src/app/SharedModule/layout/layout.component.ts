@@ -118,15 +118,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
           matIcon: 'people',
           roles: ['tutor']
         },
-        // TODO: Remove this in the languages service
-        {
-          title: 'navigation.availability',
-          translationKey: 'navigation.availability',
-          type: 'item',
-          url: '/tutor/availability',
-          matIcon: 'schedule',
-          roles: ['tutor']
-        }
       ]
     }, 
     {
@@ -150,6 +141,22 @@ export class LayoutComponent implements OnInit, OnDestroy {
           url: '/institution/students',
           matIcon: 'group',
           roles: ['institution']
+        }
+      ]
+    },
+    {
+      title: 'navigation.work',
+      translationKey: 'navigation.work',
+      type: 'group',
+      roles: ['student', 'tutor', 'institution'],
+      children: [
+        {
+          title: 'navigation.jobPostings',
+          translationKey: 'navigation.jobPostings',
+          type: 'item',
+          url: '/job-postings',
+          matIcon: 'work',
+          roles: ['student', 'tutor', 'institution']
         }
       ]
     },

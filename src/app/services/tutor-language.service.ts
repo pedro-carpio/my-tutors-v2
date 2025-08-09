@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   doc,
@@ -21,8 +21,9 @@ import { UserLanguage, LevelCEFR } from '../types/firestore.types';
   providedIn: 'root',
 })
 export class UserLanguageService {
-  private firestore: Firestore = inject(Firestore);
   private collectionName = 'user_languages';
+
+  constructor(private firestore: Firestore) {}
 
   // Create a new tutor-language relationship
   async createUserLanguage(userLanguageData: UserLanguage): Promise<string> {

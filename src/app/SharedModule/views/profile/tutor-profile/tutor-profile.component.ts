@@ -52,6 +52,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   teachingLanguages$: Observable<UserLanguage[]> = of([]);
   spokenLanguages$: Observable<UserLanguage[]> = of([]);
   isLoading = true;
+  private isDialogOpen = false; // ✅ NUEVO: Prevenir múltiples aperturas del diálogo
 
   ngOnInit(): void {
     console.log('🚀 TutorProfile: ngOnInit iniciado');
@@ -140,25 +141,69 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   openEditDialog(): void {
-    this.tutor$.pipe(take(1)).subscribe(tutor => {
-      if (tutor) {
-        console.log('✏️ TutorProfile: Abriendo diálogo de edición para tutor:', tutor.full_name);
+    // ✅ NUEVO: Prevenir múltiples aperturas del diálogo
+    if (this.isDialogOpen) {
+      console.warn('🚨 TutorProfile: Diálogo ya está abierto, evitando duplicado');
+      return;
+    }
+    
+    console.log('🔧 TutorProfile: openEditDialog() iniciado');
+    
+    this.tutor$.pipe(take(1)).subscribe({
+      next: (tutor) => {
+        console.log('🔧 TutorProfile: Datos del tutor obtenidos:', tutor);
         
-        const dialogRef = this.dialog.open(TutorEditDialogComponent, {
-          width: '900px',
-          maxWidth: '95vw',
-          maxHeight: '90vh',
-          data: { tutor }
-        });
+        if (tutor) {
+          console.log('✏️ TutorProfile: Abriendo diálogo de edición para tutor:', tutor.full_name);
+          
+          try {
+            console.log('🔧 TutorProfile: Intentando abrir MatDialog...');
+            
+            this.isDialogOpen = true; // ✅ NUEVO: Marcar diálogo como abierto
+            
+            const dialogRef = this.dialog.open(TutorEditDialogComponent, {
+              width: '900px',
+              maxWidth: '95vw',
+              maxHeight: '90vh',
+              data: { tutor },
+              disableClose: false,
+              hasBackdrop: true,
+              panelClass: 'tutor-edit-dialog'
+            });
+            
+            console.log('✅ TutorProfile: MatDialog creado exitosamente:', dialogRef);
 
-        dialogRef.afterClosed().subscribe(result => {
-          if (result) {
-            console.log('💾 TutorProfile: Diálogo cerrado con cambios, recargando datos');
-            this.loadTutorData();
-          } else {
-            console.log('❌ TutorProfile: Diálogo cerrado sin cambios');
+            // Monitorear eventos del diálogo
+            dialogRef.beforeClosed().subscribe(() => {
+              console.log('🔧 TutorProfile: Diálogo a punto de cerrarse');
+            });
+
+            dialogRef.afterOpened().subscribe(() => {
+              console.log('✅ TutorProfile: Diálogo abierto exitosamente');
+            });
+
+            dialogRef.afterClosed().subscribe(result => {
+              console.log('🔧 TutorProfile: Diálogo cerrado, resultado:', result);
+              this.isDialogOpen = false; // ✅ NUEVO: Permitir abrir de nuevo
+              
+              if (result) {
+                console.log('💾 TutorProfile: Diálogo cerrado con cambios, recargando datos');
+                this.loadTutorData();
+              } else {
+                console.log('❌ TutorProfile: Diálogo cerrado sin cambios');
+              }
+            });
+            
+          } catch (error) {
+            console.error('🚨 TutorProfile: Error al abrir diálogo:', error);
+            this.isDialogOpen = false; // ✅ NUEVO: Resetear en caso de error
           }
-        });
+        } else {
+          console.warn('⚠️ TutorProfile: No hay datos de tutor para editar');
+        }
+      },
+      error: (error) => {
+        console.error('🚨 TutorProfile: Error al obtener datos del tutor:', error);
       }
     });
   }

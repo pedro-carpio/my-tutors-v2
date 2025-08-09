@@ -16,6 +16,7 @@ import { StudentService } from '../../../../services/student.service';
 import { Institution, Tutor, Student } from '../../../../types/firestore.types';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
 import { InstitutionEditDialogComponent } from './institution-edit-dialog/institution-edit-dialog.component';
+import { InstitutionAcademicSettingsComponent } from './institution-academic-settings/institution-academic-settings.component';
 
 interface InstitutionStats {
   tutorsCount: number;
@@ -193,6 +194,27 @@ export class InstitutionProfileComponent implements OnInit, OnDestroy {
       if (result) {
         console.log('✅ InstitutionProfile: Perfil creado, recargando datos');
         // Recargar el perfil después de crear
+        this.loadInstitutionData();
+      }
+    });
+  }
+
+  openAcademicSettings(): void {
+    console.log('⚙️ InstitutionProfile: Abriendo configuración académica');
+    
+    const dialogRef = this.dialog.open(InstitutionAcademicSettingsComponent, {
+      width: '1200px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      autoFocus: false,
+      restoreFocus: false,
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('✅ InstitutionProfile: Configuración académica actualizada, recargando datos');
+        // Recargar el perfil después de actualizar configuración académica
         this.loadInstitutionData();
       }
     });

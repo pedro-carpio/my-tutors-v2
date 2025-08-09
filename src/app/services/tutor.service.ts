@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   doc,
@@ -20,8 +20,9 @@ import { Tutor, Availability } from '../types/firestore.types';
   providedIn: 'root',
 })
 export class TutorService {
-  private firestore: Firestore = inject(Firestore);
   private collectionName = 'tutors';
+
+  constructor(private firestore: Firestore) {}
 
   // Create or update tutor profile
   async createTutor(tutorData: Tutor): Promise<void> {

@@ -1,12 +1,12 @@
-<app-layout>
+<app-layout #layout>
   <app-toolbar 
     slot="toolbar"
     [title]="'profile.title' | translate"
     [showLogout]="true"
-    [showMenuButton]="true"
+    [showMenuButton]="(layout.isHandset$ | async) || false"
     [showRoleSelector]="true"
     (logout)="onLogout()"
-    (menuToggle)="toggleMenu()">
+    (menuToggle)="layout.toggleDrawer()">
   </app-toolbar>
 
   <div class="profile-container">

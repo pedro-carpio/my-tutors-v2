@@ -1,0 +1,394 @@
+.academic-settings-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+
+  .settings-header {
+    margin-bottom: 32px;
+    text-align: center;
+
+    h2 {
+      color: #1976d2;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .header-description {
+      color: #666;
+      font-size: 14px;
+      margin: 0;
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    text-align: center;
+
+    mat-spinner {
+      margin-bottom: 16px;
+    }
+  }
+
+  .academic-form {
+    .settings-panel {
+      margin-bottom: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      mat-expansion-panel-header {
+        mat-panel-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 500;
+
+          mat-icon {
+            color: #1976d2;
+          }
+        }
+
+        mat-panel-description {
+          color: #666;
+        }
+      }
+
+      .panel-content {
+        padding: 24px 0;
+
+        .full-width {
+          width: 100%;
+        }
+
+        // Programas educativos
+        .programs-list {
+          .program-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+
+            .program-field {
+              flex: 1;
+            }
+          }
+        }
+
+        // Países y estados
+        .countries-list {
+          .country-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: #fafafa;
+
+            .country-header {
+              display: flex;
+              align-items: center;
+              gap: 16px;
+              margin-bottom: 16px;
+
+              .country-field {
+                flex: 1;
+              }
+            }
+
+            .states-section {
+              h4 {
+                margin: 0 0 16px 0;
+                color: #333;
+                font-size: 14px;
+                font-weight: 500;
+              }
+
+              .states-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 12px;
+
+                .state-checkbox {
+                  font-size: 13px;
+                }
+              }
+            }
+          }
+        }
+
+        // Grupos de estudiantes
+        .groups-list {
+          .group-item {
+            margin-bottom: 24px;
+
+            .group-card {
+              border-radius: 8px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+              mat-card-header {
+                .group-title {
+                  display: flex;
+                  align-items: center;
+                  gap: 16px;
+                  width: 100%;
+
+                  .group-name-field {
+                    flex: 1;
+                  }
+
+                  .active-checkbox {
+                    margin-right: 8px;
+                  }
+                }
+              }
+
+              .group-content {
+                .group-fields {
+                  display: flex;
+                  flex-direction: column;
+                  gap: 16px;
+
+                  .description-field {
+                    width: 100%;
+                  }
+
+                  .age-range-section {
+                    h4 {
+                      margin: 0 0 12px 0;
+                      color: #333;
+                      font-size: 14px;
+                      font-weight: 500;
+                    }
+
+                    .age-fields {
+                      display: flex;
+                      align-items: center;
+                      gap: 16px;
+
+                      .age-field {
+                        width: 120px;
+                      }
+
+                      .age-separator {
+                        font-weight: 500;
+                        color: #666;
+                      }
+                    }
+                  }
+
+                  .level-field {
+                    width: 200px;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .add-button-container {
+          display: flex;
+          justify-content: center;
+          margin-top: 24px;
+          padding-top: 16px;
+          border-top: 1px solid #e0e0e0;
+
+          button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+        }
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: center;
+      padding: 32px 0;
+      border-top: 2px solid #e0e0e0;
+      margin-top: 24px;
+
+      .save-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        font-size: 16px;
+        font-weight: 500;
+
+        .button-spinner {
+          margin-right: 4px;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .academic-settings-container {
+    padding: 16px;
+
+    .academic-form {
+      .settings-panel {
+        .panel-content {
+          .countries-list .country-item .states-section .states-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .groups-list .group-item .group-card {
+            mat-card-header .group-title {
+              flex-direction: column;
+              align-items: stretch;
+              gap: 12px;
+
+              .group-name-field {
+                width: 100%;
+              }
+
+              .active-checkbox {
+                align-self: flex-start;
+              }
+            }
+
+            .group-content .group-fields {
+              .age-range-section .age-fields {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+
+                .age-field {
+                  width: 100%;
+                }
+
+                .age-separator {
+                  text-align: center;
+                }
+              }
+
+              .level-field {
+                width: 100%;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Estilos específicos para las nuevas funcionalidades
+.class-types-list {
+  .class-type-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    .class-type-field {
+      flex: 1;
+    }
+  }
+}
+
+.states-section {
+  margin-top: 16px;
+
+  .states-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    h4 {
+      margin: 0;
+      color: #333;
+      font-size: 14px;
+      font-weight: 500;
+      flex: 1;
+    }
+  }
+
+  .states-field {
+    width: 100%;
+  }
+}
+
+.age-range-section {
+  margin: 16px 0;
+
+  h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .age-fields {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .age-field {
+      flex: 1;
+      max-width: 120px;
+    }
+
+    .age-separator {
+      color: #666;
+      font-size: 14px;
+    }
+  }
+
+  .age-hint {
+    color: #666;
+    font-size: 12px;
+    margin-top: 8px;
+    display: block;
+  }
+}
+
+// Responsive mejoras
+@media (max-width: 768px) {
+  .academic-settings-container {
+    padding: 16px;
+
+    .age-fields {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+
+      .age-field {
+        max-width: none;
+      }
+
+      .age-separator {
+        text-align: center;
+      }
+    }
+
+    .class-type-item {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+}
+
+// Estilos para snackbar
+:host ::ng-deep {
+  .success-snackbar {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  .error-snackbar {
+    background-color: #f44336;
+    color: white;
+  }
+}
