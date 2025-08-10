@@ -104,6 +104,23 @@ export class TimezoneService {
   }
 
   /**
+   * Devuelve listado de estados US soportados (código y nombre)
+   */
+  getUSStates(): { code: string; name: string }[] {
+    return Object.keys(this.US_STATE_TIMEZONES).map(code => ({ code, name: this.getStateName(code) }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /**
+   * Devuelve listado de países soportados (código y nombre)
+   */
+  getCountries(): { code: string; name: string }[] {
+    const codes = new Set<string>([...Object.keys(this.COUNTRY_TIMEZONES), 'US']);
+    return Array.from(codes).map(code => ({ code, name: code === 'US' ? 'United States' : this.getCountryName(code) }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /**
    * Verifica si un país está soportado por el servicio de timezones
    */
   isCountrySupported(countryCode: string): boolean {
@@ -186,35 +203,25 @@ export class TimezoneService {
     stateCode?: string
   ): ConvertedDateTime | null {
     try {
-      const locationInfo = this.getTimezonesForLocation(countryCode, stateCode);
-      if (!locationInfo) {
-        console.error(`🕐 TimezoneService: No se pudo obtener información de timezone para ${countryCode}/${stateCode}`);
+      const tzInfo = this.findTimezoneInfo(timezone, countryCode, stateCode);
+      if (!tzInfo) {
+        console.warn('🕐 TimezoneService: Timezone no encontrado para conversión a UTC', timezone, countryCode, stateCode);
         return null;
       }
 
-      const timezoneInfo = locationInfo.timezone_info.find(tz => tz.timezone === timezone);
-      if (!timezoneInfo) {
-        console.error(`🕐 TimezoneService: Timezone ${timezone} no encontrado para ${countryCode}/${stateCode}`);
-        return null;
-      }
-
-      // Crear una fecha UTC equivalente usando la API nativa de JavaScript
-      const utcDate = new Date(localDateTime.toLocaleString('en-US', { timeZone: 'UTC' }));
-      
-      // Verificar si DST está activo
-      const isDstActive = this.isDSTActive(localDateTime, timezoneInfo);
-
-      console.log(`🕐 TimezoneService: Conversión exitosa - Local: ${localDateTime.toISOString()}, UTC: ${utcDate.toISOString()}, DST: ${isDstActive}`);
+      const dstActive = this.isDSTActive(localDateTime, tzInfo);
+      const offsetMinutes = this.getEffectiveOffsetMinutes(tzInfo, localDateTime, dstActive);
+      // local = UTC + offset -> UTC = local - offset
+      const utcDate = new Date(localDateTime.getTime() - offsetMinutes * 60000);
 
       return {
         local_datetime: localDateTime.toISOString(),
         utc_datetime: utcDate.toISOString(),
-        timezone: timezone,
-        dst_active: isDstActive
+        timezone: tzInfo.timezone,
+        dst_active: dstActive
       };
-
     } catch (error) {
-      console.error('🕐 TimezoneService: Error en conversión a UTC:', error);
+      console.error('🕐 TimezoneService: Error en convertToUTC', error);
       return null;
     }
   }
@@ -229,29 +236,29 @@ export class TimezoneService {
     stateCode?: string
   ): ConvertedDateTime | null {
     try {
-      const locationInfo = this.getTimezonesForLocation(countryCode, stateCode);
-      if (!locationInfo) {
+      const tzInfo = this.findTimezoneInfo(timezone, countryCode, stateCode);
+      if (!tzInfo) {
+        console.warn('🕐 TimezoneService: Timezone no encontrado para conversión desde UTC', timezone, countryCode, stateCode);
         return null;
       }
 
-      const timezoneInfo = locationInfo.timezone_info.find(tz => tz.timezone === timezone);
-      if (!timezoneInfo) {
-        return null;
+      // Primero asumimos offset estándar para obtener una fecha local tentativa
+      const { standardMinutes, dstMinutes } = this.parseOffsetString(tzInfo.utc_offset);
+      let localDate = new Date(utcDateTime.getTime() + standardMinutes * 60000);
+  const dstActive = this.isDSTActive(localDate, tzInfo);
+      if (dstActive && dstMinutes !== undefined) {
+        // Recalcular usando offset DST
+        localDate = new Date(utcDateTime.getTime() + dstMinutes * 60000);
       }
-
-      // Usar Intl.DateTimeFormat para la conversión
-      const localDate = new Date(utcDateTime.toLocaleString('en-US', { timeZone: timezone }));
-      const isDstActive = this.isDSTActive(localDate, timezoneInfo);
 
       return {
         local_datetime: localDate.toISOString(),
         utc_datetime: utcDateTime.toISOString(),
-        timezone: timezone,
-        dst_active: isDstActive
+        timezone: tzInfo.timezone,
+        dst_active: dstActive
       };
-
     } catch (error) {
-      console.error('🕐 TimezoneService: Error en conversión desde UTC:', error);
+      console.error('🕐 TimezoneService: Error en convertFromUTC', error);
       return null;
     }
   }
@@ -291,6 +298,54 @@ export class TimezoneService {
       console.error('🕐 TimezoneService: Error calculando offset:', error);
       return 0;
     }
+  }
+
+  /**
+   * Encuentra información de timezone basado en ubicación
+   */
+  private findTimezoneInfo(timezone: string, countryCode: string, stateCode?: string): TimezoneInfo | undefined {
+    if (countryCode === 'US' && stateCode) {
+      return this.US_STATE_TIMEZONES[stateCode]?.find(t => t.timezone === timezone);
+    }
+    if (countryCode === 'US') {
+      // Buscar en todos los estados si no se provee stateCode (caso excepcional)
+      for (const list of Object.values(this.US_STATE_TIMEZONES)) {
+        const found = list.find(t => t.timezone === timezone);
+        if (found) return found;
+      }
+    }
+    return this.COUNTRY_TIMEZONES[countryCode]?.find(t => t.timezone === timezone);
+  }
+
+  /**
+   * Parsea una cadena de offset tipo: UTC-6/-5, UTC+1/+2, UTC-4, UTC+05:30, etc.
+   * Devuelve minutos (local = UTC + minutos)
+   */
+  private parseOffsetString(utc_offset: string): { standardMinutes: number; dstMinutes?: number } {
+    const cleaned = utc_offset.replace('UTC', '').trim();
+    const parts = cleaned.split('/');
+    const parsePart = (p: string) => {
+      const sign = p.startsWith('-') ? -1 : 1;
+      const [hStr, mStr] = p.replace(/^[-+]/, '').split(':');
+      const hours = parseInt(hStr, 10) || 0;
+      const minutes = mStr ? parseInt(mStr, 10) : 0;
+      return sign * (hours * 60 + minutes);
+    };
+    const standardMinutes = parsePart(parts[0]);
+    const dstMinutes = parts[1] ? parsePart(parts[1]) : undefined;
+    return { standardMinutes, dstMinutes };
+  }
+
+  /**
+   * Obtiene offset efectivo para una fecha considerando DST
+   */
+  private getEffectiveOffsetMinutes(tzInfo: TimezoneInfo, date: Date, dstActiveOverride?: boolean): number {
+    const { standardMinutes, dstMinutes } = this.parseOffsetString(tzInfo.utc_offset);
+    if (!tzInfo.dst_aware || dstMinutes === undefined) {
+      return standardMinutes;
+    }
+    const active = dstActiveOverride !== undefined ? dstActiveOverride : this.isDSTActive(date, tzInfo);
+    return active ? dstMinutes! : standardMinutes;
   }
 
   /**
