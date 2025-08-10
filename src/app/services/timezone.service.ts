@@ -33,67 +33,67 @@ export class TimezoneService {
   // Mapeo de estados de EE.UU. con sus timezones
   private readonly US_STATE_TIMEZONES: Record<string, TimezoneInfo[]> = {
     // Estados con una sola zona horaria
-    'AL': [{ timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }],
-    'AK': [{ timezone: 'America/Anchorage', display_name: 'Alaska Time', utc_offset: 'UTC-9/-8', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }],
-    'CA': [{ timezone: 'America/Los_Angeles', display_name: 'Pacific Time', utc_offset: 'UTC-8/-7', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }],
-    'CO': [{ timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }],
-    'CT': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }],
-    'DE': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }],
-    'GA': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }],
+    'AL': [{ timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
+    'AK': [{ timezone: 'America/Anchorage', display_name: 'Alaska Time', utc_offset: 'UTC-9/-8', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
+    'CA': [{ timezone: 'America/Los_Angeles', display_name: 'Pacific Time', utc_offset: 'UTC-8/-7', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
+    'CO': [{ timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
+    'CT': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
+    'DE': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
+    'GA': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
     'HI': [{ timezone: 'Pacific/Honolulu', display_name: 'Hawaii Time', utc_offset: 'UTC-10', dst_aware: false }], // Hawaii no usa DST
-    'IL': [{ timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }],
+    'IL': [{ timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
     'IN': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
     ],
-    'NY': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }],
+    'NY': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
     
     // Estados con múltiples zonas horarias
     'AZ': [
       { timezone: 'America/Phoenix', display_name: 'Mountain Time (No DST)', utc_offset: 'UTC-7', dst_aware: false }, // Arizona no usa DST
-      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' } // Solo territorio Navajo
+      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' } // Solo territorio Navajo
     ],
     'TX': [
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' },
-      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
+      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
     ],
     'FL': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
     ],
     'IN_STATE': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
     ],
     'KY': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
     ],
     'MI': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
     ],
     'ND': [
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' },
-      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
+      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
     ],
     'SD': [
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' },
-      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
+      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
     ],
     'TN': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
     ]
   };
 
   // Timezones por país (para países que no son EE.UU.)
   private readonly COUNTRY_TIMEZONES: Record<string, TimezoneInfo[]> = {
     'BO': [{ timezone: 'America/La_Paz', display_name: 'Bolivia Time', utc_offset: 'UTC-4', dst_aware: false }],
-    'ES': [{ timezone: 'Europe/Madrid', display_name: 'Central European Time', utc_offset: 'UTC+1/+2', dst_aware: true, dst_start: '2024-03-31', dst_end: '2024-10-27' }],
+    'ES': [{ timezone: 'Europe/Madrid', display_name: 'Central European Time', utc_offset: 'UTC+1/+2', dst_aware: true, dst_start: '2025-03-30', dst_end: '2025-10-26' }],
     'MX': [
-      { timezone: 'America/Mexico_City', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2024-04-07', dst_end: '2024-10-27' },
-      { timezone: 'America/Tijuana', display_name: 'Pacific Time', utc_offset: 'UTC-8/-7', dst_aware: true, dst_start: '2024-03-10', dst_end: '2024-11-03' }
+      { timezone: 'America/Mexico_City', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-04-06', dst_end: '2025-10-26' },
+      { timezone: 'America/Tijuana', display_name: 'Pacific Time', utc_offset: 'UTC-8/-7', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
     ],
     'AR': [{ timezone: 'America/Argentina/Buenos_Aires', display_name: 'Argentina Time', utc_offset: 'UTC-3', dst_aware: false }],
     'CO': [{ timezone: 'America/Bogota', display_name: 'Colombia Time', utc_offset: 'UTC-5', dst_aware: false }]
