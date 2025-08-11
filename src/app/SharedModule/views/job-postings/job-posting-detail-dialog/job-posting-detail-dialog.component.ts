@@ -61,8 +61,6 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
 
   // Propiedades para mostrar información de timezone
   userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  localClassTime = '';
-  utcClassTime = '';
 
   // Datos
   postulations: TutorPostulation[] = [];
@@ -77,8 +75,6 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.calculateLocalClassTime();
-    
     if (this.canViewPostulations()) {
       this.loadPostulations();
     }
@@ -92,60 +88,6 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
   canViewPostulations(): boolean {
     return (this.currentUserRole === 'institution' || this.currentUserRole === 'admin') &&
            this.jobPosting.status === 'published';
-  }
-
-  /**
-   * Calcula y formatea la hora local de la clase para el usuario
-   */
-  private calculateLocalClassTime(): void {
-    const jobPosting = this.jobPosting;
-    
-    // Si tenemos la fecha UTC calculada, usarla
-    if (jobPosting.class_datetime_utc) {
-      console.log('🕐 Using UTC datetime from job posting:', jobPosting.class_datetime_utc);
-      
-      // Convertir la fecha UTC a la zona horaria del usuario
-      const utcDate = new Date(jobPosting.class_datetime_utc);
-      this.utcClassTime = utcDate.toISOString();
-      
-      // Mostrar en timezone local del usuario
-      const localDate = new Date(utcDate.getTime());
-      this.localClassTime = localDate.toLocaleString('es-ES', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZoneName: 'short'
-      });
-      
-    } else if (jobPosting.class_date && jobPosting.start_time) {
-      // Fallback: construir la fecha desde class_date y start_time
-      console.log('🕐 Constructing datetime from class_date and start_time');
-      
-      const classDateStr = jobPosting.class_date.toISOString().split('T')[0];
-      const localDateTimeStr = `${classDateStr}T${jobPosting.start_time}:00`;
-      const localDateTime = new Date(localDateTimeStr);
-      
-      this.localClassTime = localDateTime.toLocaleString('es-ES', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZoneName: 'short'
-      });
-      
-      this.utcClassTime = localDateTime.toISOString();
-    }
-    
-    console.log('🕐 Class time info calculated:', {
-      userTimezone: this.userTimezone,
-      localClassTime: this.localClassTime,
-      utcClassTime: this.utcClassTime
-    });
   }
 
   private loadPostulations(): void {
@@ -266,25 +208,63 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
   formatDateTime(value: Date | string | FirebaseTimestamp | null | undefined): string {
     if (!value) return '';
     
+    let date: Date | null = null;
+    
     // Si es un Timestamp de Firestore
     if (value && typeof (value as FirebaseTimestamp).toDate === 'function') {
-      return (value as FirebaseTimestamp).toDate().toLocaleString();
-    }
-    
-    // Si ya es un Date
-    if (value instanceof Date) {
-      return value.toLocaleString();
-    }
-    
-    // Si es un string, intentar convertir
-    if (typeof value === 'string') {
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        return date.toLocaleString();
+      date = (value as FirebaseTimestamp).toDate();
+    } else if (value instanceof Date) {
+      date = value;
+    } else if (typeof value === 'string') {
+      date = new Date(value);
+      if (isNaN(date.getTime())) {
+        return value.toString();
       }
     }
     
-    return value.toString();
+    if (!date) return '';
+    
+    return this.formatDateTimeWithTimezone(date);
+  }
+
+  private formatDateTimeWithTimezone(date: Date): string {
+    const jobPosting = this.jobPosting;
+    
+    // Si hay job_timezone, mostrar información adicional
+    if (jobPosting.job_timezone) {
+      // Si es una fecha UTC y coincide con class_datetime_utc
+      if (jobPosting.class_datetime_utc) {
+        const utcDate = new Date(jobPosting.class_datetime_utc);
+        if (Math.abs(utcDate.getTime() - date.getTime()) < 60000) { // Misma fecha aprox.
+          const jobTimezoneConversion = this.timezoneService.convertFromUTC(
+            utcDate, 
+            jobPosting.job_timezone
+          );
+          
+          if (jobTimezoneConversion) {
+            const jobLocalDate = new Date(jobTimezoneConversion.local_datetime);
+            return `${jobLocalDate.toLocaleDateString('es-ES')} ${jobLocalDate.toLocaleTimeString('es-ES', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })} (zona institución) / ${date.toLocaleString('es-ES', {
+              hour: '2-digit',
+              minute: '2-digit',
+              timeZoneName: 'short'
+            })} (tu zona)`;
+          }
+        }
+      }
+    }
+    
+    // Formato estándar
+    return date.toLocaleString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    });
   }
 
   formatTime(timeString: string): string {
@@ -330,6 +310,124 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
       withdrawn: 'Retirada'
     };
     return translations[status] || status;
+  }
+
+  /**
+   * Devuelve string con la fecha/hora en la zona del job posting y la local del usuario
+   */
+  formatJobPostingDateTimes(): string {
+    const jobPosting = this.jobPosting;
+    
+    console.log('🕐 [DetailDialog] formatJobPostingDateTimes called with jobPosting:', {
+      id: jobPosting?.id,
+      title: jobPosting?.title,
+      class_datetime_utc: jobPosting?.class_datetime_utc,
+      job_timezone: jobPosting?.job_timezone,
+      location_country: jobPosting?.location_country,
+      location_state: jobPosting?.location_state,
+      class_date: jobPosting?.class_date,
+      start_time: jobPosting?.start_time
+    });
+
+    // Verificar si tenemos job_timezone
+    if (!jobPosting?.job_timezone) {
+      console.log('❌ [DetailDialog] formatJobPostingDateTimes: Missing job_timezone');
+      return '';
+    }
+
+    let utcDate: Date | null = null;
+
+    // Opción 1: Si existe class_datetime_utc, usarlo
+    if (jobPosting.class_datetime_utc) {
+      console.log('✅ [DetailDialog] Using class_datetime_utc');
+      utcDate = new Date(jobPosting.class_datetime_utc);
+    } 
+    // Opción 2: Fallback usando class_date y start_time
+    else if (jobPosting.class_date && jobPosting.start_time) {
+      console.log('🔄 [DetailDialog] Fallback: Using class_date + start_time');
+      
+      // Convertir class_date a string si es necesario
+      let classDateStr: string;
+      if (jobPosting.class_date instanceof Date) {
+        classDateStr = jobPosting.class_date.toISOString().split('T')[0];
+      } else if (typeof jobPosting.class_date === 'string') {
+        classDateStr = jobPosting.class_date;
+      } else if (jobPosting.class_date && typeof jobPosting.class_date === 'object' && 'toDate' in jobPosting.class_date) {
+        // Firestore Timestamp
+        classDateStr = (jobPosting.class_date as { toDate(): Date }).toDate().toISOString().split('T')[0];
+      } else {
+        console.log('❌ [DetailDialog] Cannot parse class_date:', jobPosting.class_date);
+        return '';
+      }
+
+      // Construir datetime string y convertir usando el timezone del job
+      const localDateTimeStr = `${classDateStr}T${jobPosting.start_time}:00`;
+      console.log('🔧 [DetailDialog] Constructed datetime string:', localDateTimeStr);
+      
+      // Crear fecha asumiendo que está en el timezone del job posting
+      const localDate = new Date(localDateTimeStr);
+      
+      // Usar TimezoneService para convertir a UTC
+      const utcConversion = this.timezoneService.convertToUTC(
+        localDate, 
+        jobPosting.job_timezone,
+        jobPosting.location_country || '',
+        jobPosting.location_state || ''
+      );
+      
+      if (utcConversion) {
+        utcDate = new Date(utcConversion.utc_datetime);
+        console.log('✅ [DetailDialog] Converted to UTC:', utcDate.toISOString());
+      } else {
+        console.log('❌ [DetailDialog] Failed to convert to UTC');
+        return '';
+      }
+    } else {
+      console.log('❌ [DetailDialog] formatJobPostingDateTimes: Missing required data', {
+        hasClassDatetimeUtc: !!jobPosting?.class_datetime_utc,
+        hasClassDate: !!jobPosting?.class_date,
+        hasStartTime: !!jobPosting?.start_time,
+        hasJobTimezone: !!jobPosting?.job_timezone
+      });
+      return '';
+    }
+    
+    const jobTimezone = jobPosting.job_timezone;
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    console.log('🕐 [DetailDialog] formatJobPostingDateTimes: Processing data', {
+      utcDate: utcDate.toISOString(),
+      jobTimezone,
+      userTimezone
+    });
+    
+    // Obtener nombre legible de la zona horaria del job posting
+    const jobTzInfo = this.timezoneService.getTimezonesForLocation(
+      jobPosting.location_country || '',
+      jobPosting.location_state || ''
+    )?.timezone_info.find(tz => tz.timezone === jobTimezone);
+    
+    const jobTzName = jobTzInfo?.display_name || jobTimezone;
+    
+    // Obtener nombre legible de la zona horaria local
+    const localTzName = userTimezone;
+    
+    // Convertir UTC a hora local del job posting
+    const jobTime = utcDate.toLocaleString('es-ES', { timeZone: jobTimezone });
+    // Convertir UTC a hora local del usuario
+    const localTime = utcDate.toLocaleString('es-ES', { timeZone: userTimezone });
+    
+    const result = `${jobTime} ${jobTzName}<br>(${localTime} ${localTzName})`;
+
+    console.log('✅ [DetailDialog] formatJobPostingDateTimes: Result', {
+      jobTime,
+      jobTzName,
+      localTime,
+      localTzName,
+      result
+    });
+    
+    return result;
   }
 
   private showSuccess(message: string): void {

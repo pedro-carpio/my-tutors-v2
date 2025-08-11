@@ -343,4 +343,127 @@ export class TimezoneService {
     };
     return countryNames[countryCode] || countryCode;
   }
+
+  /**
+   * Convierte una fecha local a UTC
+   * @param localDate Fecha en la zona horaria local
+   * @param timezone Zona horaria IANA (ej: 'America/New_York')
+   * @param countryCode Código del país (opcional, para optimización)
+   * @param stateCode Código del estado (opcional, para EE.UU.)
+   * @returns Información de la conversión o null si hay error
+   */
+  convertToUTC(
+    localDate: Date, 
+    timezone: string, 
+    countryCode?: string, 
+    stateCode?: string
+  ): ConvertedDateTime | null {
+    try {
+      if (!(localDate instanceof Date) || isNaN(localDate.getTime())) {
+        console.error('🕐 TimezoneService.convertToUTC: Fecha local inválida', localDate);
+        return null;
+      }
+
+      // Resolver info del timezone
+      let tzInfo: TimezoneInfo | undefined;
+      if (countryCode) {
+        tzInfo = this.findTimezoneInfo(timezone, countryCode, stateCode);
+      }
+      if (!tzInfo) {
+        // Búsqueda global (fallback si no se pasó countryCode o no se encontró)
+        // Buscar en estados US
+        for (const list of Object.values(this.US_STATE_TIMEZONES)) {
+          const found = list.find(t => t.timezone === timezone);
+            if (found) { tzInfo = found; break; }
+        }
+        // Buscar en países si aún no
+        if (!tzInfo) {
+          for (const list of Object.values(this.COUNTRY_TIMEZONES)) {
+            const found = list.find(t => t.timezone === timezone);
+            if (found) { tzInfo = found; break; }
+          }
+        }
+      }
+
+      if (!tzInfo) {
+        console.error('🕐 TimezoneService.convertToUTC: Timezone no encontrado', { timezone, countryCode, stateCode });
+        return null;
+      }
+
+      const offsetMinutes = this.parseOffsetString(tzInfo.utc_offset); // local = UTC + offsetMinutes
+      // UTC = local - offsetMinutes
+      const utcDate = new Date(localDate.getTime() - offsetMinutes * 60000);
+
+      const result: ConvertedDateTime = {
+        local_datetime: localDate.toISOString(),
+        utc_datetime: utcDate.toISOString(),
+        timezone,
+        dst_active: false
+      };
+      return result;
+    } catch (e) {
+      console.error('🕐 TimezoneService.convertToUTC: Error inesperado', e);
+      return null;
+    }
+  }
+
+  /**
+   * Convierte una fecha UTC a una zona horaria local
+   * @param utcDate Fecha en UTC
+   * @param timezone Zona horaria IANA de destino
+   * @param countryCode Código del país (opcional)
+   * @param stateCode Código del estado (opcional)
+   * @returns Información de la conversión o null si hay error
+   */
+  convertFromUTC(
+    utcDate: Date, 
+    timezone: string, 
+    countryCode?: string, 
+    stateCode?: string
+  ): ConvertedDateTime | null {
+    try {
+      if (!(utcDate instanceof Date) || isNaN(utcDate.getTime())) {
+        console.error('🕐 TimezoneService.convertFromUTC: Fecha UTC inválida', utcDate);
+        return null;
+      }
+
+      // Resolver info del timezone
+      let tzInfo: TimezoneInfo | undefined;
+      if (countryCode) {
+        tzInfo = this.findTimezoneInfo(timezone, countryCode, stateCode);
+      }
+      if (!tzInfo) {
+        // Búsqueda global
+        for (const list of Object.values(this.US_STATE_TIMEZONES)) {
+          const found = list.find(t => t.timezone === timezone);
+          if (found) { tzInfo = found; break; }
+        }
+        if (!tzInfo) {
+          for (const list of Object.values(this.COUNTRY_TIMEZONES)) {
+            const found = list.find(t => t.timezone === timezone);
+            if (found) { tzInfo = found; break; }
+          }
+        }
+      }
+
+      if (!tzInfo) {
+        console.error('🕐 TimezoneService.convertFromUTC: Timezone no encontrado', { timezone, countryCode, stateCode });
+        return null;
+      }
+
+      const offsetMinutes = this.parseOffsetString(tzInfo.utc_offset); // local = UTC + offsetMinutes
+      const localDate = new Date(utcDate.getTime() + offsetMinutes * 60000);
+
+      const result: ConvertedDateTime = {
+        local_datetime: localDate.toISOString(),
+        utc_datetime: utcDate.toISOString(),
+        timezone,
+        dst_active: false
+      };
+      return result;
+    } catch (e) {
+      console.error('🕐 TimezoneService.convertFromUTC: Error inesperado', e);
+      return null;
+    }
+  }
 }

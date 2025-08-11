@@ -19,7 +19,7 @@
             <div class="job-info-grid">
               <div class="info-item">
                 <mat-icon>event</mat-icon>
-                <span>{{ formatDate(data.jobPosting.class_date) }} - {{ data.jobPosting.start_time }}</span>
+                <span [innerHTML]="formatJobPostingDateTimes()"></span>
               </div>
               <div class="info-item">
                 <mat-icon>schedule</mat-icon>
@@ -60,7 +60,7 @@
                         <h5>{{ acceptedPostulations[0].displayName }}</h5>
                         <p>{{ acceptedPostulations[0].tutorData?.email }}</p>
                         <mat-chip color="primary">
-                          \${{ acceptedPostulations[0].proposed_hourly_rate }} {{ acceptedPostulations[0].currency }}/h
+                          Tutor Aceptado
                         </mat-chip>
                       </div>
                     </div>
@@ -71,11 +71,7 @@
                     <div class="class-details-grid">
                       <div class="detail-item">
                         <mat-icon>event</mat-icon>
-                        <span><strong>Fecha:</strong> {{ formatDate(data.jobPosting.class_date) }}</span>
-                      </div>
-                      <div class="detail-item">
-                        <mat-icon>schedule</mat-icon>
-                        <span><strong>Hora:</strong> {{ data.jobPosting.start_time }}</span>
+                        <span [innerHTML]="'<strong>Fecha y hora:</strong> ' + formatJobPostingDateTimes()"></span>
                       </div>
                       <div class="detail-item">
                         <mat-icon>timer</mat-icon>
@@ -151,14 +147,6 @@
                   </div>
 
                   <div class="postulation-details">
-                    <div class="rate-section">
-                      <h5>Tarifa Propuesta</h5>
-                      <div class="rate-display">
-                        <strong>\${{ postulation.proposed_hourly_rate }}</strong>
-                        <span class="currency">{{ postulation.currency }}/hora</span>
-                      </div>
-                    </div>
-
                     <div class="approach-section" *ngIf="postulation.teaching_approach">
                       <h5>Enfoque Pedagógico</h5>
                       <p>{{ postulation.teaching_approach }}</p>

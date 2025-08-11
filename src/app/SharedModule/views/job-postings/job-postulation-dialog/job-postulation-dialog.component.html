@@ -1,0 +1,118 @@
+<div class="postulation-dialog">
+  <div mat-dialog-title>
+    <div class="dialog-title">
+      <mat-icon>work</mat-icon>
+      <h2>Postularse a Convocatoria</h2>
+    </div>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <div class="job-summary">
+      <h3>{{ data.jobPosting.title }}</h3>
+      <div class="job-details">
+        <div class="detail-item">
+          <mat-icon>event</mat-icon>
+          <span>{{ formatJobPostingDateTime() }}</span>
+        </div>
+        <div class="detail-item">
+          <mat-icon>schedule</mat-icon>
+          <span>{{ data.jobPosting.total_duration_minutes }} minutos</span>
+        </div>
+        <div class="detail-item">
+          <mat-icon>location_on</mat-icon>
+          <span>{{ data.jobPosting.modality === 'presencial' ? data.jobPosting.location : 'Virtual' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="postulationForm" class="postulation-form">
+      <!-- Tarifa Propuesta -->
+      <!-- Carta de Presentación -->
+      <div class="form-section">
+                <h4>Carta de Presentación (Opcional)</h4>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Cuéntanos por qué eres el tutor ideal para esta clase</mat-label>
+          <textarea
+            matInput
+            formControlName="cover_letter"
+            rows="4"
+            maxlength="1000"
+            placeholder="Describe tu experiencia, motivación y por qué deberían elegirte para esta convocatoria..."></textarea>
+          <mat-hint align="end">{{coverLetterControl?.value?.length || 0}}/1000</mat-hint>
+          <mat-error *ngIf="coverLetterControl?.hasError('minlength')">
+            Mínimo 20 caracteres
+          </mat-error>
+          <mat-error *ngIf="coverLetterControl?.hasError('maxlength')">
+            Máximo 1000 caracteres
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Enfoque de Enseñanza -->
+      <div class="form-section">
+        <h4>Enfoque de Enseñanza (Opcional)</h4>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Describe tu metodología o enfoque pedagógico</mat-label>
+          <textarea
+            matInput
+            formControlName="teaching_approach"
+            rows="3"
+            maxlength="500"
+            placeholder="Ej: Enfoque comunicativo, uso de tecnología interactiva, aprendizaje basado en proyectos..."></textarea>
+          <mat-hint align="end">{{teachingApproachControl?.value?.length || 0}}/500</mat-hint>
+          <mat-error *ngIf="teachingApproachControl?.hasError('minlength')">
+            Mínimo 20 caracteres
+          </mat-error>
+          <mat-error *ngIf="teachingApproachControl?.hasError('maxlength')">
+            Máximo 500 caracteres
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Confirmación de Disponibilidad -->
+      <div class="form-section">
+        <div class="availability-confirmation">
+          <mat-checkbox formControlName="availability_confirmation" color="primary">
+            Confirmo que tengo disponibilidad para la fecha y hora programada de esta clase
+          </mat-checkbox>
+          <mat-error *ngIf="availabilityConfirmationControl?.hasError('required') && availabilityConfirmationControl?.touched" class="checkbox-error">
+            Debe confirmar su disponibilidad
+          </mat-error>
+        </div>
+      </div>
+    </form>
+
+    <!-- Progress Bar -->
+    <mat-progress-bar
+      *ngIf="isSubmitting"
+      mode="indeterminate"
+      class="submission-progress">
+    </mat-progress-bar>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button
+      mat-button
+      type="button"
+      (click)="cancel()"
+      [disabled]="isSubmitting"
+      class="cancel-btn">
+      Cancelar
+    </button>
+    <button
+      mat-raised-button
+      color="primary"
+      type="button"
+      (click)="submitPostulation()"
+      [disabled]="isSubmitting || postulationForm.invalid"
+      class="submit-btn">
+      <mat-icon *ngIf="!isSubmitting">send</mat-icon>
+      <mat-progress-spinner
+        *ngIf="isSubmitting"
+        diameter="18"
+        class="button-spinner">
+      </mat-progress-spinner>
+      {{ isSubmitting ? 'Enviando...' : 'Enviar Postulación' }}
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -66,15 +66,15 @@ export class AddTutorDialogComponent {
 
   tutorForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email], [this.emailExistsValidator.bind(this)]],
-    full_name: ['', [Validators.required, Validators.minLength(2)]],
-    birth_date: ['', Validators.required],
-    country: ['', Validators.required],
+    full_name: ['', [Validators.minLength(2)]],
+    birth_date: [''],
+    country: [''],
     photo_url: [''],
-    max_hours_per_week: [20, [Validators.required, Validators.min(1), Validators.max(168)]],
-    bio: ['', [Validators.required, Validators.minLength(10)]],
-    birth_language: ['', Validators.required],
-    experience_level: [1, [Validators.required, Validators.min(0)]],
-    hourly_rate: [15, [Validators.required, Validators.min(1)]],
+    max_hours_per_week: [20, [Validators.min(1), Validators.max(168)]],
+    bio: ['', [Validators.minLength(10)]],
+    birth_language: [''],
+    experience_level: [1, [Validators.min(0)]],
+    hourly_rate: [15, [Validators.min(1)]],
     institution_id: ['', Validators.required],
     status: ['verified', [Validators.required]], // Estado por defecto: verificado (institución lo crea)
     rating: [0, [Validators.min(0), Validators.max(5)]] // Calificación inicial: 0

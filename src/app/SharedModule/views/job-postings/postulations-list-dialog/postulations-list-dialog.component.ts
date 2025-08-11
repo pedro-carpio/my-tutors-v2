@@ -16,6 +16,10 @@ import { takeUntil, timeout } from 'rxjs/operators';
 
 import { TutorPostulationService } from '../../../../services/tutor-postulation.service';
 import { UserService } from '../../../../services/user.service';
+import { InstitutionService } from '../../../../services/institution.service';
+import { EmailService } from '../../../../services/email.service';
+import { TimezoneService } from '../../../../services/timezone.service';
+import { ClassInstanceService } from '../../../../services/class-instance.service';
 // import { CreateClassDialogComponent } from '../create-class-dialog/create-class-dialog.component';
 import { JobPosting, TutorPostulation, User, PostulationStatus } from '../../../../types/firestore.types';
 
@@ -28,6 +32,31 @@ interface PostulationWithTutor extends TutorPostulation {
   displayName: string;
 }
 
+/**
+ * PostulationsListDialogComponent
+ * 
+ * Componente que gestiona la visualización y administración de postulaciones para ofertas de trabajo
+ * de las instituciones educativas. Proporciona funcionalidades para aceptar/rechazar postulaciones
+ * y enviar notificaciones automáticas por email.
+ * 
+ * TODO: GENERAR DOCUMENTO DE CLASE COMPLETO
+ * El documento debe incluir:
+ * - Diagrama de arquitectura del sistema de postulaciones
+ * - Especificación técnica detallada de la integración con EmailService
+ * - Flujo de estados de las postulaciones (pending → accepted/rejected)
+ * - Documentación de todos los templates de email utilizados
+ * - Casos de uso y escenarios de prueba
+ * - Guía de troubleshooting para problemas de notificaciones
+ * - Métricas y logs de seguimiento del sistema
+ * - Documentación de la API de Firestore y las reglas de seguridad
+ * - Manual de administración para instituciones
+ * - Especificaciones de UI/UX con mockups y wireframes
+ * - Configuración de internacionalización para emails multiidioma
+ * - Políticas de privacidad y protección de datos personales
+ * - Integración con sistema de calendario y recordatorios
+ * - Workflow de escalación para postulaciones no respondidas
+ * - Documentación de testing automatizado e2e
+ */
 @Component({
   selector: 'app-postulations-list-dialog',
   standalone: true,
@@ -51,18 +80,136 @@ interface PostulationWithTutor extends TutorPostulation {
 export class PostulationsListDialogComponent implements OnInit, OnDestroy {
   private tutorPostulationService = inject(TutorPostulationService);
   private userService = inject(UserService);
+  private institutionService = inject(InstitutionService);
+  private emailService = inject(EmailService);
+  private timezoneService = inject(TimezoneService);
+  private classInstanceService = inject(ClassInstanceService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
+  /**
+   * Devuelve string con la fecha/hora en la zona del job posting y la local del usuario
+   */
+  formatJobPostingDateTimes(): string {
+    const jobPosting = this.data.jobPosting;
+    
+    console.log('🕐 [PostulationsDialog] formatJobPostingDateTimes called with jobPosting:', {
+      id: jobPosting?.id,
+      title: jobPosting?.title,
+      class_datetime_utc: jobPosting?.class_datetime_utc,
+      job_timezone: jobPosting?.job_timezone,
+      location_country: jobPosting?.location_country,
+      location_state: jobPosting?.location_state,
+      class_date: jobPosting?.class_date,
+      start_time: jobPosting?.start_time
+    });
+
+    // Verificar si tenemos job_timezone
+    if (!jobPosting?.job_timezone) {
+      console.log('❌ [PostulationsDialog] formatJobPostingDateTimes: Missing job_timezone');
+      return '';
+    }
+
+    let utcDate: Date | null = null;
+
+    // Opción 1: Si existe class_datetime_utc, usarlo
+    if (jobPosting.class_datetime_utc) {
+      console.log('✅ [PostulationsDialog] Using class_datetime_utc');
+      utcDate = new Date(jobPosting.class_datetime_utc);
+    } 
+    // Opción 2: Fallback usando class_date y start_time
+    else if (jobPosting.class_date && jobPosting.start_time) {
+      console.log('🔄 [PostulationsDialog] Fallback: Using class_date + start_time');
+      
+      // Convertir class_date a string si es necesario
+      let classDateStr: string;
+      if (jobPosting.class_date instanceof Date) {
+        classDateStr = jobPosting.class_date.toISOString().split('T')[0];
+      } else if (typeof jobPosting.class_date === 'string') {
+        classDateStr = jobPosting.class_date;
+      } else if (jobPosting.class_date && typeof jobPosting.class_date === 'object' && 'toDate' in jobPosting.class_date) {
+        // Firestore Timestamp
+        classDateStr = (jobPosting.class_date as { toDate(): Date }).toDate().toISOString().split('T')[0];
+      } else {
+        console.log('❌ [PostulationsDialog] Cannot parse class_date:', jobPosting.class_date);
+        return '';
+      }
+
+      // Construir datetime string y convertir usando el timezone del job
+      const localDateTimeStr = `${classDateStr}T${jobPosting.start_time}:00`;
+      console.log('🔧 [PostulationsDialog] Constructed datetime string:', localDateTimeStr);
+      
+      // Crear fecha asumiendo que está en el timezone del job posting
+      const localDate = new Date(localDateTimeStr);
+      
+      // Usar TimezoneService para convertir a UTC
+      const utcConversion = this.timezoneService.convertToUTC(
+        localDate, 
+        jobPosting.job_timezone,
+        jobPosting.location_country || '',
+        jobPosting.location_state || ''
+      );
+      
+      if (utcConversion) {
+        utcDate = new Date(utcConversion.utc_datetime);
+        console.log('✅ [PostulationsDialog] Converted to UTC:', utcDate.toISOString());
+      } else {
+        console.log('❌ [PostulationsDialog] Failed to convert to UTC');
+        return '';
+      }
+    } else {
+      console.log('❌ [PostulationsDialog] formatJobPostingDateTimes: Missing required data', {
+        hasClassDatetimeUtc: !!jobPosting?.class_datetime_utc,
+        hasClassDate: !!jobPosting?.class_date,
+        hasStartTime: !!jobPosting?.start_time,
+        hasJobTimezone: !!jobPosting?.job_timezone
+      });
+      return '';
+    }
+
+    const jobTimezone = jobPosting.job_timezone;
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    console.log('🕐 [PostulationsDialog] formatJobPostingDateTimes: Processing data', {
+      utcDate: utcDate.toISOString(),
+      jobTimezone,
+      userTimezone
+    });
+
+    // Obtener nombre legible de la zona horaria del job posting
+    const jobTzInfo = this.timezoneService.getTimezonesForLocation(
+      jobPosting.location_country || '',
+      jobPosting.location_state || ''
+    )?.timezone_info.find(tz => tz.timezone === jobTimezone);
+    const jobTzName = jobTzInfo?.display_name || jobTimezone;
+    // Obtener nombre legible de la zona horaria local
+    const localTzName = userTimezone;
+    // Convertir UTC a hora local del job posting
+    const jobTime = utcDate.toLocaleString('es-ES', { timeZone: jobTimezone });
+    // Convertir UTC a hora local del usuario
+    const localTime = utcDate.toLocaleString('es-ES', { timeZone: userTimezone });
+    
+    const result = `${jobTime} ${jobTzName}<br>(${localTime} ${localTzName})`;
+
+    console.log('✅ [PostulationsDialog] formatJobPostingDateTimes: Result', {
+      jobTime,
+      jobTzName,
+      localTime,
+      localTzName,
+      result
+    });
+
+    return result;
+  }
   isLoading = false;
   isProcessingAction = false;
   allPostulations: PostulationWithTutor[] = [];
   pendingPostulations: PostulationWithTutor[] = [];
   acceptedPostulations: PostulationWithTutor[] = [];
 
-  displayedColumns: string[] = ['tutor', 'proposed_rate', 'status', 'postulated_at', 'actions'];
+  displayedColumns: string[] = ['tutor', 'status', 'postulated_at', 'actions'];
 
   constructor(
     public dialogRef: MatDialogRef<PostulationsListDialogComponent>,
@@ -134,11 +281,11 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
 
       for (let i = 0; i < postulations.length; i++) {
         const postulation = postulations[i];
+        //TODO: Implementar el corespondiente y verificado 
         console.log(`👤 [PostulationsDialog] Procesando postulación ${i + 1}/${postulations.length}:`, {
           id: postulation.id,
           tutor_id: postulation.tutor_id,
           status: postulation.status,
-          rate: postulation.proposed_hourly_rate
         });
 
         let tutorData: User | undefined;
@@ -360,8 +507,46 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
     try {
       await this.tutorPostulationService.acceptPostulation(postulation.id, 'Postulación aceptada');
       console.log('✅ [PostulationsDialog] Postulación aceptada exitosamente');
-      this.snackBar.open('Postulación aceptada correctamente', 'Cerrar', { duration: 3000 });
+
+      // ✅ NUEVO: Crear instancia de clase automáticamente
+      try {
+        console.log('📚 Creando instancia de clase para postulación aceptada...');
+        
+        const classId = await this.classInstanceService.createClassFromPostulation(
+          postulation,
+          this.data.jobPosting
+        );
+        
+        console.log('✅ Instancia de clase creada con ID:', classId);
+        
+        // Agregar el link de la clase al email
+        const classLink = `${window.location.origin}/class/${classId}`;
+        console.log('🔗 Link de clase generado:', classLink);
+        
+        // Enviar email de notificación al tutor con link de la clase
+        await this.sendAcceptanceEmailToTutor(postulation, classLink);
+        
+        this.snackBar.open('Postulación aceptada y clase creada correctamente', 'Cerrar', { 
+          duration: 5000,
+          panelClass: ['success-snackbar'] 
+        });
+        
+      } catch (classError) {
+        console.error('❌ Error al crear instancia de clase:', classError);
+        // Continuar con el email sin el link de clase
+        await this.sendAcceptanceEmailToTutor(postulation);
+        
+        this.snackBar.open('Postulación aceptada, pero hubo un error al crear la clase', 'Cerrar', { 
+          duration: 5000,
+          panelClass: ['warning-snackbar'] 
+        });
+      }
+
       this.loadPostulations(); // Recargar datos
+      
+      // Cerrar diálogo tras aceptación exitosa
+      this.dialogRef.close(true);
+
     } catch (error) {
       console.error('❌ [PostulationsDialog] Error aceptando postulación:', error);
       this.snackBar.open('Error al aceptar la postulación', 'Cerrar', { duration: 3000 });
@@ -383,6 +568,10 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
     try {
       await this.tutorPostulationService.rejectPostulation(postulation.id, 'Postulación rechazada');
       console.log('✅ [PostulationsDialog] Postulación rechazada exitosamente');
+
+      // Enviar email de notificación al tutor
+      await this.sendRejectionEmailToTutor(postulation);
+
       this.snackBar.open('Postulación rechazada correctamente', 'Cerrar', { duration: 3000 });
       this.loadPostulations(); // Recargar datos
     } catch (error) {
@@ -476,12 +665,216 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
     this.snackBar.open('Funcionalidad en desarrollo', 'Cerrar', { duration: 2000 });
   }
 
-  formatDate(date: any): string {
+  /**
+   * Envía email de notificación de postulación aceptada al tutor
+   */
+  private async sendAcceptanceEmailToTutor(postulation: PostulationWithTutor, classLink?: string): Promise<void> {
+    try {
+      console.log('📧 [PostulationsDialog] Enviando email de aceptación al tutor...');
+      
+      if (!postulation.tutorData?.email) {
+        console.warn('⚠️ [PostulationsDialog] No se puede enviar email: falta email del tutor');
+        return;
+      }
+
+      // Obtener datos de la institución
+      const institution = await this.institutionService.getInstitution(this.data.jobPosting.institution_id).toPromise();
+      if (!institution) {
+        throw new Error('No se pudo obtener la información de la institución');
+      }
+
+      // Obtener email de la institución
+      const institutionUser = await this.userService.getUser(institution.user_id).toPromise();
+      const institutionEmail = institutionUser?.email || institution.contact_email;
+
+      // Preparar URL de login o clase
+      const loginUrl = classLink || `${window.location.origin}/tutor/login`;
+
+      await this.emailService.sendPostulationAcceptedEmailToTutor({
+        tutorEmail: postulation.tutorData.email,
+        tutorName: postulation.displayName,
+        institutionName: institution.name,
+        jobTitle: this.data.jobPosting.title,
+        classDate: this.formatJobPostingDateTime(),
+        institutionEmail: institutionEmail || institution.contact_email || 'contacto@institución.com',
+        responseNotes: postulation.response_notes,
+        loginUrl: loginUrl
+      });
+
+      console.log('✅ [PostulationsDialog] Email de aceptación enviado exitosamente');
+      
+    } catch (error) {
+      console.error('❌ [PostulationsDialog] Error enviando email de aceptación:', error);
+      // No lanzar el error para que no afecte el flujo principal
+    }
+  }
+
+  /**
+   * Envía email de notificación de postulación rechazada al tutor
+   */
+  private async sendRejectionEmailToTutor(postulation: PostulationWithTutor): Promise<void> {
+    try {
+      console.log('📧 [PostulationsDialog] Enviando email de rechazo al tutor...');
+      
+      if (!postulation.tutorData?.email) {
+        console.warn('⚠️ [PostulationsDialog] No se puede enviar email: falta email del tutor');
+        return;
+      }
+
+      // Obtener datos de la institución
+      const institution = await this.institutionService.getInstitution(this.data.jobPosting.institution_id).toPromise();
+      if (!institution) {
+        throw new Error('No se pudo obtener la información de la institución');
+      }
+
+      await this.emailService.sendPostulationRejectedEmailToTutor({
+        tutorEmail: postulation.tutorData.email,
+        tutorName: postulation.displayName,
+        institutionName: institution.name,
+        jobTitle: this.data.jobPosting.title,
+        responseNotes: postulation.response_notes,
+        loginUrl: `${window.location.origin}/tutor/login`
+      });
+
+      console.log('✅ [PostulationsDialog] Email de rechazo enviado exitosamente');
+      
+    } catch (error) {
+      console.error('❌ [PostulationsDialog] Error enviando email de rechazo:', error);
+      // No lanzar el error para que no afecte el flujo principal
+    }
+  }
+
+  /**
+   * Formatea la fecha y hora de la convocatoria
+   */
+  private formatJobPostingDateTime(): string {
+    // Usar class_datetime_utc si está disponible
+    if (this.data.jobPosting.class_datetime_utc) {
+      const utcDate = new Date(this.data.jobPosting.class_datetime_utc);
+      
+      // Si hay job_timezone, mostrar en esa zona horaria
+      if (this.data.jobPosting.job_timezone) {
+        const jobTimezoneConversion = this.timezoneService.convertFromUTC(
+          utcDate, 
+          this.data.jobPosting.job_timezone
+        );
+        if (jobTimezoneConversion) {
+          const jobLocalDate = new Date(jobTimezoneConversion.local_datetime);
+          const userLocalDate = new Date(utcDate.getTime());
+          
+          return `${jobLocalDate.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })} a las ${jobLocalDate.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
+          })} (zona institución) / ${userLocalDate.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short'
+          })} (tu zona)`;
+        }
+      }
+      
+      return utcDate.toLocaleString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      });
+    }
+    
+    // Usar class_datetime si está disponible
+    if (this.data.jobPosting.class_datetime) {
+      const date = new Date(this.data.jobPosting.class_datetime);
+      
+      if (this.data.jobPosting.job_timezone) {
+        // Convertir a UTC primero
+        const utcConversion = this.timezoneService.convertToUTC(
+          date,
+          this.data.jobPosting.job_timezone
+        );
+        
+        if (utcConversion) {
+          const utcDate = new Date(utcConversion.utc_datetime);
+          return `${date.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })} a las ${date.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
+          })} (zona institución) / ${utcDate.toLocaleString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short'
+          })} (tu zona)`;
+        }
+      }
+      
+      return date.toLocaleString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    
+    // Fallback para formato legacy
+    if (this.data.jobPosting.class_date && this.data.jobPosting.start_time) {
+      const date = new Date(this.data.jobPosting.class_date);
+      const timeString = this.data.jobPosting.start_time;
+      
+      if (this.data.jobPosting.job_timezone) {
+        const classDateStr = date.toISOString().split('T')[0];
+        const localDateTimeStr = `${classDateStr}T${timeString}:00`;
+        const classDateTime = new Date(localDateTimeStr);
+        
+        const utcConversion = this.timezoneService.convertToUTC(
+          classDateTime,
+          this.data.jobPosting.job_timezone
+        );
+        
+        if (utcConversion) {
+          const utcDate = new Date(utcConversion.utc_datetime);
+          return `${date.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })} a las ${timeString} (zona institución) / ${utcDate.toLocaleString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short'
+          })} (tu zona)`;
+        }
+      }
+      
+      return `${date.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })} a las ${timeString}`;
+    }
+    
+    return 'Fecha por confirmar';
+  }
+
+  formatDate(date: unknown): string {
     if (!date) return '';
     
     // Si es un Timestamp de Firestore  
-    if (date && typeof date.toDate === 'function') {
-      return date.toDate().toLocaleDateString('es-ES');
+    if (date && typeof date === 'object' && 'toDate' in date && typeof date.toDate === 'function') {
+      return (date.toDate as () => Date)().toLocaleDateString('es-ES');
     }
     
     if (date instanceof Date) {
@@ -493,20 +886,21 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
     }
     
     // Si es un objeto con seconds (Timestamp serializado)
-    if (date && typeof date === 'object' && date.seconds) {
+    if (date && typeof date === 'object' && 'seconds' in date && typeof date.seconds === 'number') {
       return new Date(date.seconds * 1000).toLocaleDateString('es-ES');
     }
     
-    return date.toString();
+    return String(date);
   }
 
-  formatDateTime(date: any): string {
+  formatDateTime(date: unknown): string {
     if (!date) return '';
     
     // Si es un Timestamp de Firestore
-    if (date && typeof date.toDate === 'function') {
-      return date.toDate().toLocaleDateString('es-ES') + ' ' + 
-             date.toDate().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    if (date && typeof date === 'object' && 'toDate' in date && typeof date.toDate === 'function') {
+      const dateObj = (date.toDate as () => Date)();
+      return dateObj.toLocaleDateString('es-ES') + ' ' + 
+             dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     }
     
     if (date instanceof Date) {
@@ -521,16 +915,14 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
     }
     
     // Si es un objeto con seconds (Timestamp serializado)
-    if (date && typeof date === 'object' && date.seconds) {
+    if (date && typeof date === 'object' && 'seconds' in date && typeof date.seconds === 'number') {
       const dateObj = new Date(date.seconds * 1000);
       return dateObj.toLocaleDateString('es-ES') + ' ' + 
              dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     }
     
-    return date.toString();
-  }
-
-  getModalityIcon(modality: string): string {
+    return String(date);
+  }  getModalityIcon(modality: string): string {
     const icons: { [key: string]: string } = {
       'presencial': 'location_on',
       'virtual': 'videocam',

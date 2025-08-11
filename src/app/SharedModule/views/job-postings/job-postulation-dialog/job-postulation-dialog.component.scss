@@ -1,166 +1,158 @@
 .postulation-dialog {
   max-width: 100%;
+  width: 100%;
 
-  .dialog-header {
+  .dialog-title {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 16px 24px;
-    border-bottom: 1px solid #e0e0e0;
+    gap: 12px;
 
-    .title-section {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      .title-icon {
-        font-size: 24px;
-        width: 24px;
-        height: 24px;
-        color: #1976d2;
-      }
-
-      h2 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 500;
-      }
+    mat-icon {
+      font-size: 24px;
+      color: #1976d2;
     }
 
-    .close-button {
-      flex-shrink: 0;
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 500;
+      
+      @media (max-width: 480px) {
+        font-size: 1.2rem;
+      }
     }
   }
 
   .dialog-content {
-    padding: 16px 24px;
-    max-height: 70vh;
+    padding: 16px;
     overflow-y: auto;
 
-    .job-info-card {
-      margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    @media (max-width: 480px) {
+      padding: 12px;
+      max-height: 85vh;
+    }
 
-      mat-card-header {
-        margin-bottom: 16px;
+    .job-summary {
+      margin-bottom: 24px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #1976d2;
 
-        mat-card-title {
-          display: flex;
-          align-items: center;
-          gap: 8px;
+      h3 {
+        margin: 0 0 16px 0;
+        color: #333;
+        font-size: 1.3rem;
+        font-weight: 500;
+        line-height: 1.4;
+        
+        @media (max-width: 480px) {
           font-size: 1.1rem;
-          color: #1976d2;
         }
       }
 
-      .job-summary {
-        h3 {
-          margin: 0 0 8px 0;
-          color: #333;
-          font-size: 1.2rem;
+      .job-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+
+        @media (max-width: 480px) {
+          grid-template-columns: 1fr;
+          gap: 8px;
         }
 
-        .subject-info {
+        .detail-item {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin: 8px 0 16px 0;
-          color: #666;
-          font-weight: 500;
+          font-size: 0.95rem;
+          color: #555;
 
           mat-icon {
             font-size: 18px;
             width: 18px;
             height: 18px;
+            color: #1976d2;
+            flex-shrink: 0;
           }
-        }
 
-        .details-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 12px;
-
-          .detail-item {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-
-            strong {
-              font-size: 0.9rem;
-              color: #666;
-            }
-
-            span {
-              font-size: 1rem;
-              color: #333;
-            }
+          span {
+            word-break: break-word;
           }
         }
       }
     }
 
     .postulation-form {
-      .form-card {
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      .form-section {
+        margin-bottom: 24px;
 
-        mat-card-header {
-          margin-bottom: 20px;
-
-          mat-card-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1.1rem;
-            color: #1976d2;
+        h4 {
+          margin: 0 0 16px 0;
+          font-size: 1.1rem;
+          font-weight: 500;
+          color: #333;
+          
+          @media (max-width: 480px) {
+            font-size: 1rem;
+            margin-bottom: 12px;
           }
         }
 
-        mat-card-content {
-          .full-width {
-            width: 100%;
-            margin-bottom: 16px;
-          }
-
-          .half-width {
-            width: 48%;
-            margin-bottom: 16px;
-            margin-right: 4%;
-
-            @media (max-width: 768px) {
-              width: 100%;
-              margin-right: 0;
-            }
-          }
+        .full-width {
+          width: 100%;
 
           mat-form-field {
+            width: 100%;
+
             textarea {
               resize: vertical;
               min-height: 60px;
+              font-size: 14px;
+              line-height: 1.4;
             }
 
-            mat-hint {
-              font-size: 0.8rem;
+            mat-label {
+              @media (max-width: 480px) {
+                font-size: 13px;
+              }
             }
 
-            mat-error {
-              font-size: 0.8rem;
+            mat-hint, mat-error {
+              font-size: 12px;
+            }
+          }
+        }
+
+        .availability-confirmation {
+          margin-top: 8px;
+
+          mat-checkbox {
+            width: 100%;
+            
+            .mat-mdc-checkbox-label {
+              font-size: 14px;
+              line-height: 1.4;
+              
+              @media (max-width: 480px) {
+                font-size: 13px;
+              }
             }
           }
 
-          mat-select[multiple] {
-            .mat-mdc-select-value {
-              display: flex;
-              flex-wrap: wrap;
-              gap: 4px;
-            }
+          .checkbox-error {
+            color: #f44336;
+            font-size: 12px;
+            margin-top: 8px;
+            display: block;
           }
         }
       }
     }
 
-    .progress-bar {
-      margin-top: 16px;
-      margin-bottom: -6px;
+    .submission-progress {
+      margin: 16px 0;
+      border-radius: 2px;
     }
   }
 
@@ -168,45 +160,49 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    padding: 16px 24px;
+    padding: 16px;
     border-top: 1px solid #e0e0e0;
+    background: #fafafa;
+
+    @media (max-width: 480px) {
+      flex-direction: column-reverse;
+      padding: 12px;
+      gap: 8px;
+    }
 
     button {
-      min-width: 100px;
+      min-width: 120px;
+      height: 40px;
+      font-weight: 500;
+
+      @media (max-width: 480px) {
+        width: 100%;
+        min-width: auto;
+        height: 44px;
+        font-size: 14px;
+      }
 
       mat-icon {
-        margin-right: 4px;
+        margin-right: 8px;
         font-size: 18px;
         width: 18px;
         height: 18px;
       }
-    }
-  }
-}
 
-// Responsive design
-@media (max-width: 768px) {
-  .postulation-dialog {
-    .dialog-content {
-      padding: 12px 16px;
-
-      .job-info-card {
-        .job-summary {
-          .details-grid {
-            grid-template-columns: 1fr;
-            gap: 8px;
-          }
-        }
+      .button-spinner {
+        margin-right: 8px;
       }
     }
 
-    .dialog-actions {
-      padding: 12px 16px;
-      flex-direction: column-reverse;
+    .cancel-btn {
+      @media (max-width: 480px) {
+        order: 2;
+      }
+    }
 
-      button {
-        width: 100%;
-        margin: 4px 0;
+    .submit-btn {
+      @media (max-width: 480px) {
+        order: 1;
       }
     }
   }
@@ -218,6 +214,12 @@
     .mdc-dialog__surface {
       max-width: 700px;
       width: 90vw;
+      
+      @media (max-width: 480px) {
+        width: 95vw;
+        max-width: none;
+        margin: 16px;
+      }
     }
   }
 
@@ -228,6 +230,11 @@
 
   .error-snackbar {
     background-color: #f44336 !important;
+    color: white !important;
+  }
+
+  .warning-snackbar {
+    background-color: #ff9800 !important;
     color: white !important;
   }
 }

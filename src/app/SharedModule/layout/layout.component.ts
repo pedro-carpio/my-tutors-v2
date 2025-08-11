@@ -194,6 +194,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
   ];
 
+  //TODO: poner en la seccion de work una ruta a /calendar
+
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),

@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Firestore, collection, addDoc } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
 
 export interface EmailTemplate {
   subject: string;
@@ -33,15 +34,16 @@ export interface JobAssignmentEmailData {
   startTime?: string; // ✅ Ahora opcional para soportar class_datetime
   classDateTime?: string; // ✅ NUEVO: Campo combinado preferido
   duration: number;
-  students: Array<{
+  students: {
     name: string;
     age: number;
     level: string;
-  }>;
+  }[];
   modality: string;
   location?: string;
   totalPayment?: number;
   currency?: string;
+  classLink?: string; // ✅ NUEVO: Link directo a la clase
 }
 
 export interface StudentClassNotificationData {
@@ -61,6 +63,7 @@ export interface StudentClassNotificationData {
 })
 export class EmailService {
   private firestore = inject(Firestore);
+  private auth = inject(Auth);
 
   /**
    * Envía un email de bienvenida a un tutor recién creado
@@ -105,8 +108,370 @@ export class EmailService {
   }
 
   /**
-   * Genera el template HTML para el email de bienvenida del tutor
+   * Envía notificación de nueva postulación a la institución
    */
+  async sendNewPostulationNotificationEmail(data: {
+    institutionEmail: string;
+    institutionName: string;
+    jobTitle: string;
+    tutorName: string;
+    tutorEmail: string;
+    coverLetter: string;
+    teachingApproach?: string;
+    classDate: string;
+    loginUrl: string;
+  }): Promise<void> {
+    const template = this.generateNewPostulationNotificationTemplate(data);
+    await this.sendEmail(data.institutionEmail, template);
+  }
+
+  /**
+   * ✅ NUEVO: Método público para testing del sistema de emails
+   * Permite probar el envío de emails desde la consola del navegador
+   */
+  async testEmailSystem(to = 'test@example.com'): Promise<void> {
+    console.log('🧪 Iniciando prueba del sistema de emails...');
+    
+    const testTemplate: EmailTemplate = {
+      subject: 'Prueba del Sistema de Emails - My Tutors',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h1 style="margin: 0; font-size: 28px;">🧪 Prueba del Sistema</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">My Tutors Email Service</p>
+          </div>
+          
+          <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
+            <p>¡Hola!</p>
+            
+            <p>Este es un email de prueba para verificar que el sistema de envío de correos está funcionando correctamente.</p>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #28a745;">Estado del Sistema</h3>
+              <p><strong>✅ Autenticación:</strong> Usuario autenticado correctamente</p>
+              <p><strong>✅ Firestore:</strong> Permisos de escritura configurados</p>
+              <p><strong>✅ Email Extension:</strong> firestore-send-email activa</p>
+              <p><strong>✅ Template:</strong> Renderizado HTML exitoso</p>
+            </div>
+
+            <p style="margin-top: 30px;">Si recibes este email, ¡el sistema está funcionando perfectamente!</p>
+            
+            <p style="color: #666; font-size: 14px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+              Timestamp: ${new Date().toISOString()}<br>
+              El equipo técnico de My Tutors
+            </p>
+          </div>
+        </div>
+      `,
+      text: `Prueba del Sistema de Emails - My Tutors
+
+¡Hola!
+
+Este es un email de prueba para verificar que el sistema de envío de correos está funcionando correctamente.
+
+Estado del Sistema:
+✅ Autenticación: Usuario autenticado correctamente
+✅ Firestore: Permisos de escritura configurados
+✅ Email Extension: firestore-send-email activa
+✅ Template: Renderizado HTML exitoso
+
+Si recibes este email, ¡el sistema está funcionando perfectamente!
+
+Timestamp: ${new Date().toISOString()}
+El equipo técnico de My Tutors`
+    };
+
+    try {
+      await this.sendEmail(to, testTemplate);
+      console.log('✅ Prueba de email completada exitosamente');
+      console.log(`📧 Email de prueba enviado a: ${to}`);
+    } catch (error) {
+      console.error('❌ Prueba de email falló:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Genera el template HTML para notificación de nueva postulación
+   */
+  private generateNewPostulationNotificationTemplate(data: {
+    institutionName: string;
+    jobTitle: string;
+    tutorName: string;
+    tutorEmail: string;
+    coverLetter: string;
+    teachingApproach?: string;
+    classDate: string;
+    loginUrl: string;
+  }): EmailTemplate {
+    return {
+      subject: `Nueva Postulación: ${data.jobTitle} - ${data.tutorName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h1 style="margin: 0; font-size: 28px;">📝 Nueva Postulación</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">${data.institutionName}</p>
+          </div>
+          
+          <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <p>Estimado equipo de <strong>${data.institutionName}</strong>,</p>
+            
+            <p>Han recibido una nueva postulación para su convocatoria de trabajo:</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #667eea;">Detalles de la Convocatoria</h3>
+              <p><strong>Título:</strong> ${data.jobTitle}</p>
+              <p><strong>Fecha programada:</strong> ${data.classDate}</p>
+            </div>
+
+            <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; border-left: 4px solid #0066cc; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #0066cc;">Información del Tutor</h3>
+              <p><strong>Nombre:</strong> ${data.tutorName}</p>
+              <p><strong>Email:</strong> ${data.tutorEmail}</p>
+            </div>
+
+            <div style="background: #f0f8f0; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #28a745;">Carta de Presentación</h3>
+              <p style="font-style: italic;">"${data.coverLetter}"</p>
+              ${data.teachingApproach ? `
+                <h4 style="color: #28a745; margin-top: 20px;">Enfoque de Enseñanza</h4>
+                <p style="font-style: italic;">"${data.teachingApproach}"</p>
+              ` : ''}
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${data.loginUrl}" style="background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                Ver Postulaciones
+              </a>
+            </div>
+
+            <p>Pueden revisar esta postulación y todas las demás accediendo a su panel de administración.</p>
+            
+            <p style="color: #666; font-size: 14px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+              Saludos cordiales,<br>
+              El equipo de My Tutors<br>
+              <em>Este email se envió automáticamente cuando se recibió una nueva postulación.</em>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `Nueva Postulación: ${data.jobTitle}
+
+Estimado equipo de ${data.institutionName},
+
+Han recibido una nueva postulación para su convocatoria de trabajo.
+
+DETALLES DE LA CONVOCATORIA:
+- Título: ${data.jobTitle}
+- Fecha programada: ${data.classDate}
+
+INFORMACIÓN DEL TUTOR:
+- Nombre: ${data.tutorName}
+- Email: ${data.tutorEmail}
+
+CARTA DE PRESENTACIÓN:
+"${data.coverLetter}"
+
+${data.teachingApproach ? `ENFOQUE DE ENSEÑANZA:\n"${data.teachingApproach}"` : ''}
+
+Pueden revisar esta postulación accediendo a: ${data.loginUrl}
+
+Saludos cordiales,
+El equipo de My Tutors`
+    };
+  }
+
+  /**
+   * Genera el template HTML para notificación de postulación aceptada al tutor
+   */
+  private generatePostulationAcceptedTutorTemplate(data: {
+    tutorName: string;
+    institutionName: string;
+    jobTitle: string;
+    classDate: string;
+    institutionEmail: string;
+    responseNotes?: string;
+    loginUrl: string;
+  }): EmailTemplate {
+    return {
+      subject: `¡Postulación Aceptada! ${data.jobTitle} - ${data.institutionName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h1 style="margin: 0; font-size: 28px;">🎉 ¡Postulación Aceptada!</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Felicitaciones, ${data.tutorName}</p>
+          </div>
+          
+          <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <p>Estimado/a <strong>${data.tutorName}</strong>,</p>
+            
+            <p>¡Excelentes noticias! Su postulación ha sido <strong>aceptada</strong> por <strong>${data.institutionName}</strong>.</p>
+            
+            <div style="background: #d4edda; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #155724;">Detalles de la Clase</h3>
+              <p><strong>Convocatoria:</strong> ${data.jobTitle}</p>
+              <p><strong>Institución:</strong> ${data.institutionName}</p>
+              <p><strong>Fecha programada:</strong> ${data.classDate}</p>
+            </div>
+
+            ${data.responseNotes ? `
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #6c757d; margin: 20px 0;">
+                <h3 style="margin-top: 0; color: #495057;">Notas de la Institución</h3>
+                <p style="font-style: italic;">"${data.responseNotes}"</p>
+              </div>
+            ` : ''}
+
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 20px 0;">
+              <p style="margin: 0; color: #856404;"><strong>📞 Próximos pasos:</strong> La institución se pondrá en contacto contigo pronto para coordinar los detalles finales de la clase.</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${data.loginUrl}" style="background: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                Acceder a Mi Panel
+              </a>
+            </div>
+
+            <p>Para cualquier consulta, puede contactar directamente a la institución en: <strong>${data.institutionEmail}</strong></p>
+            
+            <p style="color: #666; font-size: 14px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+              ¡Felicitaciones y mucho éxito en su nueva clase!<br>
+              El equipo de My Tutors
+            </p>
+          </div>
+        </div>
+      `,
+      text: `¡Postulación Aceptada! - ${data.jobTitle}
+
+Estimado/a ${data.tutorName},
+
+¡Excelentes noticias! Su postulación ha sido ACEPTADA por ${data.institutionName}.
+
+DETALLES DE LA CLASE:
+- Convocatoria: ${data.jobTitle}
+- Institución: ${data.institutionName}
+- Fecha programada: ${data.classDate}
+
+${data.responseNotes ? `NOTAS DE LA INSTITUCIÓN:\n"${data.responseNotes}"\n` : ''}
+
+PRÓXIMOS PASOS:
+La institución se pondrá en contacto contigo pronto para coordinar los detalles finales de la clase.
+
+Para cualquier consulta, puede contactar a: ${data.institutionEmail}
+
+Accede a tu panel: ${data.loginUrl}
+
+¡Felicitaciones y mucho éxito!
+El equipo de My Tutors`
+    };
+  }
+
+  /**
+   * Genera el template HTML para notificación de postulación rechazada al tutor
+   */
+  private generatePostulationRejectedTutorTemplate(data: {
+    tutorName: string;
+    institutionName: string;
+    jobTitle: string;
+    responseNotes?: string;
+    loginUrl: string;
+  }): EmailTemplate {
+    return {
+      subject: `Actualización de Postulación: ${data.jobTitle} - ${data.institutionName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h1 style="margin: 0; font-size: 28px;">📋 Actualización de Postulación</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">${data.institutionName}</p>
+          </div>
+          
+          <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <p>Estimado/a <strong>${data.tutorName}</strong>,</p>
+            
+            <p>Le escribimos para informarle sobre el estado de su postulación para la convocatoria <strong>${data.jobTitle}</strong> en <strong>${data.institutionName}</strong>.</p>
+            
+            <div style="background: #f8d7da; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #721c24;">Estado de la Postulación</h3>
+              <p>Lamentamos informarle que en esta ocasión su postulación no ha sido seleccionada.</p>
+            </div>
+
+            ${data.responseNotes ? `
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #6c757d; margin: 20px 0;">
+                <h3 style="margin-top: 0; color: #495057;">Comentarios de la Institución</h3>
+                <p style="font-style: italic;">"${data.responseNotes}"</p>
+              </div>
+            ` : ''}
+
+            <div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin: 20px 0;">
+              <p style="margin: 0; color: #0c5460;"><strong>💼 Siga explorando:</strong> No se desanime, hay muchas más oportunidades disponibles en nuestra plataforma.</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${data.loginUrl}" style="background: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                Ver Más Oportunidades
+              </a>
+            </div>
+
+            <p>Agradecemos su interés y le animamos a seguir postulándose a nuevas convocatorias.</p>
+            
+            <p style="color: #666; font-size: 14px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+              Saludos cordiales,<br>
+              El equipo de My Tutors
+            </p>
+          </div>
+        </div>
+      `,
+      text: `Actualización de Postulación - ${data.jobTitle}
+
+Estimado/a ${data.tutorName},
+
+Le escribimos para informarle sobre el estado de su postulación para la convocatoria ${data.jobTitle} en ${data.institutionName}.
+
+ESTADO: Lamentamos informarle que en esta ocasión su postulación no ha sido seleccionada.
+
+${data.responseNotes ? `COMENTARIOS:\n"${data.responseNotes}"\n` : ''}
+
+No se desanime, hay muchas más oportunidades disponibles en nuestra plataforma.
+
+Ver más oportunidades: ${data.loginUrl}
+
+Agradecemos su interés y le animamos a seguir postulándose.
+
+Saludos cordiales,
+El equipo de My Tutors`
+    };
+  }
+
+  /**
+   * Envía notificación de postulación aceptada al tutor
+   */
+  async sendPostulationAcceptedEmailToTutor(data: {
+    tutorEmail: string;
+    tutorName: string;
+    institutionName: string;
+    jobTitle: string;
+    classDate: string;
+    institutionEmail: string;
+    responseNotes?: string;
+    loginUrl: string;
+  }): Promise<void> {
+    const template = this.generatePostulationAcceptedTutorTemplate(data);
+    await this.sendEmail(data.tutorEmail, template);
+  }
+
+  /**
+   * Envía notificación de postulación rechazada al tutor
+   */
+  async sendPostulationRejectedEmailToTutor(data: {
+    tutorEmail: string;
+    tutorName: string;
+    institutionName: string;
+    jobTitle: string;
+    responseNotes?: string;
+    loginUrl: string;
+  }): Promise<void> {
+    const template = this.generatePostulationRejectedTutorTemplate(data);
+    await this.sendEmail(data.tutorEmail, template);
+  }
   private generateTutorWelcomeTemplate(data: WelcomeEmailData): EmailTemplate {
     return {
       subject: `¡Bienvenido a ${data.institutionName}! - Credenciales de acceso`,
@@ -246,6 +611,20 @@ El equipo de ${data.institutionName}`
       ? `<p><strong>Pago total:</strong> ${data.totalPayment} ${data.currency}</p>`
       : '';
 
+    // ✅ NUEVO: Usar campo combinado o separado según disponibilidad
+    const dateTimeInfo = data.classDateTime
+      ? `<p><strong>Fecha y hora:</strong> ${data.classDateTime}</p>`
+      : `<p><strong>Fecha:</strong> ${data.classDate}</p><p><strong>Hora de inicio:</strong> ${data.startTime}</p>`;
+
+    // ✅ NUEVO: Botón de acceso a clase si está disponible
+    const classButtonHtml = data.classLink 
+      ? `<div style="text-align: center; margin: 30px 0;">
+          <a href="${data.classLink}" style="background: #28a745; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
+            🎓 Ver Detalles de la Clase
+          </a>
+         </div>`
+      : '';
+
     return {
       subject: `Clase asignada: ${data.jobTitle}`,
       html: `
@@ -262,8 +641,7 @@ El equipo de ${data.institutionName}`
             
             <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
               <h3 style="margin-top: 0; color: #667eea;">${data.jobTitle}</h3>
-              <p><strong>Fecha:</strong> ${data.classDate}</p>
-              <p><strong>Hora de inicio:</strong> ${data.startTime}</p>
+              ${dateTimeInfo}
               <p><strong>Duración:</strong> ${data.duration} minutos</p>
               ${locationInfo}
               <p><strong>Institución:</strong> ${data.institutionName}</p>
@@ -284,6 +662,8 @@ El equipo de ${data.institutionName}`
               </ul>
             </div>
 
+            ${classButtonHtml}
+
             <p style="margin-top: 30px;">¡Que tengas una excelente clase!</p>
             
             <p style="color: #666; font-size: 14px; margin-top: 30px;">
@@ -300,8 +680,7 @@ Hola ${data.tutorName},
 Has sido seleccionado para dar la siguiente clase:
 
 ${data.jobTitle}
-Fecha: ${data.classDate}
-Hora: ${data.startTime}
+${data.classDateTime ? 'Fecha y hora: ' + data.classDateTime : 'Fecha: ' + data.classDate + '\nHora: ' + (data.startTime || '')}
 Duración: ${data.duration} minutos
 Modalidad: ${data.modality}
 ${data.location ? 'Ubicación: ' + data.location : ''}
@@ -474,21 +853,80 @@ El equipo de ${data.institutionName}`
    */
   private async sendEmail(to: string, template: EmailTemplate): Promise<void> {
     try {
+      // Verificar autenticación antes de proceder
+      if (!this.auth.currentUser) {
+        throw new Error('Usuario no autenticado - no se puede enviar email');
+      }
+
+      console.log('🔄 Iniciando envío de email...', {
+        destinatario: to,
+        asunto: template.subject,
+        usuarioAutenticado: this.auth.currentUser.uid,
+        email: this.auth.currentUser.email
+      });
+
       const mailCollection = collection(this.firestore, 'mail');
+      console.log('📁 Colección mail obtenida');
       
-      await addDoc(mailCollection, {
+      const emailDoc = {
         to: [to],
         message: {
           subject: template.subject,
           html: template.html,
-          text: template.text
+          text: template.text || ''
+        },
+        // Agregar timestamp para debugging
+        created: new Date().toISOString(),
+        // Agregar información del remitente autenticado
+        from_uid: this.auth.currentUser.uid,
+        from_email: this.auth.currentUser.email,
+        // Agregar estado inicial
+        delivery: {
+          state: 'PENDING',
+          attempts: 0
         }
+      };
+
+      console.log('📧 Documento de email preparado:', {
+        to: emailDoc.to,
+        subject: emailDoc.message.subject,
+        from_uid: emailDoc.from_uid,
+        from_email: emailDoc.from_email,
+        hasHtml: !!emailDoc.message.html,
+        hasText: !!emailDoc.message.text
       });
+
+      const docRef = await addDoc(mailCollection, emailDoc);
+      console.log('✅ Email document creado exitosamente con ID:', docRef.id);
+      console.log(`📬 Email enviado exitosamente a: ${to}`);
       
-      console.log(`Email enviado exitosamente a: ${to}`);
-    } catch (error) {
-      console.error('Error enviando email:', error);
-      throw new Error(`Error al enviar email a ${to}`);
+    } catch (error: unknown) {
+      const errorObj = error as { message?: string; code?: string; stack?: string };
+      
+      console.error('❌ Error detallado enviando email:', {
+        error: error,
+        message: errorObj?.message,
+        code: errorObj?.code,
+        destinatario: to,
+        usuarioAutenticado: this.auth.currentUser?.uid || 'NO_AUTH',
+        emailAuth: this.auth.currentUser?.email || 'NO_EMAIL',
+        stack: errorObj?.stack
+      });
+
+      // Proporcionar más contexto sobre el error
+      let errorMessage = `Error al enviar email a ${to}`;
+      
+      if (errorObj?.code === 'permission-denied') {
+        errorMessage += ': Permisos insuficientes para escribir en la colección mail. Verificar reglas de Firestore.';
+      } else if (errorObj?.code === 'unauthenticated') {
+        errorMessage += ': Usuario no autenticado. Iniciar sesión antes de enviar emails.';
+      } else if (errorObj?.message?.includes('no autenticado')) {
+        errorMessage += ': Sesión no válida. Volver a iniciar sesión.';
+      } else if (errorObj?.message) {
+        errorMessage += `: ${errorObj.message}`;
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 }

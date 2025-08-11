@@ -31,8 +31,8 @@ export class ClassInstanceService {
       video_call_link: additionalData.video_call_link || jobPosting.video_call_link || '',
       modality: jobPosting.modality,
       students: jobPosting.students,
-      hourly_rate: postulation.proposed_hourly_rate,
-      currency: postulation.currency,
+      hourly_rate: jobPosting.hourly_rate || 0,
+      currency: jobPosting.currency || 'USD',
       timezone: jobPosting.timezone,
       notes: additionalData.notes || '',
       status: 'scheduled',
@@ -333,6 +333,7 @@ export class ClassInstanceService {
   async getClassStatistics(): Promise<{
     total: number;
     scheduled: number;
+    confirmed: number;
     ongoing: number;
     completed: number;
     cancelled: number;
@@ -341,6 +342,7 @@ export class ClassInstanceService {
     const stats = {
       total: snapshot.size,
       scheduled: 0,
+      confirmed: 0,
       ongoing: 0,
       completed: 0,
       cancelled: 0
@@ -350,7 +352,7 @@ export class ClassInstanceService {
       const data = doc.data();
       const status = data['status'] as ClassStatus;
       if (status in stats) {
-        stats[status]++;
+        stats[status as keyof typeof stats]++;
       }
     });
 

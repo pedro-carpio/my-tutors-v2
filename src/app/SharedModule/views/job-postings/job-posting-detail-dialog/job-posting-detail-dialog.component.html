@@ -58,32 +58,15 @@
       </mat-card-header>
       <mat-card-content>
         <div class="info-grid">
-          <div class="info-item full-width" *ngIf="localClassTime">
+          <div class="info-item full-width">
             <strong>⏰ {{ 'jobPostings.fields.classDateTime' | translate }}:</strong>
             <div class="datetime-info">
               <div class="local-time">
                 <mat-icon>schedule</mat-icon>
-                <span>{{ localClassTime }}</span>
-                <small class="timezone-note">({{ 'jobPostings.details.yourLocalTime' | translate }})</small>
-              </div>
-              <div class="utc-time" *ngIf="utcClassTime">
-                <small>UTC: {{ formatDateTime(utcClassTime) }}</small>
+                <span [innerHTML]="formatJobPostingDateTimes()"></span>
               </div>
             </div>
           </div>
-
-          <!-- Fallback para cuando no hay UTC calculado -->
-          <ng-container *ngIf="!localClassTime">
-            <div class="info-item">
-              <strong>{{ 'jobPostings.fields.classDate' | translate }}:</strong>
-              <span>{{ formatDate(jobPosting.class_date) }}</span>
-            </div>
-
-            <div class="info-item" *ngIf="jobPosting.start_time">
-              <strong>{{ 'jobPostings.fields.startTime' | translate }}:</strong>
-              <span>{{ formatTime(jobPosting.start_time) }}</span>
-            </div>
-          </ng-container>
 
           <div class="info-item">
             <strong>{{ 'jobPostings.fields.duration' | translate }}:</strong>
@@ -175,31 +158,6 @@
       </mat-card-header>
       <mat-card-content>
         <p>{{ jobPosting.additional_comment }}</p>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- Información de creación -->
-    <mat-card class="info-card">
-      <mat-card-header>
-        <mat-card-title>{{ 'jobPostings.details.metadata' | translate }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="info-grid">
-          <div class="info-item">
-            <strong>{{ 'jobPostings.fields.createdAt' | translate }}:</strong>
-            <!-- <span>{{ formatDate(jobPosting.created_at) }}</span> -->
-          </div>
-          
-          <div class="info-item" *ngIf="jobPosting.updated_at">
-            <strong>{{ 'jobPostings.fields.updatedAt' | translate }}:</strong>
-            <!-- <span>{{ formatDate(jobPosting.updated_at) }}</span> -->
-          </div>
-
-          <div class="info-item" *ngIf="jobPosting.assigned_tutor_id">
-            <strong>{{ 'jobPostings.fields.assignedTutor' | translate }}:</strong>
-            <span>{{ jobPosting.assigned_tutor_id }}</span>
-          </div>
-        </div>
       </mat-card-content>
     </mat-card>
   </mat-tab>

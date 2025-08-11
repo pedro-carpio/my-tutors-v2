@@ -81,19 +81,18 @@ export class TimezoneCalculatorComponent {
     }
 
     addConversion() {
-        // ⚠️ TEMPORALMENTE DESHABILITADO: Las funciones de conversión DST fueron removidas
-        console.warn('🚧 Timezone Calculator: Funcionalidad temporalmente deshabilitada debido a cambios en TimezoneService');
-        return;
-        
-        /* COMENTADO HASTA REIMPLEMENTAR
         if (!this.form.localDateTime || !this.form.localTimezone || !this.form.targetTimezone) return;
+        
         const localDate = new Date(this.form.localDateTime);
         const toUtc = this.tzService.convertToUTC(localDate, this.form.localTimezone, this.form.localCountry, this.form.localState);
         if (!toUtc) return;
+        
         const fromUtc = this.tzService.convertFromUTC(new Date(toUtc.utc_datetime), this.form.targetTimezone, this.form.targetCountry, this.form.targetState);
         if (!fromUtc) return;
+        
         const localTzInfo = this.localTimezoneOptions.find(t => t.timezone === this.form.localTimezone)!;
         const targetTzInfo = this.targetTimezoneOptions.find(t => t.timezone === this.form.targetTimezone)!;
+        
         this.rows.unshift({
             local1: new Date(toUtc.local_datetime),
             utc: new Date(toUtc.utc_datetime),
@@ -103,6 +102,5 @@ export class TimezoneCalculatorComponent {
             local1Dst: toUtc.dst_active,
             local2Dst: fromUtc.dst_active
         });
-        */
     }
 }

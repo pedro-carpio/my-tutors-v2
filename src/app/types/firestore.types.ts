@@ -374,18 +374,17 @@ export type ClassModality = 'presencial' | 'virtual' | 'hibrida';
 export type JobPostingStatus = 'draft' | 'published' | 'assigned' | 'completed' | 'cancelled';
 export type FrequencyType = 'unica' | 'semanal' | 'diario' | 'otro';
 export type PostulationStatus = 'pending' | 'accepted' | 'rejected' | 'withdrawn';
-export type ClassStatus = 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
+export type ClassStatus = 'scheduled' | 'confirmed' | 'ongoing' | 'completed' | 'cancelled';
 
 export interface TutorPostulation {
   id?: string;
   job_posting_id: string;
   tutor_id: string;
+  tutor_email: string;
   institution_id: string;
-  proposed_hourly_rate: number;
-  currency: string;
-  cover_letter: string;
-  teaching_approach: string;
-  availability_confirmation: boolean;
+  cover_letter?: string;
+  teaching_approach?: string;
+  availability_confirmation?: boolean;
   status: PostulationStatus;
   postulated_at: FieldValue | Timestamp;
   responded_at?: FieldValue | Timestamp;
@@ -495,6 +494,8 @@ export interface ClassInstance {
   notes?: string;
   created_at: FieldValue | Timestamp;
   updated_at?: FieldValue | Timestamp;
+  canceled_at?: FieldValue | Timestamp;
+  recording_url?: string;
 }
 
 // Nuevas interfaces para gestión académica de instituciones

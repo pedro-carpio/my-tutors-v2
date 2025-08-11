@@ -253,11 +253,9 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
       
       const locationStateControl = this.classDetailsForm.get('location_state');
       
-      // Validar estado si el país requiere estados
-      if (countryCode && this.locationService.hasStates(countryCode)) {
-        locationStateControl?.setValidators([Validators.required]);
-      } else {
-        locationStateControl?.clearValidators();
+      // ✅ MODIFICADO: El estado siempre es opcional, nunca obligatorio
+      locationStateControl?.clearValidators();
+      if (!countryCode) {
         locationStateControl?.setValue('');
       }
       
@@ -463,10 +461,9 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
     return selectedCountry ? this.locationService.hasStatesSync(selectedCountry) : false;
   }
 
-  // ✅ NUEVO: Método para verificar si el estado es obligatorio
+  // ✅ MODIFICADO: El estado ahora siempre es opcional
   isStateRequiredForJob(): boolean {
-    const selectedCountry = this.classDetailsForm.get('location_country')?.value;
-    return selectedCountry && this.locationService.hasStates(selectedCountry);
+    return false; // Estado siempre opcional
   }
 
   // ✅ NUEVO: Métodos para manejo de timezone en job postings
@@ -839,6 +836,21 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Convierte un objeto Date al formato requerido por datetime-local input (YYYY-MM-DDTHH:mm)
+   */
+  private formatDateTimeForInput(date: Date | null): string {
+    if (!date) return '';
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
   private populateForms(jobPosting: JobPostingWithLegacyFields): void {
     // Información básica
     this.basicInfoForm.patchValue({
@@ -855,12 +867,15 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
       if (typeof (jobPosting.class_datetime as any).toDate === 'function') {
         // Es un Timestamp de Firestore
         classDateTime = (jobPosting.class_datetime as any).toDate();
+        console.log('📅 Convertido desde Firestore Timestamp:', classDateTime);
       } else if (jobPosting.class_datetime instanceof Date) {
         // Ya es un Date
         classDateTime = jobPosting.class_datetime;
+        console.log('📅 Ya es Date:', classDateTime);
       } else if (typeof jobPosting.class_datetime === 'string') {
         // Es un string, convertir a Date
         classDateTime = new Date(jobPosting.class_datetime);
+        console.log('📅 Convertido desde string:', classDateTime);
       }
     } else if (jobPosting.class_date && jobPosting.start_time) {
       // Migración desde campos separados (retrocompatibilidad)
@@ -877,12 +892,17 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
         const [hours, minutes] = jobPosting.start_time.split(':').map(num => parseInt(num, 10));
         classDateTime = new Date(classDate);
         classDateTime.setHours(hours, minutes, 0, 0);
+        console.log('📅 Migrado desde campos separados:', classDateTime);
       }
     }
 
+    // Convertir a formato compatible con datetime-local input
+    const classDateTimeForInput = this.formatDateTimeForInput(classDateTime);
+    console.log('📅 Formato para datetime-local input:', classDateTimeForInput);
+
     // Detalles de clase
     this.classDetailsForm.patchValue({
-      class_datetime: classDateTime, // ✅ NUEVO: Campo combinado de fecha y hora
+      class_datetime: classDateTimeForInput, // ✅ CORREGIDO: Convertir a formato string para datetime-local
       total_duration_minutes: jobPosting.total_duration_minutes,
       frequency: jobPosting.frequency,
       frequency_other: jobPosting.frequency_other || '',
@@ -927,8 +947,8 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
       level_group: ['', [Validators.required]],
       individual_duration_minutes: [null, [Validators.min(15)]],
       allergies_conditions: [''],
-      responsible_person: ['', [Validators.required]],
-      contact_phone: ['', [Validators.required]],
+      responsible_person: [''],
+      contact_phone: [''],
       additional_notes: [''],
       // ✅ NUEVOS CAMPOS: Configuración de timezone del estudiante
       use_job_timezone: [true],
@@ -967,8 +987,8 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
           level_group: [result.studentDetails.level_group, [Validators.required]],
           individual_duration_minutes: [result.studentDetails.individual_duration_minutes || null, [Validators.min(15)]],
           allergies_conditions: [result.studentDetails.allergies_conditions || ''],
-          responsible_person: [result.studentDetails.responsible_person, [Validators.required]],
-          contact_phone: [result.studentDetails.contact_phone, [Validators.required]],
+          responsible_person: [result.studentDetails.responsible_person],
+          contact_phone: [result.studentDetails.contact_phone],
           additional_notes: [result.studentDetails.additional_notes || ''],
           use_job_timezone: [true],
           timezone_country: [''],
@@ -1005,8 +1025,8 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
         level_group: [student.level_group, [Validators.required]],
         individual_duration_minutes: [student.individual_duration_minutes || null, [Validators.min(15)]],
         allergies_conditions: [student.allergies_conditions || ''],
-        responsible_person: [student.responsible_person, [Validators.required]],
-        contact_phone: [student.contact_phone, [Validators.required]],
+        responsible_person: [student.responsible_person],
+        contact_phone: [student.contact_phone],
         additional_notes: [student.additional_notes || ''],
         use_job_timezone: [true],
         timezone_country: [''],
@@ -1104,12 +1124,17 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
 
     // Procesar campos de fecha y hora
     if (classDetails.class_datetime) {
-      jobPostingData.class_datetime = classDetails.class_datetime;
+      // ✅ CORREGIDO: Convertir el string del datetime-local input a Date antes de guardar
+      const classDateTimeDate = new Date(classDetails.class_datetime);
+      jobPostingData.class_datetime = classDateTimeDate;
+      console.log('📅 Convirtiendo datetime-local input a Date para guardar:', {
+        inputValue: classDetails.class_datetime,
+        dateObject: classDateTimeDate
+      });
       
       // También generar campos legacy para retrocompatibilidad
-      const dateTime = new Date(classDetails.class_datetime);
-      jobPostingData.class_date = new Date(dateTime.getFullYear(), dateTime.getMonth(), dateTime.getDate());
-      jobPostingData.start_time = `${dateTime.getHours().toString().padStart(2, '0')}:${dateTime.getMinutes().toString().padStart(2, '0')}`;
+      jobPostingData.class_date = new Date(classDateTimeDate.getFullYear(), classDateTimeDate.getMonth(), classDateTimeDate.getDate());
+      jobPostingData.start_time = `${classDateTimeDate.getHours().toString().padStart(2, '0')}:${classDateTimeDate.getMinutes().toString().padStart(2, '0')}`;
     }
 
     // Agregar resto de campos de class details
@@ -1406,16 +1431,13 @@ export class JobPostingFormComponent implements OnInit, OnDestroy {
     // Cargar estados para este país
     this.loadStatesForStudentTimezone(studentIndex, countryCode);
     
-    // Configurar validación dinámica del estado
-    if (countryCode && this.locationService.hasStates(countryCode)) {
-      stateControl?.setValidators([Validators.required]);
-      console.log(`🗺️ Estado requerido para estudiante ${studentIndex} en país ${countryCode}`);
-    } else {
-      stateControl?.clearValidators();
+    // ✅ MODIFICADO: Estado siempre opcional para estudiantes
+    stateControl?.clearValidators();
+    if (!countryCode) {
       stateControl?.setValue('');
-      console.log(`🗺️ Estado no requerido para estudiante ${studentIndex} en país ${countryCode}`);
     }
     stateControl?.updateValueAndValidity();
+    console.log(`🗺️ Estado opcional para estudiante ${studentIndex} en país ${countryCode || 'sin país'}`);
     
     // Cargar opciones de timezone para este país
     this.loadTimezonesForStudentLocation(studentIndex, countryCode);

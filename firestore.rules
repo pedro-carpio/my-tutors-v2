@@ -79,5 +79,12 @@ service cloud.firestore {
     match /tutor_postulations/{postulationId} {
       allow read, write: if true; // ⚠️ INSECURE - Only for development/testing
     }
+    
+    // Email collection for firestore-send-email extension
+    // Allow authenticated users to create email documents
+    match /mail/{mailId} {
+      allow create: if request.auth != null;
+      allow read, update: if false; // Only the extension should read/update emails
+    }
   }
 }

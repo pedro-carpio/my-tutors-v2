@@ -27,12 +27,8 @@
                   <span>{{ data.jobPosting.program }}</span>
                 </div>
                 <div class="detail-item">
-                  <strong>Fecha:</strong>
-                  <span>{{ formatDate(data.jobPosting.class_date) }}</span>
-                </div>
-                <div class="detail-item">
-                  <strong>Hora:</strong>
-                  <span>{{ data.jobPosting.start_time }}</span>
+                  <strong>Fecha y Hora:</strong>
+                  <span [innerHTML]="formatJobPostingDateTimes(data.jobPosting)"></span>
                 </div>
                 <div class="detail-item">
                   <strong>Duración:</strong>
@@ -83,7 +79,6 @@
                     </div>
                     <div class="tutor-details">
                       <h4>{{ tutor.displayName }}</h4>
-                      <p class="tutor-email">{{ tutor.user_id }}</p>
                       <p class="tutor-country">{{ tutor.country }}</p>
                       <div class="tutor-meta">
                         <mat-chip class="experience-chip">
@@ -117,7 +112,7 @@
                         <mat-icon class="tutor-icon">person</mat-icon>
                         <div>
                           <h5>{{ selectedTutor.displayName }}</h5>
-                          <p>{{ selectedTutor.user_id }}</p>
+                          <p>{{ selectedTutor.email }}</p>
                           <p><small>{{ selectedTutor.country }}</small></p>
                         </div>
                       </div>
@@ -134,10 +129,7 @@
                           <strong>Idioma nativo:</strong>
                           <span>{{ selectedTutor.birth_language }}</span>
                         </div>
-                        <div class="stat-item" *ngIf="selectedTutor.bio">
-                          <strong>Bio:</strong>
-                          <span>{{ selectedTutor.bio }}</span>
-                        </div>
+                        
                       </div>
                     </div>
                   </mat-card-content>

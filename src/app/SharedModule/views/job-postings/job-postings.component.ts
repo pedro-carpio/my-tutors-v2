@@ -28,6 +28,7 @@ import { AssignTutorDialogComponent } from './assign-tutor-dialog/assign-tutor-d
 import { PostulationsListDialogComponent } from './postulations-list-dialog/postulations-list-dialog.component';
 
 import { SessionService, JobPostingService, MultiRoleService, TutorPostulationService, ClassInstanceService } from '../../../services';
+import { TimezoneService } from '../../../services/timezone.service';
 import { JobPosting, UserRole, JobPostingStatus, ClassType, ClassModality, TutorPostulation, PostulationStatus } from '../../../types/firestore.types';
 
 @Component({
@@ -63,11 +64,125 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
   private tutorPostulationService = inject(TutorPostulationService);
   private classInstanceService = inject(ClassInstanceService);
   private multiRoleService = inject(MultiRoleService);
+  private timezoneService = inject(TimezoneService);
   private router = inject(Router);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private destroy$ = new Subject<void>();
 
+    /**
+     * Devuelve string con la fecha/hora en la zona del job posting y la local del usuario
+     */
+    formatJobPostingDateTimes(jobPosting: JobPosting): string {
+      console.log('🕐 formatJobPostingDateTimes called with jobPosting:', {
+        id: jobPosting?.id,
+        title: jobPosting?.title,
+        class_datetime_utc: jobPosting?.class_datetime_utc,
+        job_timezone: jobPosting?.job_timezone,
+        location_country: jobPosting?.location_country,
+        location_state: jobPosting?.location_state,
+        class_date: jobPosting?.class_date,
+        start_time: jobPosting?.start_time
+      });
+
+      // Verificar si tenemos job_timezone
+      if (!jobPosting?.job_timezone) {
+        console.log('❌ formatJobPostingDateTimes: Missing job_timezone');
+        return '';
+      }
+
+      let utcDate: Date | null = null;
+
+      // Opción 1: Si existe class_datetime_utc, usarlo
+      if (jobPosting.class_datetime_utc) {
+        console.log('✅ Using class_datetime_utc');
+        utcDate = new Date(jobPosting.class_datetime_utc);
+      } 
+      // Opción 2: Fallback usando class_date y start_time
+      else if (jobPosting.class_date && jobPosting.start_time) {
+        console.log('🔄 Fallback: Using class_date + start_time');
+        
+        // Convertir class_date a string si es necesario
+        let classDateStr: string;
+        if (jobPosting.class_date instanceof Date) {
+          classDateStr = jobPosting.class_date.toISOString().split('T')[0];
+        } else if (typeof jobPosting.class_date === 'string') {
+          classDateStr = jobPosting.class_date;
+        } else if (jobPosting.class_date && typeof jobPosting.class_date === 'object' && 'toDate' in jobPosting.class_date) {
+          // Firestore Timestamp
+          classDateStr = (jobPosting.class_date as { toDate(): Date }).toDate().toISOString().split('T')[0];
+        } else {
+          console.log('❌ Cannot parse class_date:', jobPosting.class_date);
+          return '';
+        }
+
+        // Construir datetime string y convertir usando el timezone del job
+        const localDateTimeStr = `${classDateStr}T${jobPosting.start_time}:00`;
+        console.log('🔧 Constructed datetime string:', localDateTimeStr);
+        
+        // Crear fecha asumiendo que está en el timezone del job posting
+        const localDate = new Date(localDateTimeStr);
+        
+        // Usar TimezoneService para convertir a UTC
+        const utcConversion = this.timezoneService.convertToUTC(
+          localDate, 
+          jobPosting.job_timezone,
+          jobPosting.location_country || '',
+          jobPosting.location_state || ''
+        );
+        
+        if (utcConversion) {
+          utcDate = new Date(utcConversion.utc_datetime);
+          console.log('✅ Converted to UTC:', utcDate.toISOString());
+        } else {
+          console.log('❌ Failed to convert to UTC');
+          return '';
+        }
+      } else {
+        console.log('❌ formatJobPostingDateTimes: Missing both class_datetime_utc and class_date/start_time', {
+          hasClassDatetimeUtc: !!jobPosting?.class_datetime_utc,
+          hasClassDate: !!jobPosting?.class_date,
+          hasStartTime: !!jobPosting?.start_time
+        });
+        return '';
+      }
+
+      const jobTimezone = jobPosting.job_timezone;
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      console.log('🕐 formatJobPostingDateTimes: Processing data', {
+        utcDate: utcDate.toISOString(),
+        jobTimezone,
+        userTimezone
+      });
+
+      // Obtener nombre legible de la zona horaria del job posting
+      const jobTzInfo = this.timezoneService.getTimezonesForLocation(
+        jobPosting.location_country || '',
+        jobPosting.location_state || ''
+      )?.timezone_info.find(tz => tz.timezone === jobTimezone);
+      const jobTzName = jobTzInfo?.display_name || jobTimezone;
+
+      // Obtener nombre legible de la zona horaria local
+      const localTzName = userTimezone;
+
+      // Convertir UTC a hora local del job posting
+      const jobTime = utcDate.toLocaleString('es-ES', { timeZone: jobTimezone });
+      // Convertir UTC a hora local del usuario
+      const localTime = utcDate.toLocaleString('es-ES', { timeZone: userTimezone });
+      
+      const result = `${jobTime} ${jobTzName}<br>(${localTime} ${localTzName})`;
+
+      console.log('✅ formatJobPostingDateTimes: Result', {
+        jobTime,
+        jobTzName,
+        localTime,
+        localTzName,
+        result
+      });
+
+      return result;
+    }
   // Estado del componente
   isLoading = false;
   currentUserRole: UserRole | null = null;
@@ -274,7 +389,11 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
               status: job.status,
               modality: job.modality,
               location_country: job.location_country,
-              location_state: job.location_state
+              location_state: job.location_state,
+              class_datetime_utc: job.class_datetime_utc,
+              job_timezone: job.job_timezone,
+              class_date: job.class_date,
+              start_time: job.start_time
             }))
           });
           resolve(jobPostings);
@@ -811,29 +930,71 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
     return timeString;
   }
 
-  // ✅ NUEVO: Método para formatear fecha y hora combinadas
-  formatDateTime(dateTime: any): string {
+  // ✅ ACTUALIZADO: Método para formatear fecha y hora combinadas con timezone
+  formatDateTime(dateTime: any, jobPosting?: JobPosting): string {
     if (!dateTime) return '';
     
-    // Si es un Timestamp de Firestore
+    let date: Date | null = null;
+    
+    // Convertir el valor a Date
     if (dateTime && typeof dateTime.toDate === 'function') {
-      return dateTime.toDate().toLocaleString('es-ES');
+      date = dateTime.toDate();
+    } else if (dateTime instanceof Date) {
+      date = dateTime;
+    } else if (typeof dateTime === 'string') {
+      date = new Date(dateTime);
+    } else if (dateTime && typeof dateTime === 'object' && dateTime.seconds) {
+      date = new Date(dateTime.seconds * 1000);
     }
     
-    if (dateTime instanceof Date) {
-      return dateTime.toLocaleString('es-ES');
+    if (!date || isNaN(date.getTime())) {
+      return dateTime?.toString() || '';
     }
     
-    if (typeof dateTime === 'string') {
-      return new Date(dateTime).toLocaleString('es-ES');
+    // Si hay jobPosting y job_timezone, mostrar información de zona horaria
+    if (jobPosting && jobPosting.job_timezone) {
+      // Si la fecha viene de class_datetime_utc, convertir desde UTC
+      if (jobPosting.class_datetime_utc) {
+        const utcDate = new Date(jobPosting.class_datetime_utc);
+        const jobTimezoneConversion = this.timezoneService.convertFromUTC(
+          utcDate, 
+          jobPosting.job_timezone
+        );
+        
+        if (jobTimezoneConversion) {
+          const jobLocalDate = new Date(jobTimezoneConversion.local_datetime);
+          return `${jobLocalDate.toLocaleDateString('es-ES')} ${jobLocalDate.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
+          })} (zona institución)`;
+        }
+      }
+      
+      // Si es class_datetime sin UTC, asumir que está en job_timezone
+      if (jobPosting.class_datetime && !jobPosting.class_datetime_utc) {
+        const utcConversion = this.timezoneService.convertToUTC(
+          date,
+          jobPosting.job_timezone
+        );
+        
+        if (utcConversion) {
+          const utcDate = new Date(utcConversion.utc_datetime);
+          return `${date.toLocaleDateString('es-ES')} ${date.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
+          })} (zona institución)`;
+        }
+      }
     }
     
-    // Si es un objeto con seconds (Timestamp serializado)
-    if (dateTime && typeof dateTime === 'object' && dateTime.seconds) {
-      return new Date(dateTime.seconds * 1000).toLocaleString('es-ES');
-    }
-    
-    return dateTime.toString();
+    // Formato estándar sin información de timezone
+    return date.toLocaleString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   getStudentCount(students: any[]): number {

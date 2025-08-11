@@ -7,6 +7,10 @@ export type Language = 'es' | 'en';
 //profile.teachingCertifications
 //jobPostings.form.sections.location
 //jobPostings.form.selectTimezone
+//jobPostings.actions.viewPostulations
+//common.select
+//jobPostings.form.fields.country
+
 
 @Injectable({
   providedIn: 'root'
@@ -909,6 +913,105 @@ export class I18nService {
           }
         },
 
+        // Clases
+        class: {
+          title: 'Clase: {{course}} · {{tutorName}}',
+          details: 'Detalles de la clase',
+          status: {
+            scheduled: 'Programada',
+            confirmed: 'Confirmada',
+            ongoing: 'En curso',
+            completed: 'Completada',
+            cancelled: 'Cancelada'
+          },
+          actions: {
+            edit: 'Editar',
+            join: 'Unirse a la clase',
+            confirmAttendance: 'Confirmar asistencia',
+            reschedule: 'Reprogramar',
+            cancel: 'Cancelar clase',
+            uploadMaterial: 'Subir material',
+            openMap: 'Abrir en mapa',
+            contact: 'Contactar',
+            viewProfile: 'Ver perfil',
+            reminder: 'Recordarme',
+            report: 'Reportar incidencia',
+            requestRecording: 'Solicitar grabación'
+          },
+          info: {
+            startTime: 'Hora de inicio',
+            endTime: 'Hora de finalización',
+            duration: 'Duración',
+            modality: 'Modalidad',
+            location: 'Ubicación',
+            videoCall: 'Videollamada',
+            timezone: 'Zona horaria',
+            showInMyTime: 'Mostrar en mi hora',
+            lastUpdate: 'Última actualización',
+            createdBy: 'Creado por'
+          },
+          modality: {
+            presencial: 'Presencial',
+            virtual: 'Virtual',
+            hibrida: 'Híbrida'
+          },
+          students: {
+            title: 'Estudiantes',
+            confirmed: 'Confirmados',
+            pending: 'Pendientes',
+            absent: 'Ausentes',
+            age: 'años',
+            group: 'Grupo'
+          },
+          tutor: {
+            title: 'Tutor',
+            rating: 'Calificación',
+            languages: 'Idiomas'
+          },
+          materials: {
+            title: 'Materiales y recursos',
+            upload: 'Subir archivo',
+            recordings: 'Grabaciones',
+            links: 'Enlaces'
+          },
+          billing: {
+            title: 'Información de facturación',
+            hourlyRate: 'Tarifa por hora',
+            total: 'Total',
+            status: 'Estado del pago',
+            pending: 'Pendiente',
+            processed: 'Procesado',
+            receipt: 'Ver recibo'
+          },
+          feedback: {
+            title: 'Evaluación y comentarios',
+            rating: 'Calificación promedio',
+            comments: 'Comentarios',
+            survey: 'Abrir encuesta'
+          },
+          history: {
+            title: 'Historial',
+            created: 'Creado',
+            edited: 'Editado',
+            confirmed: 'Confirmado',
+            cancelled: 'Cancelado'
+          },
+          confirmAttendanceDialog: {
+            title: 'Confirmar asistencia',
+            message: '¿Confirmas tu asistencia a esta clase?',
+            confirm: 'Confirmar asistencia',
+            cancel: 'Cancelar'
+          },
+          messages: {
+            attendanceConfirmed: 'Asistencia confirmada correctamente',
+            classUpdated: 'Clase actualizada correctamente',
+            classCancelled: 'Clase cancelada correctamente',
+            error: 'Ha ocurrido un error. Inténtalo de nuevo.',
+            notFound: 'Clase no encontrada',
+            unauthorized: 'No tienes permisos para ver esta clase'
+          }
+        },
+
         // Validaciones
         validation: {
           required: 'Este campo es obligatorio',
@@ -1338,6 +1441,105 @@ export class I18nService {
               no_specific_level: 'No specific level',
               add: 'Add Group'
             }
+          }
+        },
+
+        // Classes
+        class: {
+          title: 'Class: {{course}} · {{tutorName}}',
+          details: 'Class details',
+          status: {
+            scheduled: 'Scheduled',
+            confirmed: 'Confirmed',
+            ongoing: 'Ongoing',
+            completed: 'Completed',
+            cancelled: 'Cancelled'
+          },
+          actions: {
+            edit: 'Edit',
+            join: 'Join class',
+            confirmAttendance: 'Confirm attendance',
+            reschedule: 'Reschedule',
+            cancel: 'Cancel class',
+            uploadMaterial: 'Upload material',
+            openMap: 'Open in map',
+            contact: 'Contact',
+            viewProfile: 'View profile',
+            reminder: 'Remind me',
+            report: 'Report incident',
+            requestRecording: 'Request recording'
+          },
+          info: {
+            startTime: 'Start time',
+            endTime: 'End time',
+            duration: 'Duration',
+            modality: 'Modality',
+            location: 'Location',
+            videoCall: 'Video call',
+            timezone: 'Timezone',
+            showInMyTime: 'Show in my time',
+            lastUpdate: 'Last update',
+            createdBy: 'Created by'
+          },
+          modality: {
+            presencial: 'In-person',
+            virtual: 'Virtual',
+            hibrida: 'Hybrid'
+          },
+          students: {
+            title: 'Students',
+            confirmed: 'Confirmed',
+            pending: 'Pending',
+            absent: 'Absent',
+            age: 'years old',
+            group: 'Group'
+          },
+          tutor: {
+            title: 'Tutor',
+            rating: 'Rating',
+            languages: 'Languages'
+          },
+          materials: {
+            title: 'Materials and resources',
+            upload: 'Upload file',
+            recordings: 'Recordings',
+            links: 'Links'
+          },
+          billing: {
+            title: 'Billing information',
+            hourlyRate: 'Hourly rate',
+            total: 'Total',
+            status: 'Payment status',
+            pending: 'Pending',
+            processed: 'Processed',
+            receipt: 'View receipt'
+          },
+          feedback: {
+            title: 'Feedback and comments',
+            rating: 'Average rating',
+            comments: 'Comments',
+            survey: 'Open survey'
+          },
+          history: {
+            title: 'History',
+            created: 'Created',
+            edited: 'Edited',
+            confirmed: 'Confirmed',
+            cancelled: 'Cancelled'
+          },
+          confirmAttendanceDialog: {
+            title: 'Confirm attendance',
+            message: 'Do you confirm your attendance to this class?',
+            confirm: 'Confirm attendance',
+            cancel: 'Cancel'
+          },
+          messages: {
+            attendanceConfirmed: 'Attendance confirmed successfully',
+            classUpdated: 'Class updated successfully',
+            classCancelled: 'Class cancelled successfully',
+            error: 'An error occurred. Please try again.',
+            notFound: 'Class not found',
+            unauthorized: 'You don\'t have permission to view this class'
           }
         },
 

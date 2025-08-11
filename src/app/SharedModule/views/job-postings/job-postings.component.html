@@ -148,9 +148,9 @@
             <!-- Información básica -->
             <div class="job-info-row">
               <mat-icon>event</mat-icon>
-              <span *ngIf="job.class_datetime; else legacyDateTime">{{ formatDateTime(job.class_datetime) }}</span>
+              <span *ngIf="job.class_datetime_utc && job.job_timezone; else legacyDateTime" [innerHTML]="formatJobPostingDateTimes(job)"></span>
               <ng-template #legacyDateTime>
-                <span>{{ formatDate(job.class_date) }}<span *ngIf="job.start_time"> - {{ formatTime(job.start_time) }}</span></span>
+                <span [innerHTML]="formatJobPostingDateTimes(job)"></span>
               </ng-template>
             </div>
 

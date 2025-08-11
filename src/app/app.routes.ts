@@ -259,6 +259,13 @@ export const routes: Routes = [
     ]
   },
 
+  // ✅ Ruta para ver detalles de clase individual
+  {
+    path: 'class/:id',
+    loadComponent: () => import('./SharedModule/views/class/class.component').then(m => m.ClassComponent),
+    canActivate: [AuthGuard]
+  },
+
   // Ruta por defecto
   {
     path: '',
