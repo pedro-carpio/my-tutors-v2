@@ -82,7 +82,6 @@
                   *ngFor="let tz of getTimezoneOptions()" 
                   [value]="tz.timezone">
                   {{ tz.display_name }} ({{ tz.utc_offset }})
-                  <span *ngIf="!tz.dst_aware" class="no-dst-indicator"> - No DST</span>
                 </mat-option>
               </mat-select>
               

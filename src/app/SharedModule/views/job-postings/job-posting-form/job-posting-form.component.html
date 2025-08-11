@@ -129,26 +129,87 @@
                 <h3>{{ 'jobPostings.form.steps.classDetails' | translate }}</h3>
                 <p class="step-description">{{ 'jobPostings.form.steps.classDetailsDescription' | translate }}</p>
 
-                <div class="form-row">
-                  <mat-form-field appearance="outline" class="half-width">
-                    <mat-label>{{ 'jobPostings.form.fields.classDate' | translate }}</mat-label>
-                    <input matInput [matDatepicker]="picker" formControlName="class_date">
-                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-                    <mat-datepicker #picker></mat-datepicker>
-                    <mat-error *ngIf="classDetailsForm.get('class_date')?.hasError('required')">
+                <!-- Ubicación para clases presenciales/híbridas -->
+                <div class="form-section" *ngIf="basicInfoForm.get('modality')?.value === 'presencial' || basicInfoForm.get('modality')?.value === 'hibrida'">
+                  <h4>{{ 'jobPostings.form.sections.location' | translate }}</h4>
+                  
+                  <!-- País y Estado -->
+                  <div class="form-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>{{ 'jobPostings.form.fields.country' | translate }}</mat-label>
+                      <mat-select formControlName="location_country">
+                        <mat-option value="">{{ 'common.select' | translate }}</mat-option>
+                        <mat-option *ngFor="let country of availableCountries" [value]="country.code">
+                          {{ country.name }}
+                        </mat-option>
+                      </mat-select>
+                      <mat-error *ngIf="classDetailsForm.get('location_country')?.hasError('required')">
+                        {{ 'jobPostings.form.errors.required' | translate }}
+                      </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" *ngIf="hasStatesForJob()">
+                      <mat-label>{{ 'jobPostings.form.fields.state' | translate }}</mat-label>
+                      <mat-select formControlName="location_state">
+                        <mat-option value="">{{ 'common.select' | translate }}</mat-option>
+                        <mat-option *ngFor="let state of availableStates" [value]="state.code">
+                          {{ state.name }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                  </div>
+
+                  <!-- Dirección específica -->
+                  <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>{{ 'jobPostings.form.fields.location' | translate }}</mat-label>
+                      <input matInput formControlName="location"
+                             [placeholder]="'jobPostings.form.placeholders.location' | translate">
+                      <mat-error *ngIf="classDetailsForm.get('location')?.hasError('required')">
+                        {{ 'jobPostings.form.errors.required' | translate }}
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <!-- Link para clases virtuales/híbridas -->
+                <div class="form-row" *ngIf="basicInfoForm.get('modality')?.value === 'virtual' || basicInfoForm.get('modality')?.value === 'hibrida'">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ 'jobPostings.form.fields.videoCallLink' | translate }}</mat-label>
+                    <input matInput formControlName="video_call_link"
+                           [placeholder]="'jobPostings.form.placeholders.videoCallLink' | translate">
+                    <mat-error *ngIf="classDetailsForm.get('video_call_link')?.hasError('required')">
                       {{ 'jobPostings.form.errors.required' | translate }}
                     </mat-error>
                   </mat-form-field>
+                </div>
 
-                  <mat-form-field appearance="outline" class="half-width">
-                    <mat-label>{{ 'jobPostings.form.fields.startTime' | translate }}</mat-label>
-                    <mat-select formControlName="start_time">
-                      <mat-option *ngFor="let time of timeOptions" [value]="time">
-                        {{ time }}
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ 'jobPostings.form.fields.classDateTime' | translate }}</mat-label>
+                    <input matInput type="datetime-local" formControlName="class_datetime">
+                    <mat-hint>{{ 'jobPostings.form.hints.classDateTime' | translate }}</mat-hint>
+                    <mat-error *ngIf="classDetailsForm.get('class_datetime')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.required' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- ✅ NUEVO: Selector de timezone basado en países de estudiantes -->
+                <div class="form-row" *ngIf="shouldShowStudentCountriesTimezoneSelector()">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>{{ 'jobPostings.form.fields.timezone' | translate }}</mat-label>
+                    <mat-select formControlName="job_timezone">
+                      <mat-option value="">{{ 'jobPostings.form.selectTimezone' | translate }}</mat-option>
+                      <mat-option *ngFor="let tz of getStudentCountriesTimezoneOptions()" [value]="tz.timezone">
+                        {{ tz.display_name }} ({{ tz.utc_offset }})
                       </mat-option>
                     </mat-select>
-                    <mat-error *ngIf="classDetailsForm.get('start_time')?.hasError('required')">
-                      {{ 'jobPostings.form.errors.required' | translate }}
+                    <mat-hint>{{ 'jobPostings.form.hints.studentCountriesTimezone' | translate }}</mat-hint>
+                    <mat-error *ngIf="classDetailsForm.get('job_timezone')?.hasError('required')">
+                      {{ 'jobPostings.form.errors.timezone.required' | translate }}
                     </mat-error>
                   </mat-form-field>
                 </div>
@@ -192,79 +253,6 @@
                   </mat-form-field>
                 </div>
 
-                <!-- Ubicación para clases presenciales/híbridas -->
-                <div class="form-section" *ngIf="basicInfoForm.get('modality')?.value === 'presencial' || basicInfoForm.get('modality')?.value === 'hibrida'">
-                  <h4>{{ 'jobPostings.form.sections.location' | translate }}</h4>
-                  
-                  <!-- País y Estado -->
-                  <div class="form-row">
-                    <mat-form-field appearance="outline">
-                      <mat-label>{{ 'jobPostings.form.fields.country' | translate }}</mat-label>
-                      <mat-select formControlName="location_country">
-                        <mat-option value="">{{ 'common.select' | translate }}</mat-option>
-                        <mat-option *ngFor="let country of availableCountries" [value]="country.code">
-                          {{ country.name }}
-                        </mat-option>
-                      </mat-select>
-                      <mat-error *ngIf="classDetailsForm.get('location_country')?.hasError('required')">
-                        {{ 'jobPostings.form.errors.required' | translate }}
-                      </mat-error>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" *ngIf="hasStatesForJob()">
-                      <mat-label>{{ 'jobPostings.form.fields.state' | translate }}</mat-label>
-                      <mat-select formControlName="location_state">
-                        <mat-option value="">{{ 'common.select' | translate }}</mat-option>
-                        <mat-option *ngFor="let state of availableStates" [value]="state.code">
-                          {{ state.name }}
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-
-                    <!-- ✅ NUEVO: Selector de timezone para job postings -->
-                    <mat-form-field appearance="outline" *ngIf="shouldShowJobTimezoneSelector()">
-                      <mat-label>{{ 'jobPostings.form.fields.timezone' | translate }}</mat-label>
-                      <mat-select formControlName="job_timezone" (selectionChange)="onJobTimezoneChange($event.value)">
-                        <mat-option value="">{{ 'jobPostings.form.selectTimezone' | translate }}</mat-option>
-                        <mat-option *ngFor="let tz of getJobTimezoneOptions()" [value]="tz.timezone">
-                          {{ tz.display_name }} (UTC{{ tz.utc_offset }})
-                          <span *ngIf="tz.dst_aware" class="timezone-dst-indicator"> - DST</span>
-                        </mat-option>
-                      </mat-select>
-                      <mat-hint *ngIf="jobLocationHasMultipleTimezones">
-                        {{ 'jobPostings.form.hints.multipleTimezones' | translate }}
-                      </mat-hint>
-                      <mat-error *ngIf="classDetailsForm.get('job_timezone')?.hasError('required')">
-                        {{ 'jobPostings.form.errors.timezone.required' | translate }}
-                      </mat-error>
-                    </mat-form-field>
-                  </div>
-
-                  <!-- Dirección específica -->
-                  <div class="form-row">
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>{{ 'jobPostings.form.fields.location' | translate }}</mat-label>
-                      <input matInput formControlName="location"
-                             [placeholder]="'jobPostings.form.placeholders.location' | translate">
-                      <mat-error *ngIf="classDetailsForm.get('location')?.hasError('required')">
-                        {{ 'jobPostings.form.errors.required' | translate }}
-                      </mat-error>
-                    </mat-form-field>
-                  </div>
-                </div>
-
-                <!-- Link para clases virtuales/híbridas -->
-                <div class="form-row" *ngIf="basicInfoForm.get('modality')?.value === 'virtual' || basicInfoForm.get('modality')?.value === 'hibrida'">
-                  <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>{{ 'jobPostings.form.fields.videoCallLink' | translate }}</mat-label>
-                    <input matInput formControlName="video_call_link"
-                           [placeholder]="'jobPostings.form.placeholders.videoCallLink' | translate">
-                    <mat-error *ngIf="classDetailsForm.get('video_call_link')?.hasError('required')">
-                      {{ 'jobPostings.form.errors.required' | translate }}
-                    </mat-error>
-                  </mat-form-field>
-                </div>
-
                 <!-- Tarifa y moneda -->
                 <div class="form-row">
                   <mat-form-field appearance="outline" class="half-width">
@@ -274,7 +262,9 @@
                     <mat-hint>{{ 'jobPostings.form.hints.hourlyRate' | translate }}</mat-hint>
                   </mat-form-field>
 
-                  <mat-form-field appearance="outline" class="half-width">
+                  <!-- ✅ NUEVO: Solo mostrar moneda si hay tarifa -->
+                  <mat-form-field appearance="outline" class="half-width" 
+                                  *ngIf="shouldShowCurrencyField()">
                     <mat-label>{{ 'jobPostings.form.fields.currency' | translate }}</mat-label>
                     <mat-select formControlName="currency">
                       <mat-option value="USD">USD ($)</mat-option>
@@ -319,9 +309,10 @@
                 <div class="form-row">
                   <mat-form-field appearance="outline" class="half-width">
                     <mat-label>{{ 'jobPostings.form.fields.targetLanguage' | translate }}</mat-label>
-                    <mat-select formControlName="target_language">
+                    <mat-select formControlName="target_language" 
+                                [disabled]="isLoadingLanguages || isLoadingInstitutionData">
                       <mat-option 
-                        *ngFor="let language of getAvailableTargetLanguages()" 
+                        *ngFor="let language of availableTargetLanguages" 
                         [value]="language.code">
                         {{ getLanguageName(language) }}
                       </mat-option>
@@ -329,15 +320,19 @@
                     <mat-error *ngIf="tutorRequirementsForm.get('target_language')?.hasError('required')">
                       {{ 'jobPostings.form.errors.required' | translate }}
                     </mat-error>
-                    <mat-hint *ngIf="isLoadingInstitutionData">
+                    <mat-hint *ngIf="isLoadingInstitutionData || isLoadingLanguages">
                       {{ 'jobPostings.form.loading.institutionData' | translate }}
+                    </mat-hint>
+                    <mat-hint *ngIf="!isLoadingInstitutionData && !isLoadingLanguages && availableTargetLanguages.length === 0">
+                      No hay idiomas disponibles
                     </mat-hint>
                   </mat-form-field>
                   <mat-form-field appearance="outline" class="half-width">
                     <mat-label>{{ 'jobPostings.form.fields.requiredLanguages' | translate }}</mat-label>
-                    <mat-select formControlName="required_languages" multiple>
+                    <mat-select formControlName="required_languages" multiple
+                                [disabled]="isLoadingLanguages || isLoadingInstitutionData">
                       <mat-option 
-                        *ngFor="let language of getAvailableRequiredLanguages()" 
+                        *ngFor="let language of availableRequiredLanguages" 
                         [value]="language.code">
                         {{ getLanguageName(language) }}
                       </mat-option>
@@ -347,6 +342,9 @@
                     </mat-error>
                     <mat-hint *ngIf="isLoadingLanguages">
                       {{ 'jobPostings.form.loading.languages' | translate }}
+                    </mat-hint>
+                    <mat-hint *ngIf="!isLoadingInstitutionData && !isLoadingLanguages && availableRequiredLanguages.length === 0">
+                      No hay idiomas disponibles
                     </mat-hint>
                   </mat-form-field>
                 </div>
@@ -558,8 +556,8 @@
 
                     <div class="summary-section">
                       <h4>{{ 'jobPostings.form.summary.classDetails' | translate }}</h4>
-                      <p><strong>{{ 'jobPostings.form.fields.classDate' | translate }}:</strong> {{ formatDate(classDetailsForm.get('class_date')?.value) }}</p>
-                      <p><strong>{{ 'jobPostings.form.fields.startTime' | translate }}:</strong> {{ classDetailsForm.get('start_time')?.value }}</p>
+                      <p><strong>{{ 'jobPostings.form.fields.classDateTime' | translate }}:</strong> {{ formatDateTime(classDetailsForm.get('class_datetime')?.value) }}</p>
+                      <p *ngIf="classDetailsForm.get('job_timezone')?.value"><strong>{{ 'jobPostings.form.fields.timezone' | translate }}:</strong> {{ getSelectedTimezone() }}</p>
                       <p><strong>{{ 'jobPostings.form.fields.duration' | translate }}:</strong> {{ classDetailsForm.get('total_duration_minutes')?.value }} {{ 'jobPostings.minutes' | translate }}</p>
                       <p><strong>{{ 'jobPostings.form.fields.frequency' | translate }}:</strong> {{ 'jobPostings.frequency.' + classDetailsForm.get('frequency')?.value | translate }}</p>
                     </div>

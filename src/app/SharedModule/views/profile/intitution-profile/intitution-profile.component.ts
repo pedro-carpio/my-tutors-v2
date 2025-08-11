@@ -8,7 +8,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject, Observable, of, combineLatest, switchMap, map } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, take } from 'rxjs/operators';
 import { Auth, user } from '@angular/fire/auth';
 import { InstitutionService } from '../../../../services/institution.service';
 import { TutorService } from '../../../../services/tutor.service';
@@ -108,7 +108,9 @@ export class IntitutionProfileComponent implements OnInit, OnDestroy {
   }
 
   openEditDialog(): void {
-    this.institution$.subscribe(institution => {
+    this.institution$.pipe(
+      take(1) // Solo tomar el primer valor y completar automáticamente
+    ).subscribe(institution => {
       if (institution) {
         const dialogRef = this.dialog.open(InstitutionEditDialogComponent, {
           width: '800px',

@@ -73,7 +73,7 @@ export class TutorEditDialogComponent implements OnInit {
 
   // ✅ NUEVO: Propiedades para manejo de timezones
   showManualTimezone = false;
-  availableTimezones: {timezone: string; display_name: string; utc_offset: string; dst_aware: boolean}[] = [];
+  availableTimezones: {timezone: string; display_name: string; utc_offset: string}[] = [];
   selectedLocationHasMultipleTimezones = false;
 
   constructor() {
@@ -362,7 +362,7 @@ export class TutorEditDialogComponent implements OnInit {
   }
 
   // ✅ NUEVO: Método para obtener las opciones de timezone disponibles
-  getTimezoneOptions(): {timezone: string; display_name: string; utc_offset: string; dst_aware: boolean}[] {
+    getTimezoneOptions(): {timezone: string; display_name: string; utc_offset: string}[] {
     try {
       return this.availableTimezones || [];
     } catch (error) {

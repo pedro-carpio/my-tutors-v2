@@ -30,7 +30,8 @@ export interface JobAssignmentEmailData {
   institutionEmail: string;
   jobTitle: string;
   classDate: string;
-  startTime: string;
+  startTime?: string; // ✅ Ahora opcional para soportar class_datetime
+  classDateTime?: string; // ✅ NUEVO: Campo combinado preferido
   duration: number;
   students: Array<{
     name: string;

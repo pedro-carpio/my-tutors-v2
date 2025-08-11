@@ -16,7 +16,7 @@ import { takeUntil, timeout } from 'rxjs/operators';
 
 import { TutorPostulationService } from '../../../../services/tutor-postulation.service';
 import { UserService } from '../../../../services/user.service';
-import { CreateClassDialogComponent } from '../create-class-dialog/create-class-dialog.component';
+// import { CreateClassDialogComponent } from '../create-class-dialog/create-class-dialog.component';
 import { JobPosting, TutorPostulation, User, PostulationStatus } from '../../../../types/firestore.types';
 
 export interface PostulationsListDialogData {
@@ -411,6 +411,18 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
     this.isProcessingAction = true;
     console.log('🔄 [PostulationsDialog] Estado de procesamiento activado para creación de clase');
 
+    // Funcionalidad temporal - mostrar mensaje de que está en desarrollo
+    console.log('🚧 [PostulationsDialog] Funcionalidad de crear clase en desarrollo');
+    this.snackBar.open('Funcionalidad de crear clase en desarrollo', 'Cerrar', { 
+      duration: 3000,
+      panelClass: ['info-snackbar']
+    });
+    
+    this.isProcessingAction = false;
+    console.log('✅ [PostulationsDialog] Estado de procesamiento desactivado');
+    
+    // TODO: Implementar CreateClassDialogComponent
+    /*
     console.log('🔄 [PostulationsDialog] Abriendo diálogo de creación de clase...');
     const dialogRef = this.dialog.open(CreateClassDialogComponent, {
       width: '800px',
@@ -443,6 +455,7 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
         console.log('ℹ️ [PostulationsDialog] Creación de clase cancelada por el usuario');
       }
     });
+    */
   }
 
   createClassFromFirstAccepted(): void {

@@ -81,6 +81,11 @@ export class TimezoneCalculatorComponent {
     }
 
     addConversion() {
+        // ⚠️ TEMPORALMENTE DESHABILITADO: Las funciones de conversión DST fueron removidas
+        console.warn('🚧 Timezone Calculator: Funcionalidad temporalmente deshabilitada debido a cambios en TimezoneService');
+        return;
+        
+        /* COMENTADO HASTA REIMPLEMENTAR
         if (!this.form.localDateTime || !this.form.localTimezone || !this.form.targetTimezone) return;
         const localDate = new Date(this.form.localDateTime);
         const toUtc = this.tzService.convertToUTC(localDate, this.form.localTimezone, this.form.localCountry, this.form.localState);
@@ -98,5 +103,6 @@ export class TimezoneCalculatorComponent {
             local1Dst: toUtc.dst_active,
             local2Dst: fromUtc.dst_active
         });
+        */
     }
 }

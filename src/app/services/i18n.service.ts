@@ -3,6 +3,11 @@ import { BehaviorSubject } from 'rxjs';
 
 export type Language = 'es' | 'en';
 
+//languageOptions.es
+//profile.teachingCertifications
+//jobPostings.form.sections.location
+//jobPostings.form.selectTimezone
+
 @Injectable({
   providedIn: 'root'
 })
@@ -466,6 +471,9 @@ export class I18nService {
           availableJobs: 'Trabajos Disponibles',
           assignedJobs: 'Trabajos Asignados',
           
+          // ✅ NUEVAS: Traducciones para selección
+          selectTimezone: 'Seleccionar zona horaria',
+          
           // Estados
           status: {
             draft: 'Borrador',
@@ -531,6 +539,9 @@ export class I18nService {
               classType: 'Tipo de clase',
               modality: 'Modalidad',
               additionalComment: 'Comentario adicional',
+              classDateTime: 'Fecha y hora de la clase', // ✅ NUEVO: Campo combinado
+              timezone: 'Zona horaria', // ✅ NUEVO: Selector de timezone
+              // Campos legacy (mantener para retrocompatibilidad)
               classDate: 'Fecha de clase',
               startTime: 'Hora de inicio',
               duration: 'Duración (minutos)',
@@ -609,14 +620,20 @@ export class I18nService {
               isDividedByStudents: 'Si se marca, el tiempo se dividirá entre los estudiantes',
               saveAsDraft: 'Los borradores no serán visibles para los tutores',
               addStudentOptions: 'Puedes agregar estudiantes manualmente o buscar estudiantes ya registrados en el sistema',
-              maxHourlyRate: 'Tarifa máxima que está dispuesto a pagar al tutor'
+              maxHourlyRate: 'Tarifa máxima que está dispuesto a pagar al tutor',
+              // ✅ NUEVOS: Hints para campos combinados
+              classDateTime: 'Selecciona la fecha y hora exacta de la clase',
+              studentCountriesTimezone: 'Zona horaria basada en los países donde tienes estudiantes'
             },
             
             errors: {
               required: 'Este campo es obligatorio',
               minLength: 'Mínimo {min} caracteres',
               minValue: 'Valor mínimo: {min}',
-              maxValue: 'Valor máximo: {max}'
+              maxValue: 'Valor máximo: {max}',
+              timezone: {
+                required: 'Debe seleccionar una zona horaria'
+              }
             }
           },
           
@@ -1477,6 +1494,9 @@ export class I18nService {
           availableJobs: 'Available Jobs',
           assignedJobs: 'Assigned Jobs',
           
+          // ✅ NEW: Selection translations
+          selectTimezone: 'Select timezone',
+          
           // Status
           status: {
             draft: 'Draft',
@@ -1542,6 +1562,9 @@ export class I18nService {
               classType: 'Class type',
               modality: 'Modality',
               additionalComment: 'Additional comment',
+              classDateTime: 'Class date and time', // ✅ NEW: Combined field
+              timezone: 'Timezone', // ✅ NEW: Timezone selector
+              // Legacy fields (maintain for backward compatibility)
               classDate: 'Class date',
               startTime: 'Start time',
               duration: 'Duration (minutes)',
@@ -1620,14 +1643,20 @@ export class I18nService {
               isDividedByStudents: 'If checked, time will be divided among students',
               saveAsDraft: 'Drafts will not be visible to tutors',
               addStudentOptions: 'You can add students manually or search for students already registered in the system',
-              maxHourlyRate: 'Maximum rate you are willing to pay to the tutor'
+              maxHourlyRate: 'Maximum rate you are willing to pay to the tutor',
+              // ✅ NEW: Hints for combined fields
+              classDateTime: 'Select the exact date and time for the class',
+              studentCountriesTimezone: 'Timezone based on countries where you have students'
             },
             
             errors: {
               required: 'This field is required',
               minLength: 'Minimum {min} characters',
               minValue: 'Minimum value: {min}',
-              maxValue: 'Maximum value: {max}'
+              maxValue: 'Maximum value: {max}',
+              timezone: {
+                required: 'You must select a timezone'
+              }
             }
           },
           

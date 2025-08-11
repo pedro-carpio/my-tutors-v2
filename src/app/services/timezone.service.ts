@@ -4,9 +4,6 @@ export interface TimezoneInfo {
   timezone: string;
   display_name: string;
   utc_offset: string;
-  dst_aware: boolean;
-  dst_start?: string;
-  dst_end?: string;
 }
 
 export interface LocationTimezoneInfo {
@@ -14,7 +11,6 @@ export interface LocationTimezoneInfo {
   state_code?: string;
   timezones: string[];
   multiple_timezones: boolean;
-  dst_aware: boolean;
   timezone_info: TimezoneInfo[];
 }
 
@@ -30,73 +26,89 @@ export interface ConvertedDateTime {
 })
 export class TimezoneService {
 
-  // Mapeo de estados de EE.UU. con sus timezones
+  // Mapeo de estados de EE.UU. con sus timezones (sin DST para simplificación)
   private readonly US_STATE_TIMEZONES: Record<string, TimezoneInfo[]> = {
     // Estados con una sola zona horaria
-    'AL': [{ timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
-    'AK': [{ timezone: 'America/Anchorage', display_name: 'Alaska Time', utc_offset: 'UTC-9/-8', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
-    'CA': [{ timezone: 'America/Los_Angeles', display_name: 'Pacific Time', utc_offset: 'UTC-8/-7', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
-    'CO': [{ timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
-    'CT': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
-    'DE': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
-    'GA': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
-    'HI': [{ timezone: 'Pacific/Honolulu', display_name: 'Hawaii Time', utc_offset: 'UTC-10', dst_aware: false }], // Hawaii no usa DST
-    'IL': [{ timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
+    'AL': [{ timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' }],
+    'AK': [{ timezone: 'America/Anchorage', display_name: 'Alaska Time', utc_offset: 'UTC-9' }],
+    'CA': [{ timezone: 'America/Los_Angeles', display_name: 'Pacific Time', utc_offset: 'UTC-8' }],
+    'CO': [{ timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7' }],
+    'CT': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5' }],
+    'DE': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5' }],
+    'GA': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5' }],
+    'HI': [{ timezone: 'Pacific/Honolulu', display_name: 'Hawaii Time', utc_offset: 'UTC-10' }],
+    'IL': [{ timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' }],
     'IN': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' }
     ],
-    'NY': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }],
+    'NY': [{ timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5' }],
     
     // Estados con múltiples zonas horarias
     'AZ': [
-      { timezone: 'America/Phoenix', display_name: 'Mountain Time (No DST)', utc_offset: 'UTC-7', dst_aware: false }, // Arizona no usa DST
-      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' } // Solo territorio Navajo
+      { timezone: 'America/Phoenix', display_name: 'Mountain Time (No DST)', utc_offset: 'UTC-7' },
+      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7' }
     ],
     'TX': [
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
-      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' },
+      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7' }
     ],
     'FL': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' }
     ],
     'IN_STATE': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' }
     ],
     'KY': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' }
     ],
     'MI': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' }
     ],
     'ND': [
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
-      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' },
+      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7' }
     ],
     'SD': [
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
-      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7/-6', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' },
+      { timezone: 'America/Denver', display_name: 'Mountain Time', utc_offset: 'UTC-7' }
     ],
     'TN': [
-      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5/-4', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' },
-      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
+      { timezone: 'America/New_York', display_name: 'Eastern Time', utc_offset: 'UTC-5' },
+      { timezone: 'America/Chicago', display_name: 'Central Time', utc_offset: 'UTC-6' }
     ]
   };
 
-  // Timezones por país (para países que no son EE.UU.)
+  // Timezones por país (para países que no son EE.UU.) - sin DST para simplificación
   private readonly COUNTRY_TIMEZONES: Record<string, TimezoneInfo[]> = {
-    'BO': [{ timezone: 'America/La_Paz', display_name: 'Bolivia Time', utc_offset: 'UTC-4', dst_aware: false }],
-    'ES': [{ timezone: 'Europe/Madrid', display_name: 'Central European Time', utc_offset: 'UTC+1/+2', dst_aware: true, dst_start: '2025-03-30', dst_end: '2025-10-26' }],
-    'MX': [
-      { timezone: 'America/Mexico_City', display_name: 'Central Time', utc_offset: 'UTC-6/-5', dst_aware: true, dst_start: '2025-04-06', dst_end: '2025-10-26' },
-      { timezone: 'America/Tijuana', display_name: 'Pacific Time', utc_offset: 'UTC-8/-7', dst_aware: true, dst_start: '2025-03-09', dst_end: '2025-11-02' }
+    'BO': [{ timezone: 'America/La_Paz', display_name: 'Hora de Bolivia', utc_offset: 'UTC-4' }],
+    'AR': [{ timezone: 'America/Argentina/Buenos_Aires', display_name: 'Hora de Argentina', utc_offset: 'UTC-3' }],
+    'CL': [
+      { timezone: 'America/Santiago', display_name: 'Hora de Chile', utc_offset: 'UTC-4' },
+      { timezone: 'Pacific/Easter', display_name: 'Hora de Isla de Pascua', utc_offset: 'UTC-6' }
     ],
-    'AR': [{ timezone: 'America/Argentina/Buenos_Aires', display_name: 'Argentina Time', utc_offset: 'UTC-3', dst_aware: false }],
-    'CO': [{ timezone: 'America/Bogota', display_name: 'Colombia Time', utc_offset: 'UTC-5', dst_aware: false }]
+    'CO': [{ timezone: 'America/Bogota', display_name: 'Hora de Colombia', utc_offset: 'UTC-5' }],
+    'EC': [{ timezone: 'America/Guayaquil', display_name: 'Hora de Ecuador', utc_offset: 'UTC-5' }],
+    'PE': [{ timezone: 'America/Lima', display_name: 'Hora de Perú', utc_offset: 'UTC-5' }],
+    'PY': [{ timezone: 'America/Asuncion', display_name: 'Hora de Paraguay', utc_offset: 'UTC-3' }],
+    'UY': [{ timezone: 'America/Montevideo', display_name: 'Hora de Uruguay', utc_offset: 'UTC-3' }],
+    'VE': [{ timezone: 'America/Caracas', display_name: 'Hora de Venezuela', utc_offset: 'UTC-4' }],
+    'ES': [
+      { timezone: 'Europe/Madrid', display_name: 'Hora Central Europea', utc_offset: 'UTC+1' },
+      { timezone: 'Atlantic/Canary', display_name: 'Hora de Europa Occidental', utc_offset: 'UTC+0' }
+    ],
+    'MX': [
+      { timezone: 'America/Mexico_City', display_name: 'Central Time', utc_offset: 'UTC-6' },
+      { timezone: 'America/Tijuana', display_name: 'Pacific Time', utc_offset: 'UTC-8' },
+      { timezone: 'America/Cancun', display_name: 'Eastern Time', utc_offset: 'UTC-5' }
+    ],
+    'CR': [{ timezone: 'America/Costa_Rica', display_name: 'Central Standard Time', utc_offset: 'UTC-6' }],
+    'GT': [{ timezone: 'America/Guatemala', display_name: 'Central Standard Time', utc_offset: 'UTC-6' }],
+    'PA': [{ timezone: 'America/Panama', display_name: 'Eastern Standard Time', utc_offset: 'UTC-5' }]
   };
 
   constructor() {
@@ -141,7 +153,6 @@ export class TimezoneService {
           state_code: stateCode,
           timezones: stateTimezones.map(tz => tz.timezone),
           multiple_timezones: stateTimezones.length > 1,
-          dst_aware: stateTimezones.some(tz => tz.dst_aware),
           timezone_info: stateTimezones
         };
       }
@@ -153,7 +164,6 @@ export class TimezoneService {
         country_code: countryCode,
         timezones: countryTimezones.map(tz => tz.timezone),
         multiple_timezones: countryTimezones.length > 1,
-        dst_aware: countryTimezones.some(tz => tz.dst_aware),
         timezone_info: countryTimezones
       };
     }
@@ -179,92 +189,7 @@ export class TimezoneService {
   }
 
   /**
-   * Verifica si una fecha está en horario de verano (DST)
-   */
-  isDSTActive(date: Date, timezoneInfo: TimezoneInfo): boolean {
-    if (!timezoneInfo.dst_aware || !timezoneInfo.dst_start || !timezoneInfo.dst_end) {
-      return false;
-    }
-
-    const year = date.getFullYear();
-    const dstStart = new Date(`${year}-${timezoneInfo.dst_start.substring(5)}`);
-    const dstEnd = new Date(`${year}-${timezoneInfo.dst_end.substring(5)}`);
-
-    return date >= dstStart && date < dstEnd;
-  }
-
-  /**
-   * Convierte una fecha y hora local a UTC considerando DST
-   */
-  convertToUTC(
-    localDateTime: Date,
-    timezone: string,
-    countryCode: string,
-    stateCode?: string
-  ): ConvertedDateTime | null {
-    try {
-      const tzInfo = this.findTimezoneInfo(timezone, countryCode, stateCode);
-      if (!tzInfo) {
-        console.warn('🕐 TimezoneService: Timezone no encontrado para conversión a UTC', timezone, countryCode, stateCode);
-        return null;
-      }
-
-      const dstActive = this.isDSTActive(localDateTime, tzInfo);
-      const offsetMinutes = this.getEffectiveOffsetMinutes(tzInfo, localDateTime, dstActive);
-      // local = UTC + offset -> UTC = local - offset
-      const utcDate = new Date(localDateTime.getTime() - offsetMinutes * 60000);
-
-      return {
-        local_datetime: localDateTime.toISOString(),
-        utc_datetime: utcDate.toISOString(),
-        timezone: tzInfo.timezone,
-        dst_active: dstActive
-      };
-    } catch (error) {
-      console.error('🕐 TimezoneService: Error en convertToUTC', error);
-      return null;
-    }
-  }
-
-  /**
-   * Convierte una fecha UTC a hora local de un timezone específico
-   */
-  convertFromUTC(
-    utcDateTime: Date,
-    timezone: string,
-    countryCode: string,
-    stateCode?: string
-  ): ConvertedDateTime | null {
-    try {
-      const tzInfo = this.findTimezoneInfo(timezone, countryCode, stateCode);
-      if (!tzInfo) {
-        console.warn('🕐 TimezoneService: Timezone no encontrado para conversión desde UTC', timezone, countryCode, stateCode);
-        return null;
-      }
-
-      // Primero asumimos offset estándar para obtener una fecha local tentativa
-      const { standardMinutes, dstMinutes } = this.parseOffsetString(tzInfo.utc_offset);
-      let localDate = new Date(utcDateTime.getTime() + standardMinutes * 60000);
-  const dstActive = this.isDSTActive(localDate, tzInfo);
-      if (dstActive && dstMinutes !== undefined) {
-        // Recalcular usando offset DST
-        localDate = new Date(utcDateTime.getTime() + dstMinutes * 60000);
-      }
-
-      return {
-        local_datetime: localDate.toISOString(),
-        utc_datetime: utcDateTime.toISOString(),
-        timezone: tzInfo.timezone,
-        dst_active: dstActive
-      };
-    } catch (error) {
-      console.error('🕐 TimezoneService: Error en convertFromUTC', error);
-      return null;
-    }
-  }
-
-  /**
-   * Obtiene el offset actual de un timezone considerando DST
+   * Obtiene el offset actual de un timezone (simplificado, sin DST)
    */
   getCurrentOffset(timezone: string): string {
     try {
@@ -304,48 +229,55 @@ export class TimezoneService {
    * Encuentra información de timezone basado en ubicación
    */
   private findTimezoneInfo(timezone: string, countryCode: string, stateCode?: string): TimezoneInfo | undefined {
+    console.log(`🔍 TimezoneService: Buscando timezone info para "${timezone}" en ${countryCode}${stateCode ? '/' + stateCode : ''}`);
+    
     if (countryCode === 'US' && stateCode) {
-      return this.US_STATE_TIMEZONES[stateCode]?.find(t => t.timezone === timezone);
+      const found = this.US_STATE_TIMEZONES[stateCode]?.find(t => t.timezone === timezone);
+      if (found) {
+        console.log(`✅ TimezoneService: Encontrado en US/${stateCode}:`, found);
+        return found;
+      }
+      console.log(`⚠️ TimezoneService: No encontrado en US/${stateCode}`);
     }
+    
     if (countryCode === 'US') {
       // Buscar en todos los estados si no se provee stateCode (caso excepcional)
-      for (const list of Object.values(this.US_STATE_TIMEZONES)) {
+      for (const [state, list] of Object.entries(this.US_STATE_TIMEZONES)) {
         const found = list.find(t => t.timezone === timezone);
-        if (found) return found;
+        if (found) {
+          console.log(`✅ TimezoneService: Encontrado en US/${state}:`, found);
+          return found;
+        }
       }
+      console.log(`⚠️ TimezoneService: No encontrado en ningún estado de US`);
     }
-    return this.COUNTRY_TIMEZONES[countryCode]?.find(t => t.timezone === timezone);
+    
+    const countryTimezones = this.COUNTRY_TIMEZONES[countryCode];
+    if (countryTimezones) {
+      const found = countryTimezones.find(t => t.timezone === timezone);
+      if (found) {
+        console.log(`✅ TimezoneService: Encontrado en país ${countryCode}:`, found);
+        return found;
+      }
+      console.log(`⚠️ TimezoneService: Timezone "${timezone}" no encontrado en ${countryCode}. Disponibles:`, countryTimezones.map(t => t.timezone));
+    } else {
+      console.log(`⚠️ TimezoneService: País "${countryCode}" no está configurado. Países disponibles:`, Object.keys(this.COUNTRY_TIMEZONES));
+    }
+    
+    return undefined;
   }
 
   /**
-   * Parsea una cadena de offset tipo: UTC-6/-5, UTC+1/+2, UTC-4, UTC+05:30, etc.
+   * Parsea una cadena de offset tipo: UTC-6, UTC+1, UTC+05:30, etc.
    * Devuelve minutos (local = UTC + minutos)
    */
-  private parseOffsetString(utc_offset: string): { standardMinutes: number; dstMinutes?: number } {
+  private parseOffsetString(utc_offset: string): number {
     const cleaned = utc_offset.replace('UTC', '').trim();
-    const parts = cleaned.split('/');
-    const parsePart = (p: string) => {
-      const sign = p.startsWith('-') ? -1 : 1;
-      const [hStr, mStr] = p.replace(/^[-+]/, '').split(':');
-      const hours = parseInt(hStr, 10) || 0;
-      const minutes = mStr ? parseInt(mStr, 10) : 0;
-      return sign * (hours * 60 + minutes);
-    };
-    const standardMinutes = parsePart(parts[0]);
-    const dstMinutes = parts[1] ? parsePart(parts[1]) : undefined;
-    return { standardMinutes, dstMinutes };
-  }
-
-  /**
-   * Obtiene offset efectivo para una fecha considerando DST
-   */
-  private getEffectiveOffsetMinutes(tzInfo: TimezoneInfo, date: Date, dstActiveOverride?: boolean): number {
-    const { standardMinutes, dstMinutes } = this.parseOffsetString(tzInfo.utc_offset);
-    if (!tzInfo.dst_aware || dstMinutes === undefined) {
-      return standardMinutes;
-    }
-    const active = dstActiveOverride !== undefined ? dstActiveOverride : this.isDSTActive(date, tzInfo);
-    return active ? dstMinutes! : standardMinutes;
+    const sign = cleaned.startsWith('-') ? -1 : 1;
+    const [hStr, mStr] = cleaned.replace(/^[-+]/, '').split(':');
+    const hours = parseInt(hStr, 10) || 0;
+    const minutes = mStr ? parseInt(mStr, 10) : 0;
+    return sign * (hours * 60 + minutes);
   }
 
   /**

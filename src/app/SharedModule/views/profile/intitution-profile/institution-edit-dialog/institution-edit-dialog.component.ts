@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -12,6 +12,8 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Auth } from '@angular/fire/auth';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { InstitutionService } from '../../../../../services/institution.service';
 import { Institution } from '../../../../../types/firestore.types';
 import { TranslatePipe } from '../../../../../pipes/translate.pipe';
@@ -39,13 +41,15 @@ export interface InstitutionEditDialogData {
   templateUrl: './institution-edit-dialog.component.html',
   styleUrl: './institution-edit-dialog.component.scss'
 })
-export class InstitutionEditDialogComponent implements OnInit {
+export class InstitutionEditDialogComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private institutionService = inject(InstitutionService);
   private snackBar = inject(MatSnackBar);
   private auth = inject(Auth);
   private dialogRef = inject(MatDialogRef<InstitutionEditDialogComponent>);
   public data = inject<InstitutionEditDialogData>(MAT_DIALOG_DATA);
+  
+  private destroy$ = new Subject<void>();
 
   institutionForm!: FormGroup;
   availableLanguages: string[] = [
@@ -54,47 +58,70 @@ export class InstitutionEditDialogComponent implements OnInit {
   ];
   isLoading = false;
 
+  constructor() {
+    console.log('🔧 InstitutionEditDialog: Iniciado');
+  }
+
   ngOnInit(): void {
-    this.initializeForm();
+    try {
+      console.log('🔧 InstitutionEditDialog: Iniciando');
+      
+      this.initializeForm();
+      
+      console.log('✅ InstitutionEditDialog: Inicializado correctamente');
+    } catch (error) {
+      console.error('🚨 Error en ngOnInit del InstitutionEditDialog:', error);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private initializeForm(): void {
-    const institution = this.data.institution || {} as Partial<Institution>; // Use empty object with Institution type if null
-    
-    this.institutionForm = this.fb.group({
-      // Información básica
-      basicInfo: this.fb.group({
-        name: [institution.name || '', [Validators.required]],
-        country: [institution.country || '', [Validators.required]],
-        phone: [institution.phone || '', [Validators.required]],
-        contact_email: [institution.contact_email || ''],
-        website_url: [institution.website_url || ''],
-        contact_person: [institution.contact_person || ''],
-        address: [institution.address || ''],
-        logo_url: [institution.logo_url || '']
-      }),
+    try {
+      const institution = this.data.institution || {} as Partial<Institution>; // Use empty object with Institution type if null
       
-      // Descripción y servicios
-      services: this.fb.group({
-        description: [institution.description || ''],
-        subscription_plan: [institution.subscription_plan || ''],
-        max_tutors: [institution.max_tutors || null],
-        max_students: [institution.max_students || null]
-      }),
-      
-      // Idiomas ofrecidos (array dinámico)
-      languages_offered: this.fb.array([])
-    });
+      this.institutionForm = this.fb.group({
+        // Información básica
+        basicInfo: this.fb.group({
+          name: [institution.name || '', [Validators.required]],
+          phone: [institution.phone || '', [Validators.required]],
+          contact_email: [institution.contact_email || ''],
+          website_url: [institution.website_url || ''],
+          contact_person: [institution.contact_person || ''],
+          address: [institution.address || ''],
+          logo_url: [institution.logo_url || '']
+        }),
+        
+        // Descripción y servicios
+        services: this.fb.group({
+          description: [institution.description || ''],
+          subscription_plan: [institution.subscription_plan || ''],
+          max_tutors: [institution.max_tutors || null],
+          max_students: [institution.max_students || null]
+        }),
+        
+        // Idiomas ofrecidos (array dinámico)
+        languages_offered: this.fb.array([])
+      });
 
-    // Inicializar idiomas ofrecidos
-    this.initializeLanguagesOffered();
-    
-    // Debug: Log form status
-    this.institutionForm.statusChanges.subscribe(status => {
-      console.log('Form status changed:', status);
-      console.log('Basic info errors:', this.institutionForm.get('basicInfo')?.errors);
-      console.log('Services errors:', this.institutionForm.get('services')?.errors);
-    });
+      // Inicializar idiomas ofrecidos
+      this.initializeLanguagesOffered();
+      
+      // Debug: Log form status
+      this.institutionForm.statusChanges.pipe(
+        takeUntil(this.destroy$)
+      ).subscribe(status => {
+        console.log('Form status changed:', status);
+        console.log('Basic info errors:', this.institutionForm.get('basicInfo')?.errors);
+        console.log('Services errors:', this.institutionForm.get('services')?.errors);
+      });
+    } catch (error) {
+      console.error('🚨 InstitutionEditDialog: Error en initializeForm:', error);
+      throw error;
+    }
   }
 
   private initializeLanguagesOffered(): void {
@@ -152,12 +179,14 @@ export class InstitutionEditDialogComponent implements OnInit {
           languages_offered: formValue.languages_offered.filter((lang: string) => lang.trim() !== '')
         };
 
+        let success = false;
         if (this.data.institution) {
           // Actualizar institución existente
           await this.institutionService.updateInstitution(currentUser.uid, institutionData);
           this.snackBar.open('Perfil actualizado exitosamente', 'Cerrar', {
             duration: 3000
           });
+          success = true;
         } else {
           // Crear nueva institución - incluir user_id
           const newInstitutionData = {
@@ -169,9 +198,13 @@ export class InstitutionEditDialogComponent implements OnInit {
           this.snackBar.open('Perfil de institución creado exitosamente', 'Cerrar', {
             duration: 3000
           });
+          success = true;
         }
 
-        this.dialogRef.close(true);
+        // Solo cerrar el diálogo si la operación fue exitosa
+        if (success) {
+          this.dialogRef.close(true);
+        }
       } catch (error) {
         console.error('Error saving institution profile:', error);
         const message = this.data.institution ? 'Error al actualizar el perfil' : 'Error al crear el perfil';

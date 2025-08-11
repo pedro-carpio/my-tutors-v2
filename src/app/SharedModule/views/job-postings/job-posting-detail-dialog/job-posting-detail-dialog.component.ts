@@ -1,4 +1,4 @@
-import { Component, Inject, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,13 +14,18 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { ToolbarComponent } from '../../../toolbar/toolbar.component';
-import { LayoutComponent } from '../../../layout/layout.component';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
-import { CreateClassDialogComponent } from '../create-class-dialog/create-class-dialog.component';
 import { TutorPostulationService } from '../../../../services/tutor-postulation.service';
 import { SessionService } from '../../../../services/session.service';
-import { JobPosting, ClassType, ClassModality, JobPostingStatus, FrequencyType, TutorPostulation, PostulationStatus, UserRole } from '../../../../types/firestore.types';
+import { TimezoneService } from '../../../../services/timezone.service';
+import { JobPosting, ClassType, ClassModality, JobPostingStatus, TutorPostulation, PostulationStatus, UserRole } from '../../../../types/firestore.types';
+
+import { FieldValue, Timestamp } from '@angular/fire/firestore';
+
+// Interface personalizada para Timestamp de Firebase
+interface FirebaseTimestamp {
+  toDate(): Date;
+}
 
 @Component({
   selector: 'app-job-posting-detail-dialog',
@@ -45,9 +50,19 @@ import { JobPosting, ClassType, ClassModality, JobPostingStatus, FrequencyType, 
 export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
   private tutorPostulationService = inject(TutorPostulationService);
   private sessionService = inject(SessionService);
+  private timezoneService = inject(TimezoneService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   private destroy$ = new Subject<void>();
+
+  // Datos inyectados
+  public data = inject(MAT_DIALOG_DATA) as { jobPosting: JobPosting; userRole?: UserRole };
+  public dialogRef = inject(MatDialogRef<JobPostingDetailDialogComponent>);
+
+  // Propiedades para mostrar información de timezone
+  userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  localClassTime = '';
+  utcClassTime = '';
 
   // Datos
   postulations: TutorPostulation[] = [];
@@ -57,14 +72,13 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
   // Columnas de la tabla de postulaciones
   postulationColumns: string[] = ['tutor', 'proposed_rate', 'status', 'postulated_at', 'actions'];
 
-  constructor(
-    public dialogRef: MatDialogRef<JobPostingDetailDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { jobPosting: JobPosting; userRole?: UserRole }
-  ) {
-    this.currentUserRole = data.userRole || null;
+  constructor() {
+    this.currentUserRole = this.data.userRole || null;
   }
 
   ngOnInit(): void {
+    this.calculateLocalClassTime();
+    
     if (this.canViewPostulations()) {
       this.loadPostulations();
     }
@@ -78,6 +92,60 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
   canViewPostulations(): boolean {
     return (this.currentUserRole === 'institution' || this.currentUserRole === 'admin') &&
            this.jobPosting.status === 'published';
+  }
+
+  /**
+   * Calcula y formatea la hora local de la clase para el usuario
+   */
+  private calculateLocalClassTime(): void {
+    const jobPosting = this.jobPosting;
+    
+    // Si tenemos la fecha UTC calculada, usarla
+    if (jobPosting.class_datetime_utc) {
+      console.log('🕐 Using UTC datetime from job posting:', jobPosting.class_datetime_utc);
+      
+      // Convertir la fecha UTC a la zona horaria del usuario
+      const utcDate = new Date(jobPosting.class_datetime_utc);
+      this.utcClassTime = utcDate.toISOString();
+      
+      // Mostrar en timezone local del usuario
+      const localDate = new Date(utcDate.getTime());
+      this.localClassTime = localDate.toLocaleString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      });
+      
+    } else if (jobPosting.class_date && jobPosting.start_time) {
+      // Fallback: construir la fecha desde class_date y start_time
+      console.log('🕐 Constructing datetime from class_date and start_time');
+      
+      const classDateStr = jobPosting.class_date.toISOString().split('T')[0];
+      const localDateTimeStr = `${classDateStr}T${jobPosting.start_time}:00`;
+      const localDateTime = new Date(localDateTimeStr);
+      
+      this.localClassTime = localDateTime.toLocaleString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      });
+      
+      this.utcClassTime = localDateTime.toISOString();
+    }
+    
+    console.log('🕐 Class time info calculated:', {
+      userTimezone: this.userTimezone,
+      localClassTime: this.localClassTime,
+      utcClassTime: this.utcClassTime
+    });
   }
 
   private loadPostulations(): void {
@@ -160,12 +228,23 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
     return icons[classType] || 'class';
   }
 
-  formatDate(value: any): string {
+  formatTimestampDate(timestamp: FieldValue | Timestamp | Date | string | null | undefined): Date | null {
+    if (timestamp && typeof (timestamp as Timestamp).toDate === 'function') {
+      return (timestamp as Timestamp).toDate();
+    } else if (timestamp instanceof Date) {
+      return timestamp;
+    } else if (typeof timestamp === 'string') {
+      return new Date(timestamp);
+    }
+    return null;
+  }
+
+  formatDate(value: string | Date | FirebaseTimestamp | null | undefined): string {
     if (!value) return '';
     
     // Si es un Timestamp de Firestore
-    if (value && typeof value.toDate === 'function') {
-      return value.toDate().toLocaleDateString();
+    if (value && typeof (value as FirebaseTimestamp).toDate === 'function') {
+      return (value as FirebaseTimestamp).toDate().toLocaleDateString();
     }
     
     // Si ya es un Date
@@ -184,12 +263,12 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
     return value.toString();
   }
 
-  formatDateTime(value: any): string {
+  formatDateTime(value: Date | string | FirebaseTimestamp | null | undefined): string {
     if (!value) return '';
     
     // Si es un Timestamp de Firestore
-    if (value && typeof value.toDate === 'function') {
-      return value.toDate().toLocaleString();
+    if (value && typeof (value as FirebaseTimestamp).toDate === 'function') {
+      return (value as FirebaseTimestamp).toDate().toLocaleString();
     }
     
     // Si ya es un Date
@@ -268,6 +347,11 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
   }
 
   createClass(postulation: TutorPostulation): void {
+    // TODO: Implementar diálogo de creación de clase
+    console.log('Create class from postulation:', postulation);
+    this.showSuccess('Funcionalidad de crear clase en desarrollo');
+    
+    /*
     // Necesitamos obtener los datos del tutor para el diálogo
     // Por ahora, vamos a simular estos datos o usar un servicio para obtenerlos
     
@@ -290,5 +374,6 @@ export class JobPostingDetailDialogComponent implements OnInit, OnDestroy {
         // Opcionalmente, cerrar este diálogo o actualizar la vista
       }
     });
+    */
   }
 }

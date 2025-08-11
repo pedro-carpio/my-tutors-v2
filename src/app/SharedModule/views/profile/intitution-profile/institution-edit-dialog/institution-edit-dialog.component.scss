@@ -21,6 +21,15 @@
   width: 100%;
 }
 
+// Clase específica para el campo de estado
+.state-field {
+  margin-top: 8px;
+  
+  mat-form-field {
+    width: 100%;
+  }
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;

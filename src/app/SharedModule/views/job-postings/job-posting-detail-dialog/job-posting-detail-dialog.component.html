@@ -36,7 +36,7 @@
             <strong>{{ 'jobPostings.fields.classType' | translate }}:</strong>
             <div class="type-info">
               <mat-icon>{{ getClassTypeIcon(jobPosting.class_type) }}</mat-icon>
-              <span>{{ 'jobPostings.classTypes.' + jobPosting.class_type | translate }}</span>
+              <span>{{ jobPosting.class_type }}</span>
             </div>
           </div>
 
@@ -58,15 +58,32 @@
       </mat-card-header>
       <mat-card-content>
         <div class="info-grid">
-          <div class="info-item">
-            <strong>{{ 'jobPostings.fields.classDate' | translate }}:</strong>
-            <span>{{ formatDate(jobPosting.class_date) }}</span>
+          <div class="info-item full-width" *ngIf="localClassTime">
+            <strong>⏰ {{ 'jobPostings.fields.classDateTime' | translate }}:</strong>
+            <div class="datetime-info">
+              <div class="local-time">
+                <mat-icon>schedule</mat-icon>
+                <span>{{ localClassTime }}</span>
+                <small class="timezone-note">({{ 'jobPostings.details.yourLocalTime' | translate }})</small>
+              </div>
+              <div class="utc-time" *ngIf="utcClassTime">
+                <small>UTC: {{ formatDateTime(utcClassTime) }}</small>
+              </div>
+            </div>
           </div>
 
-          <div class="info-item">
-            <strong>{{ 'jobPostings.fields.startTime' | translate }}:</strong>
-            <span>{{ formatTime(jobPosting.start_time) }}</span>
-          </div>
+          <!-- Fallback para cuando no hay UTC calculado -->
+          <ng-container *ngIf="!localClassTime">
+            <div class="info-item">
+              <strong>{{ 'jobPostings.fields.classDate' | translate }}:</strong>
+              <span>{{ formatDate(jobPosting.class_date) }}</span>
+            </div>
+
+            <div class="info-item" *ngIf="jobPosting.start_time">
+              <strong>{{ 'jobPostings.fields.startTime' | translate }}:</strong>
+              <span>{{ formatTime(jobPosting.start_time) }}</span>
+            </div>
+          </ng-container>
 
           <div class="info-item">
             <strong>{{ 'jobPostings.fields.duration' | translate }}:</strong>
@@ -170,12 +187,12 @@
         <div class="info-grid">
           <div class="info-item">
             <strong>{{ 'jobPostings.fields.createdAt' | translate }}:</strong>
-            <span>{{ formatDateTime(jobPosting.created_at) }}</span>
+            <!-- <span>{{ formatDate(jobPosting.created_at) }}</span> -->
           </div>
           
           <div class="info-item" *ngIf="jobPosting.updated_at">
             <strong>{{ 'jobPostings.fields.updatedAt' | translate }}:</strong>
-            <span>{{ formatDateTime(jobPosting.updated_at) }}</span>
+            <!-- <span>{{ formatDate(jobPosting.updated_at) }}</span> -->
           </div>
 
           <div class="info-item" *ngIf="jobPosting.assigned_tutor_id">

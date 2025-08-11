@@ -424,8 +424,11 @@ export interface JobPosting {
   additional_comment?: string;
   
   // Bloque 2 - Detalles de la(s) clase(s)
-  class_date: Date;
-  start_time: string; // formato HH:mm
+  class_datetime?: Date; // ✅ NUEVO: Fecha y hora combinadas de la clase (formato preferido)
+  class_datetime_utc?: Date; // ✅ Fecha y hora de la clase en UTC para cálculos
+  // Campos legacy para retrocompatibilidad durante migración
+  class_date?: Date; // ⚠️ DEPRECATED: Usar class_datetime en su lugar
+  start_time?: string; // ⚠️ DEPRECATED: formato HH:mm, usar class_datetime en su lugar
   total_duration_minutes: number;
   is_divided_by_students: boolean;
   frequency: FrequencyType;
@@ -436,6 +439,7 @@ export interface JobPosting {
   location_latitude?: number;
   location_longitude?: number;
   video_call_link?: string; // para clases virtuales
+  job_timezone?: string; // ✅ NUEVO: Timezone específico del job posting
   
   // Bloque 3 - Estudiantes & Logística
   students: StudentDetails[];
@@ -475,8 +479,10 @@ export interface ClassInstance {
   postulation_id?: string; // Referencia a la postulación aceptada
   institution_id: string;
   tutor_id: string;
-  class_date: Date | FieldValue | Timestamp;
-  start_time: string;
+  class_datetime?: Date | FieldValue | Timestamp; // ✅ NUEVO: Fecha y hora combinadas (formato preferido)
+  // Campos legacy para retrocompatibilidad
+  class_date?: Date | FieldValue | Timestamp; // ⚠️ DEPRECATED: Usar class_datetime
+  start_time?: string; // ⚠️ DEPRECATED: Usar class_datetime
   duration_minutes: number;
   location?: string;
   video_call_link?: string;

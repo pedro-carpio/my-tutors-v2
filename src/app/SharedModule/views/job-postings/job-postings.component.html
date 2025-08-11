@@ -148,7 +148,10 @@
             <!-- Información básica -->
             <div class="job-info-row">
               <mat-icon>event</mat-icon>
-              <span>{{ formatDate(job.class_date) }} - {{ formatTime(job.start_time) }}</span>
+              <span *ngIf="job.class_datetime; else legacyDateTime">{{ formatDateTime(job.class_datetime) }}</span>
+              <ng-template #legacyDateTime>
+                <span>{{ formatDate(job.class_date) }}<span *ngIf="job.start_time"> - {{ formatTime(job.start_time) }}</span></span>
+              </ng-template>
             </div>
 
             <div class="job-info-row">

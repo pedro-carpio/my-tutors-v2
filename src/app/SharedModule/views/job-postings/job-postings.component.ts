@@ -811,6 +811,31 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
     return timeString;
   }
 
+  // ✅ NUEVO: Método para formatear fecha y hora combinadas
+  formatDateTime(dateTime: any): string {
+    if (!dateTime) return '';
+    
+    // Si es un Timestamp de Firestore
+    if (dateTime && typeof dateTime.toDate === 'function') {
+      return dateTime.toDate().toLocaleString('es-ES');
+    }
+    
+    if (dateTime instanceof Date) {
+      return dateTime.toLocaleString('es-ES');
+    }
+    
+    if (typeof dateTime === 'string') {
+      return new Date(dateTime).toLocaleString('es-ES');
+    }
+    
+    // Si es un objeto con seconds (Timestamp serializado)
+    if (dateTime && typeof dateTime === 'object' && dateTime.seconds) {
+      return new Date(dateTime.seconds * 1000).toLocaleString('es-ES');
+    }
+    
+    return dateTime.toString();
+  }
+
   getStudentCount(students: any[]): number {
     return students?.length || 0;
   }

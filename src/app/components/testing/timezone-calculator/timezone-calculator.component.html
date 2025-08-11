@@ -81,8 +81,7 @@
     <h3>Detalle Zona Local</h3>
     <div *ngFor="let tz of localTimezoneOptions" class="tz-detail" [class.active]="tz.timezone===form.localTimezone">
       <strong>{{tz.display_name}}</strong> - {{tz.timezone}}<br>
-      Offset: {{tz.utc_offset}}<br>
-      DST: {{tz.dst_aware ? 'Sí' : 'No'}} <span *ngIf="tz.dst_aware">({{tz.dst_start}} → {{tz.dst_end}})</span>
+      Offset: {{tz.utc_offset}}
     </div>
   </div>
 </div>

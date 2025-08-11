@@ -465,14 +465,13 @@ export class AssignTutorDialogComponent implements OnInit {
     if (!this.selectedTutor?.userData?.email) return;
 
     try {
-      const emailData = {
+      // ✅ NUEVO: Construir datos con soporte para ambos formatos
+      const emailData: any = {
         tutorName: this.selectedTutor.displayName,
         tutorEmail: this.selectedTutor.userData.email,
         institutionName: 'Tu Institución', // TODO: Obtener del contexto
         institutionEmail: 'institucion@example.com', // TODO: Obtener del contexto
         jobTitle: this.data.jobPosting.title,
-        classDate: this.formatDate(this.data.jobPosting.class_date),
-        startTime: this.data.jobPosting.start_time,
         duration: this.data.jobPosting.total_duration_minutes,
         students: this.data.jobPosting.students.map(student => ({
           name: student.name,
@@ -482,6 +481,19 @@ export class AssignTutorDialogComponent implements OnInit {
         modality: this.getModalityLabel(this.data.jobPosting.modality),
         location: this.data.jobPosting.location
       };
+
+      // ✅ NUEVO: Manejar formato combinado o separado
+      if (this.data.jobPosting.class_datetime) {
+        emailData.classDateTime = this.formatDateTime(this.data.jobPosting.class_datetime);
+        // Extraer fecha y hora por separado para retrocompatibilidad
+        const dateTime = new Date(this.data.jobPosting.class_datetime);
+        emailData.classDate = dateTime.toLocaleDateString();
+        emailData.startTime = `${dateTime.getHours().toString().padStart(2, '0')}:${dateTime.getMinutes().toString().padStart(2, '0')}`;
+      } else {
+        // Fallback a campos separados
+        emailData.classDate = this.formatDate(this.data.jobPosting.class_date || new Date());
+        emailData.startTime = this.data.jobPosting.start_time || '00:00';
+      }
 
       await this.emailService.sendJobAssignmentEmailToTutor(emailData);
     } catch (error) {
@@ -512,6 +524,31 @@ export class AssignTutorDialogComponent implements OnInit {
     }
     
     return date.toString();
+  }
+
+  // ✅ NUEVO: Método para formatear fecha y hora combinadas
+  formatDateTime(dateTime: any): string {
+    if (!dateTime) return '';
+    
+    // Si es un Timestamp de Firestore
+    if (dateTime && typeof dateTime.toDate === 'function') {
+      return dateTime.toDate().toLocaleString('es-ES');
+    }
+    
+    if (dateTime instanceof Date) {
+      return dateTime.toLocaleString('es-ES');
+    }
+    
+    if (typeof dateTime === 'string') {
+      return new Date(dateTime).toLocaleString('es-ES');
+    }
+    
+    // Si es un objeto con seconds (Timestamp serializado)
+    if (dateTime && typeof dateTime === 'object' && dateTime.seconds) {
+      return new Date(dateTime.seconds * 1000).toLocaleString('es-ES');
+    }
+    
+    return dateTime.toString();
   }
 
   getModalityLabel(modality: string): string {
