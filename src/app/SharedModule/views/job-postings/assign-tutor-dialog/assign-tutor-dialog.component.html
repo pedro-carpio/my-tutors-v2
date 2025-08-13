@@ -28,7 +28,7 @@
                 </div>
                 <div class="detail-item">
                   <strong>Fecha y Hora:</strong>
-                  <span [innerHTML]="formatJobPostingDateTimes(data.jobPosting)"></span>
+                  <span [innerHTML]="data.jobPosting | formatJobDateTime"></span>
                 </div>
                 <div class="detail-item">
                   <strong>Duración:</strong>

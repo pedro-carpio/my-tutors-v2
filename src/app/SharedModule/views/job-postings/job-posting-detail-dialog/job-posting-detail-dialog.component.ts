@@ -15,6 +15,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
+import { FormatJobDateTimePipe } from '../../../../pipes/format-job-datetime.pipe';
 import { TutorPostulationService } from '../../../../services/tutor-postulation.service';
 import { SessionService } from '../../../../services/session.service';
 import { TimezoneService } from '../../../../services/timezone.service';
@@ -42,7 +43,8 @@ interface FirebaseTimestamp {
     MatTabsModule,
     MatTableModule,
     MatProgressSpinnerModule,
-    TranslatePipe
+    TranslatePipe,
+    FormatJobDateTimePipe
   ],
   templateUrl: './job-posting-detail-dialog.component.html',
   styleUrls: ['./job-posting-detail-dialog.component.scss']

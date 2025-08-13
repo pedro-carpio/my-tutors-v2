@@ -13,9 +13,10 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { firstValueFrom } from 'rxjs';
 import { TutorPostulationService } from '../../../../services/tutor-postulation.service';
 import { JobPosting, TutorPostulation, User } from '../../../../types/firestore.types';
-import { EmailService, EmailTemplate } from '../../../../services/email.service';
+import { EmailService } from '../../../../services/email.service';
 import { InstitutionService } from '../../../../services/institution.service';
 import { UserService } from '../../../../services/user.service';
 import { I18nService } from '../../../../services/i18n.service';
@@ -24,18 +25,6 @@ import { TimezoneService } from '../../../../services/timezone.service';
 export interface JobPostulationDialogData {
   jobPosting: JobPosting;
   currentUserId: string;
-}
-
-interface PostulationEmailData {
-  institutionName: string;
-  institutionEmail: string;
-  jobTitle: string;
-  tutorName: string;
-  tutorEmail: string;
-  coverLetter: string;
-  teachingApproach?: string;
-  classDate: string;
-  loginUrl: string;
 }
 
 @Component({
@@ -75,9 +64,11 @@ export class JobPostulationDialogComponent {
   
   postulationForm!: FormGroup;
   isSubmitting = false;
+  formattedDateTime = '';
 
   constructor() {
     this.initForm();
+    this.formattedDateTime = this.formatJobPostingDateTime();
   }
 
   private initForm(): void {
@@ -117,6 +108,7 @@ export class JobPostulationDialogComponent {
           this.i18nService.translate('common.close'),
           { duration: 4000, panelClass: ['warning-snackbar'] }
         );
+        this.isSubmitting = false; // Resetear el estado aquí
         return;
       }
 
@@ -134,8 +126,8 @@ export class JobPostulationDialogComponent {
         status: 'pending'
       };
 
-      // Obtener email del tutor actual
-      const tutorUser = await this.userService.getUser(this.data.currentUserId).toPromise();
+      // Obtener email del tutor actual usando firstValueFrom
+      const tutorUser = await firstValueFrom(this.userService.getUser(this.data.currentUserId));
       if (!tutorUser?.email) {
         throw new Error('No se pudo obtener el email del tutor');
       }
@@ -148,8 +140,10 @@ export class JobPostulationDialogComponent {
       
       console.log('✅ [JobPostulationDialog] Postulación creada exitosamente:', postulationId);
 
-      // Enviar email de notificación a la institución
-      await this.sendInstitutionNotificationEmail(postulationData, tutorUser);
+      // Enviar email de notificación a la institución (sin bloquear el flujo)
+      this.sendInstitutionNotificationEmail(postulationData, tutorUser).catch(emailError => {
+        console.error('❌ [JobPostulationDialog] Error enviando email (no crítico):', emailError);
+      });
 
       // Mostrar mensaje de éxito
       this.snackBar.open(
@@ -180,14 +174,14 @@ export class JobPostulationDialogComponent {
     try {
       console.log('📧 [JobPostulationDialog] Enviando email a la institución...');
       
-      // Obtener datos de la institución
-      const institution = await this.institutionService.getInstitution(postulation.institution_id).toPromise();
+      // Obtener datos de la institución usando firstValueFrom
+      const institution = await firstValueFrom(this.institutionService.getInstitution(postulation.institution_id));
       if (!institution) {
         throw new Error('No se pudo obtener la información de la institución');
       }
 
-      // Obtener email de la institución
-      const institutionUser = await this.userService.getUser(institution.user_id).toPromise();
+      // Obtener email de la institución usando firstValueFrom
+      const institutionUser = await firstValueFrom(this.userService.getUser(institution.user_id));
       const institutionEmail = institution.contact_email || institutionUser?.email;
       
       if (!institutionEmail) {
@@ -203,7 +197,7 @@ export class JobPostulationDialogComponent {
         tutorEmail: tutorUser.email,
         coverLetter: postulation.cover_letter || '',
         teachingApproach: postulation.teaching_approach,
-        classDate: this.formatJobPostingDateTime(),
+        classDate: this.formattedDateTime,
         loginUrl: `${window.location.origin}/institution/login`
       });
       
@@ -213,84 +207,6 @@ export class JobPostulationDialogComponent {
       console.error('❌ [JobPostulationDialog] Error enviando email a institución:', error);
       // No lanzar el error para que no afecte el flujo principal
     }
-  }
-
-  private generateNewPostulationNotificationTemplate(data: PostulationEmailData): EmailTemplate {
-    return {
-      subject: `Nueva Postulación: ${data.jobTitle} - ${data.tutorName}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-            <h1 style="margin: 0; font-size: 28px;">📝 Nueva Postulación</h1>
-            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">${data.institutionName}</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <p>Estimado equipo de <strong>${data.institutionName}</strong>,</p>
-            
-            <p>Han recibido una nueva postulación para su convocatoria de trabajo:</p>
-            
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #667eea;">Detalles de la Convocatoria</h3>
-              <p><strong>Título:</strong> ${data.jobTitle}</p>
-              <p><strong>Fecha programada:</strong> ${data.classDate}</p>
-            </div>
-
-            <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; border-left: 4px solid #0066cc; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #0066cc;">Información del Tutor</h3>
-              <p><strong>Nombre:</strong> ${data.tutorName}</p>
-              <p><strong>Email:</strong> ${data.tutorEmail}</p>
-            </div>
-
-            <div style="background: #f0f8f0; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #28a745;">Carta de Presentación</h3>
-              <p style="font-style: italic;">"${data.coverLetter}"</p>
-              ${data.teachingApproach ? `
-                <h4 style="color: #28a745; margin-top: 20px;">Enfoque de Enseñanza</h4>
-                <p style="font-style: italic;">"${data.teachingApproach}"</p>
-              ` : ''}
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${data.loginUrl}" style="background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                Ver Postulaciones
-              </a>
-            </div>
-
-            <p>Pueden revisar esta postulación y todas las demás accediendo a su panel de administración.</p>
-            
-            <p style="color: #666; font-size: 14px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-              Saludos cordiales,<br>
-              El equipo de My Tutors<br>
-              <em>Este email se envió automáticamente cuando se recibió una nueva postulación.</em>
-            </p>
-          </div>
-        </div>
-      `,
-      text: `Nueva Postulación: ${data.jobTitle}
-
-Estimado equipo de ${data.institutionName},
-
-Han recibido una nueva postulación para su convocatoria de trabajo.
-
-DETALLES DE LA CONVOCATORIA:
-- Título: ${data.jobTitle}
-- Fecha programada: ${data.classDate}
-
-INFORMACIÓN DEL TUTOR:
-- Nombre: ${data.tutorName}
-- Email: ${data.tutorEmail}
-
-CARTA DE PRESENTACIÓN:
-"${data.coverLetter}"
-
-${data.teachingApproach ? `ENFOQUE DE ENSEÑANZA:\n"${data.teachingApproach}"` : ''}
-
-Pueden revisar esta postulación accediendo a: ${data.loginUrl}
-
-Saludos cordiales,
-El equipo de My Tutors`
-    };
   }
 
   private convertToDate(dateValue: unknown): Date | null {
@@ -341,13 +257,8 @@ El equipo de My Tutors`
 
   formatJobPostingDateTime(): string {
     try {
-      console.log('📅 [JobPostulationDialog] Formatting date:', this.data.jobPosting.class_datetime);
-      console.log('📅 [JobPostulationDialog] Job timezone:', this.data.jobPosting.job_timezone);
-      console.log('📅 [JobPostulationDialog] Type:', typeof this.data.jobPosting.class_datetime);
-      
       // Verificar si existe class_datetime_utc
       if (this.data.jobPosting.class_datetime_utc) {
-        console.log('📅 [JobPostulationDialog] Using UTC datetime:', this.data.jobPosting.class_datetime_utc);
         const utcDate = new Date(this.data.jobPosting.class_datetime_utc);
         
         if (!isNaN(utcDate.getTime())) {
@@ -395,7 +306,6 @@ El equipo de My Tutors`
         const date = this.convertToDate(this.data.jobPosting.class_datetime as unknown);
         
         if (date && !isNaN(date.getTime())) {
-          console.log('📅 [JobPostulationDialog] Successfully converted date:', date);
           
           // Si hay job_timezone, convertir correctamente
           if (this.data.jobPosting.job_timezone) {
@@ -431,14 +341,11 @@ El equipo de My Tutors`
             hour: '2-digit',
             minute: '2-digit'
           });
-        } else {
-          console.warn('📅 [JobPostulationDialog] Invalid date after conversion:', date);
         }
       }
       
       // Fallback para formato legacy
       if (this.data.jobPosting.class_date && this.data.jobPosting.start_time) {
-        console.log('📅 [JobPostulationDialog] Using legacy format');
         const legacyDate = this.convertToDate(this.data.jobPosting.class_date as unknown);
           
         if (legacyDate && !isNaN(legacyDate.getTime())) {
@@ -479,12 +386,10 @@ El equipo de My Tutors`
         }
       }
       
-      console.warn('📅 [JobPostulationDialog] No valid date found, using fallback');
       return 'Fecha por confirmar';
       
     } catch (error) {
-      console.error('📅 [JobPostulationDialog] Error formatting date:', error);
-      console.error('📅 [JobPostulationDialog] Job posting data:', this.data.jobPosting);
+      console.error('❌ [JobPostulationDialog] Error formatting date:', error);
       return 'Fecha por confirmar';
     }
   }

@@ -63,7 +63,7 @@
             <div class="datetime-info">
               <div class="local-time">
                 <mat-icon>schedule</mat-icon>
-                <span [innerHTML]="formatJobPostingDateTimes()"></span>
+                <span [innerHTML]="data.jobPosting | formatJobDateTime"></span>
               </div>
             </div>
           </div>

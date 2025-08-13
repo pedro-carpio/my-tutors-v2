@@ -61,12 +61,27 @@ export class ClassInstanceService {
       updated_at: serverTimestamp()
     };
 
-    const docRef = await addDoc(this.classInstancesCollection, {
+    const dataToSave: any = {
       ...newClass,
-      class_date: this.convertToTimestamp(newClass.class_date),
       created_at: serverTimestamp(),
       updated_at: serverTimestamp()
-    });
+    };
+
+    // Convertir timestamps apropiadamente
+    if (newClass.class_date) {
+      dataToSave.class_date = this.convertToTimestamp(newClass.class_date);
+    }
+    if (newClass.class_datetime) {
+      dataToSave.class_datetime = this.convertToTimestamp(newClass.class_datetime);
+    }
+    if (newClass.completed_at) {
+      dataToSave.completed_at = this.convertToTimestamp(newClass.completed_at);
+    }
+    if (newClass.canceled_at) {
+      dataToSave.canceled_at = this.convertToTimestamp(newClass.canceled_at);
+    }
+
+    const docRef = await addDoc(this.classInstancesCollection, dataToSave);
 
     return docRef.id;
   }
@@ -360,7 +375,7 @@ export class ClassInstanceService {
   }
 
   /**
-   * Buscar clases por rango de fechas
+   * Obtener clases por rango de fechas
    */
   getClassesByDateRange(startDate: Date, endDate: Date): Observable<ClassInstance[]> {
     const q = query(
@@ -383,6 +398,43 @@ export class ClassInstanceService {
           } as ClassInstance;
         });
         observer.next(classes);
+      });
+
+      return () => unsubscribe();
+    });
+  }
+
+  /**
+   * Obtener clase por job posting ID
+   */
+  getClassByJobPostingId(jobPostingId: string): Observable<ClassInstance | null> {
+    const q = query(
+      this.classInstancesCollection,
+      where('job_posting_id', '==', jobPostingId),
+      limit(1)
+    );
+
+    return new Observable(observer => {
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+          observer.next(null);
+          return;
+        }
+
+        const doc = snapshot.docs[0];
+        const data = doc.data();
+        const classInstance: ClassInstance = {
+          id: doc.id,
+          ...data,
+          class_date: data['class_date']?.toDate() || new Date(),
+          class_datetime: data['class_datetime']?.toDate() || data['class_date']?.toDate() || new Date(),
+          created_at: data['created_at']?.toDate() || new Date(),
+          updated_at: data['updated_at']?.toDate() || new Date(),
+          completed_at: data['completed_at']?.toDate() || undefined,
+          canceled_at: data['canceled_at']?.toDate() || undefined
+        } as ClassInstance;
+        
+        observer.next(classInstance);
       });
 
       return () => unsubscribe();

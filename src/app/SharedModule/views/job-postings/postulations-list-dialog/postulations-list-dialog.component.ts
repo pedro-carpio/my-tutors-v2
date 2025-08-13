@@ -20,6 +20,7 @@ import { InstitutionService } from '../../../../services/institution.service';
 import { EmailService } from '../../../../services/email.service';
 import { TimezoneService } from '../../../../services/timezone.service';
 import { ClassInstanceService } from '../../../../services/class-instance.service';
+import { FormatJobDateTimePipe } from '../../../../pipes/format-job-datetime.pipe';
 // import { CreateClassDialogComponent } from '../create-class-dialog/create-class-dialog.component';
 import { JobPosting, TutorPostulation, User, PostulationStatus } from '../../../../types/firestore.types';
 
@@ -72,7 +73,8 @@ interface PostulationWithTutor extends TutorPostulation {
     MatSnackBarModule,
     MatTabsModule,
     MatMenuModule,
-    MatTooltipModule
+    MatTooltipModule,
+    FormatJobDateTimePipe
   ],
   templateUrl: './postulations-list-dialog.component.html',
   styleUrl: './postulations-list-dialog.component.scss'
@@ -90,131 +92,80 @@ export class PostulationsListDialogComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   /**
-   * Devuelve string con la fecha/hora en la zona del job posting y la local del usuario
+   * Devuelve string con la fecha/hora precalculada
+   * @deprecated Use formattedDateTime property or FormatJobDateTimePipe instead
    */
   formatJobPostingDateTimes(): string {
-    const jobPosting = this.data.jobPosting;
-    
-    console.log('🕐 [PostulationsDialog] formatJobPostingDateTimes called with jobPosting:', {
-      id: jobPosting?.id,
-      title: jobPosting?.title,
-      class_datetime_utc: jobPosting?.class_datetime_utc,
-      job_timezone: jobPosting?.job_timezone,
-      location_country: jobPosting?.location_country,
-      location_state: jobPosting?.location_state,
-      class_date: jobPosting?.class_date,
-      start_time: jobPosting?.start_time
-    });
-
-    // Verificar si tenemos job_timezone
-    if (!jobPosting?.job_timezone) {
-      console.log('❌ [PostulationsDialog] formatJobPostingDateTimes: Missing job_timezone');
-      return '';
-    }
-
-    let utcDate: Date | null = null;
-
-    // Opción 1: Si existe class_datetime_utc, usarlo
-    if (jobPosting.class_datetime_utc) {
-      console.log('✅ [PostulationsDialog] Using class_datetime_utc');
-      utcDate = new Date(jobPosting.class_datetime_utc);
-    } 
-    // Opción 2: Fallback usando class_date y start_time
-    else if (jobPosting.class_date && jobPosting.start_time) {
-      console.log('🔄 [PostulationsDialog] Fallback: Using class_date + start_time');
-      
-      // Convertir class_date a string si es necesario
-      let classDateStr: string;
-      if (jobPosting.class_date instanceof Date) {
-        classDateStr = jobPosting.class_date.toISOString().split('T')[0];
-      } else if (typeof jobPosting.class_date === 'string') {
-        classDateStr = jobPosting.class_date;
-      } else if (jobPosting.class_date && typeof jobPosting.class_date === 'object' && 'toDate' in jobPosting.class_date) {
-        // Firestore Timestamp
-        classDateStr = (jobPosting.class_date as { toDate(): Date }).toDate().toISOString().split('T')[0];
-      } else {
-        console.log('❌ [PostulationsDialog] Cannot parse class_date:', jobPosting.class_date);
-        return '';
-      }
-
-      // Construir datetime string y convertir usando el timezone del job
-      const localDateTimeStr = `${classDateStr}T${jobPosting.start_time}:00`;
-      console.log('🔧 [PostulationsDialog] Constructed datetime string:', localDateTimeStr);
-      
-      // Crear fecha asumiendo que está en el timezone del job posting
-      const localDate = new Date(localDateTimeStr);
-      
-      // Usar TimezoneService para convertir a UTC
-      const utcConversion = this.timezoneService.convertToUTC(
-        localDate, 
-        jobPosting.job_timezone,
-        jobPosting.location_country || '',
-        jobPosting.location_state || ''
-      );
-      
-      if (utcConversion) {
-        utcDate = new Date(utcConversion.utc_datetime);
-        console.log('✅ [PostulationsDialog] Converted to UTC:', utcDate.toISOString());
-      } else {
-        console.log('❌ [PostulationsDialog] Failed to convert to UTC');
-        return '';
-      }
-    } else {
-      console.log('❌ [PostulationsDialog] formatJobPostingDateTimes: Missing required data', {
-        hasClassDatetimeUtc: !!jobPosting?.class_datetime_utc,
-        hasClassDate: !!jobPosting?.class_date,
-        hasStartTime: !!jobPosting?.start_time,
-        hasJobTimezone: !!jobPosting?.job_timezone
-      });
-      return '';
-    }
-
-    const jobTimezone = jobPosting.job_timezone;
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    console.log('🕐 [PostulationsDialog] formatJobPostingDateTimes: Processing data', {
-      utcDate: utcDate.toISOString(),
-      jobTimezone,
-      userTimezone
-    });
-
-    // Obtener nombre legible de la zona horaria del job posting
-    const jobTzInfo = this.timezoneService.getTimezonesForLocation(
-      jobPosting.location_country || '',
-      jobPosting.location_state || ''
-    )?.timezone_info.find(tz => tz.timezone === jobTimezone);
-    const jobTzName = jobTzInfo?.display_name || jobTimezone;
-    // Obtener nombre legible de la zona horaria local
-    const localTzName = userTimezone;
-    // Convertir UTC a hora local del job posting
-    const jobTime = utcDate.toLocaleString('es-ES', { timeZone: jobTimezone });
-    // Convertir UTC a hora local del usuario
-    const localTime = utcDate.toLocaleString('es-ES', { timeZone: userTimezone });
-    
-    const result = `${jobTime} ${jobTzName}<br>(${localTime} ${localTzName})`;
-
-    console.log('✅ [PostulationsDialog] formatJobPostingDateTimes: Result', {
-      jobTime,
-      jobTzName,
-      localTime,
-      localTzName,
-      result
-    });
-
-    return result;
+    // Devolver la fecha precalculada para evitar ciclos infinitos
+    return this.formattedDateTime;
   }
+
+  // Estado del componente
   isLoading = false;
   isProcessingAction = false;
   allPostulations: PostulationWithTutor[] = [];
   pendingPostulations: PostulationWithTutor[] = [];
   acceptedPostulations: PostulationWithTutor[] = [];
+  formattedDateTime: string = '';
 
   displayedColumns: string[] = ['tutor', 'status', 'postulated_at', 'actions'];
 
   constructor(
     public dialogRef: MatDialogRef<PostulationsListDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: PostulationsListDialogData
-  ) {}
+  ) {
+    // Inicializar la fecha formateada una vez
+    this.formattedDateTime = this.calculateFormattedDateTime();
+  }
+
+  /**
+   * Calcula la fecha formateada una sola vez para evitar ciclos infinitos
+   */
+  private calculateFormattedDateTime(): string {
+    const jobPosting = this.data.jobPosting;
+    
+    // Implementación simplificada sin logging excesivo
+    if (!jobPosting) return 'Fecha por confirmar';
+    
+    try {
+      // Si existe class_datetime_utc
+      if (jobPosting.class_datetime_utc) {
+        const utcDate = new Date(jobPosting.class_datetime_utc);
+        if (!isNaN(utcDate.getTime())) {
+          return utcDate.toLocaleString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short'
+          });
+        }
+      }
+      
+      // Fallback con class_date y start_time
+      if (jobPosting.class_date && jobPosting.start_time) {
+        const date = jobPosting.class_date instanceof Date ? 
+          jobPosting.class_date : 
+          new Date(jobPosting.class_date as string);
+        
+        if (!isNaN(date.getTime())) {
+          return `${date.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })} a las ${jobPosting.start_time}`;
+        }
+      }
+      
+      return 'Fecha por confirmar';
+    } catch (error) {
+      console.error('❌ [PostulationsDialog] Error calculating date:', error);
+      return 'Fecha por confirmar';
+    }
+  }
 
   ngOnInit(): void {
     console.log('🚀 [PostulationsDialog] Componente inicializado');

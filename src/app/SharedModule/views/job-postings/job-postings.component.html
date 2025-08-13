@@ -123,6 +123,10 @@
                   <mat-icon>person_add</mat-icon>
                   {{ 'jobPostings.actions.assignTutor' | translate }}
                 </button>
+                <button mat-menu-item *ngIf="canGoToClass(job)" (click)="goToClass(job)">
+                  <mat-icon>school</mat-icon>
+                  {{ 'jobPostings.actions.goToClass' | translate }}
+                </button>
                 <button mat-menu-item *ngIf="canCompleteJob(job)" (click)="completeJob(job)">
                   <mat-icon>check_circle</mat-icon>
                   {{ 'jobPostings.actions.complete' | translate }}
@@ -148,10 +152,7 @@
             <!-- Información básica -->
             <div class="job-info-row">
               <mat-icon>event</mat-icon>
-              <span *ngIf="job.class_datetime_utc && job.job_timezone; else legacyDateTime" [innerHTML]="formatJobPostingDateTimes(job)"></span>
-              <ng-template #legacyDateTime>
-                <span [innerHTML]="formatJobPostingDateTimes(job)"></span>
-              </ng-template>
+              <span [innerHTML]="job | formatJobDateTime"></span>
             </div>
 
             <div class="job-info-row">

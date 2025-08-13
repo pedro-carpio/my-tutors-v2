@@ -662,6 +662,7 @@ export class I18nService {
             hide: 'Esconder',
             apply: 'Aplicar',
             assignTutor: 'Asignar Tutor',
+            goToClass: 'Ir a Clase',
             complete: 'Completar',
             cancel: 'Cancelar',
             createFirst: 'Crear Primera Convocatoria'
@@ -1883,6 +1884,7 @@ export class I18nService {
             hide: 'Hide',
             apply: 'Apply',
             assignTutor: 'Assign Tutor',
+            goToClass: 'Go to Class',
             complete: 'Complete',
             cancel: 'Cancel',
             createFirst: 'Create First Job Posting'

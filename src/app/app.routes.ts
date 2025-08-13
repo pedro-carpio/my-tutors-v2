@@ -263,7 +263,6 @@ export const routes: Routes = [
   {
     path: 'class/:id',
     loadComponent: () => import('./SharedModule/views/class/class.component').then(m => m.ClassComponent),
-    canActivate: [AuthGuard]
   },
 
   // Ruta por defecto

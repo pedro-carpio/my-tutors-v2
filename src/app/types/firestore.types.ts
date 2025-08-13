@@ -482,6 +482,7 @@ export interface ClassInstance {
   // Campos legacy para retrocompatibilidad
   class_date?: Date | FieldValue | Timestamp; // ⚠️ DEPRECATED: Usar class_datetime
   start_time?: string; // ⚠️ DEPRECATED: Usar class_datetime
+  end_time?: string; // Hora de finalización calculada
   duration_minutes: number;
   location?: string;
   video_call_link?: string;
@@ -492,6 +493,10 @@ export interface ClassInstance {
   currency: string;
   timezone: string;
   notes?: string;
+  materials?: string[]; // URLs de materiales compartidos
+  homework_assigned?: string; // Tarea asignada
+  attendance_confirmed?: boolean; // Si la asistencia fue confirmada
+  completed_at?: FieldValue | Timestamp; // Fecha de finalización
   created_at: FieldValue | Timestamp;
   updated_at?: FieldValue | Timestamp;
   canceled_at?: FieldValue | Timestamp;

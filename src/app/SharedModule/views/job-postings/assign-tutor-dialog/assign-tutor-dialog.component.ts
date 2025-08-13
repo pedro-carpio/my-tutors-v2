@@ -23,6 +23,7 @@ import { EmailService, JobAssignmentEmailData } from '../../../../services/email
 import { UserService } from '../../../../services/user.service';
 import { TimezoneService } from '../../../../services/timezone.service';
 import { ClassInstanceService } from '../../../../services/class-instance.service';
+import { FormatJobDateTimePipe } from '../../../../pipes/format-job-datetime.pipe';
 import { JobPosting, Tutor, User } from '../../../../types/firestore.types';
 
 export interface AssignTutorDialogData {
@@ -62,7 +63,8 @@ interface SerializedTimestamp {
     MatProgressBarModule,
     MatTableModule,
     MatChipsModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    FormatJobDateTimePipe
   ],
   templateUrl: './assign-tutor-dialog.component.html',
   styleUrl: './assign-tutor-dialog.component.scss'
@@ -531,7 +533,11 @@ export class AssignTutorDialogComponent implements OnInit {
           hourly_rate: this.selectedTutor.hourly_rate,
           currency: this.selectedTutor.hourly_rate_currency || 'USD',
           timezone: this.data.jobPosting.job_timezone || 'UTC',
-          notes: formValue.assignmentNotes || ''
+          notes: formValue.assignmentNotes || '',
+          // Nuevos campos
+          attendance_confirmed: false,
+          materials: [],
+          homework_assigned: ''
         };
 
         const classId = await this.classInstanceService.createClassInstance(classInstanceData);
@@ -742,121 +748,7 @@ export class AssignTutorDialogComponent implements OnInit {
     return 'No especificado';
   }
 
-  /**
-   * Devuelve string con la fecha/hora en la zona del job posting y la local del usuario
-   */
-  formatJobPostingDateTimes(jobPosting: JobPosting): string {
-    console.log('🕐 [AssignTutor] formatJobPostingDateTimes called with jobPosting:', {
-      id: jobPosting?.id,
-      title: jobPosting?.title,
-      class_datetime_utc: jobPosting?.class_datetime_utc,
-      job_timezone: jobPosting?.job_timezone,
-      location_country: jobPosting?.location_country,
-      location_state: jobPosting?.location_state,
-      class_date: jobPosting?.class_date,
-      start_time: jobPosting?.start_time
-    });
 
-    // Verificar si tenemos job_timezone
-    if (!jobPosting?.job_timezone) {
-      console.log('❌ [AssignTutor] formatJobPostingDateTimes: Missing job_timezone');
-      return '';
-    }
-
-    let utcDate: Date | null = null;
-
-    // Opción 1: Si existe class_datetime_utc, usarlo
-    if (jobPosting.class_datetime_utc) {
-      console.log('✅ [AssignTutor] Using class_datetime_utc');
-      utcDate = new Date(jobPosting.class_datetime_utc);
-    } 
-    // Opción 2: Fallback usando class_date y start_time
-    else if (jobPosting.class_date && jobPosting.start_time) {
-      console.log('🔄 [AssignTutor] Fallback: Using class_date + start_time');
-      
-      // Convertir class_date a string si es necesario
-      let classDateStr: string;
-      if (jobPosting.class_date instanceof Date) {
-        classDateStr = jobPosting.class_date.toISOString().split('T')[0];
-      } else if (typeof jobPosting.class_date === 'string') {
-        classDateStr = jobPosting.class_date;
-      } else if (jobPosting.class_date && typeof jobPosting.class_date === 'object' && 'toDate' in jobPosting.class_date) {
-        // Firestore Timestamp
-        classDateStr = (jobPosting.class_date as { toDate(): Date }).toDate().toISOString().split('T')[0];
-      } else {
-        console.log('❌ [AssignTutor] Cannot parse class_date:', jobPosting.class_date);
-        return '';
-      }
-
-      // Construir datetime string y convertir usando el timezone del job
-      const localDateTimeStr = `${classDateStr}T${jobPosting.start_time}:00`;
-      console.log('🔧 [AssignTutor] Constructed datetime string:', localDateTimeStr);
-      
-      // Crear fecha asumiendo que está en el timezone del job posting
-      const localDate = new Date(localDateTimeStr);
-      
-      // Usar TimezoneService para convertir a UTC
-      const utcConversion = this.timezoneService.convertToUTC(
-        localDate, 
-        jobPosting.job_timezone,
-        jobPosting.location_country || '',
-        jobPosting.location_state || ''
-      );
-      
-      if (utcConversion) {
-        utcDate = new Date(utcConversion.utc_datetime);
-        console.log('✅ [AssignTutor] Converted to UTC:', utcDate.toISOString());
-      } else {
-        console.log('❌ [AssignTutor] Failed to convert to UTC');
-        return '';
-      }
-    } else {
-      console.log('❌ [AssignTutor] formatJobPostingDateTimes: Missing required data', {
-        hasClassDatetimeUtc: !!jobPosting?.class_datetime_utc,
-        hasClassDate: !!jobPosting?.class_date,
-        hasStartTime: !!jobPosting?.start_time,
-        hasJobTimezone: !!jobPosting?.job_timezone
-      });
-      return '';
-    }
-    
-    const jobTimezone = jobPosting.job_timezone;
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    console.log('🕐 [AssignTutor] formatJobPostingDateTimes: Processing data', {
-      utcDate: utcDate.toISOString(),
-      jobTimezone,
-      userTimezone
-    });
-    
-    // Obtener nombre legible de la zona horaria del job posting
-    const jobTzInfo = this.timezoneService.getTimezonesForLocation(
-      jobPosting.location_country || '',
-      jobPosting.location_state || ''
-    )?.timezone_info.find(tz => tz.timezone === jobTimezone);
-    
-    const jobTzName = jobTzInfo?.display_name || jobTimezone;
-    
-    // Obtener nombre legible de la zona horaria local
-    const localTzName = userTimezone;
-    
-    // Convertir UTC a hora local del job posting
-    const jobTime = utcDate.toLocaleString('es-ES', { timeZone: jobTimezone });
-    // Convertir UTC a hora local del usuario
-    const localTime = utcDate.toLocaleString('es-ES', { timeZone: userTimezone });
-    
-    const result = `${jobTime} ${jobTzName}<br>(${localTime} ${localTzName})`;
-
-    console.log('✅ [AssignTutor] formatJobPostingDateTimes: Result', {
-      jobTime,
-      jobTzName,
-      localTime,
-      localTzName,
-      result
-    });
-    
-    return result;
-  }
 
   /**
    * Construye una fecha y hora combinada a partir de los campos separados del JobPosting

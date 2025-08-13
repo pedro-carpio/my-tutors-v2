@@ -22,6 +22,7 @@ import { RouterModule } from '@angular/router';
 import { ToolbarComponent } from '../../toolbar/toolbar.component';
 import { LayoutComponent } from '../../layout/layout.component';
 import { TranslatePipe } from '../../../pipes/translate.pipe';
+import { FormatJobDateTimePipe } from '../../../pipes/format-job-datetime.pipe';
 import { JobPostingDetailDialogComponent } from './job-posting-detail-dialog/job-posting-detail-dialog.component';
 import { JobPostulationDialogComponent } from './job-postulation-dialog/job-postulation-dialog.component';
 import { AssignTutorDialogComponent } from './assign-tutor-dialog/assign-tutor-dialog.component';
@@ -53,7 +54,8 @@ import { JobPosting, UserRole, JobPostingStatus, ClassType, ClassModality, Tutor
     RouterModule,
     ToolbarComponent,
     LayoutComponent,
-    TranslatePipe
+    TranslatePipe,
+    FormatJobDateTimePipe
   ],
   templateUrl: './job-postings.component.html',
   styleUrls: ['./job-postings.component.scss']
@@ -70,119 +72,28 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private destroy$ = new Subject<void>();
 
-    /**
-     * Devuelve string con la fecha/hora en la zona del job posting y la local del usuario
-     */
-    formatJobPostingDateTimes(jobPosting: JobPosting): string {
-      console.log('🕐 formatJobPostingDateTimes called with jobPosting:', {
-        id: jobPosting?.id,
-        title: jobPosting?.title,
-        class_datetime_utc: jobPosting?.class_datetime_utc,
-        job_timezone: jobPosting?.job_timezone,
-        location_country: jobPosting?.location_country,
-        location_state: jobPosting?.location_state,
-        class_date: jobPosting?.class_date,
-        start_time: jobPosting?.start_time
-      });
-
-      // Verificar si tenemos job_timezone
-      if (!jobPosting?.job_timezone) {
-        console.log('❌ formatJobPostingDateTimes: Missing job_timezone');
-        return '';
-      }
-
-      let utcDate: Date | null = null;
-
-      // Opción 1: Si existe class_datetime_utc, usarlo
-      if (jobPosting.class_datetime_utc) {
-        console.log('✅ Using class_datetime_utc');
-        utcDate = new Date(jobPosting.class_datetime_utc);
-      } 
-      // Opción 2: Fallback usando class_date y start_time
-      else if (jobPosting.class_date && jobPosting.start_time) {
-        console.log('🔄 Fallback: Using class_date + start_time');
-        
-        // Convertir class_date a string si es necesario
-        let classDateStr: string;
-        if (jobPosting.class_date instanceof Date) {
-          classDateStr = jobPosting.class_date.toISOString().split('T')[0];
-        } else if (typeof jobPosting.class_date === 'string') {
-          classDateStr = jobPosting.class_date;
-        } else if (jobPosting.class_date && typeof jobPosting.class_date === 'object' && 'toDate' in jobPosting.class_date) {
-          // Firestore Timestamp
-          classDateStr = (jobPosting.class_date as { toDate(): Date }).toDate().toISOString().split('T')[0];
-        } else {
-          console.log('❌ Cannot parse class_date:', jobPosting.class_date);
-          return '';
-        }
-
-        // Construir datetime string y convertir usando el timezone del job
-        const localDateTimeStr = `${classDateStr}T${jobPosting.start_time}:00`;
-        console.log('🔧 Constructed datetime string:', localDateTimeStr);
-        
-        // Crear fecha asumiendo que está en el timezone del job posting
-        const localDate = new Date(localDateTimeStr);
-        
-        // Usar TimezoneService para convertir a UTC
-        const utcConversion = this.timezoneService.convertToUTC(
-          localDate, 
-          jobPosting.job_timezone,
-          jobPosting.location_country || '',
-          jobPosting.location_state || ''
-        );
-        
-        if (utcConversion) {
-          utcDate = new Date(utcConversion.utc_datetime);
-          console.log('✅ Converted to UTC:', utcDate.toISOString());
-        } else {
-          console.log('❌ Failed to convert to UTC');
-          return '';
-        }
-      } else {
-        console.log('❌ formatJobPostingDateTimes: Missing both class_datetime_utc and class_date/start_time', {
-          hasClassDatetimeUtc: !!jobPosting?.class_datetime_utc,
-          hasClassDate: !!jobPosting?.class_date,
-          hasStartTime: !!jobPosting?.start_time
-        });
-        return '';
-      }
-
-      const jobTimezone = jobPosting.job_timezone;
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-      console.log('🕐 formatJobPostingDateTimes: Processing data', {
-        utcDate: utcDate.toISOString(),
-        jobTimezone,
-        userTimezone
-      });
-
-      // Obtener nombre legible de la zona horaria del job posting
-      const jobTzInfo = this.timezoneService.getTimezonesForLocation(
-        jobPosting.location_country || '',
-        jobPosting.location_state || ''
-      )?.timezone_info.find(tz => tz.timezone === jobTimezone);
-      const jobTzName = jobTzInfo?.display_name || jobTimezone;
-
-      // Obtener nombre legible de la zona horaria local
-      const localTzName = userTimezone;
-
-      // Convertir UTC a hora local del job posting
-      const jobTime = utcDate.toLocaleString('es-ES', { timeZone: jobTimezone });
-      // Convertir UTC a hora local del usuario
-      const localTime = utcDate.toLocaleString('es-ES', { timeZone: userTimezone });
-      
-      const result = `${jobTime} ${jobTzName}<br>(${localTime} ${localTzName})`;
-
-      console.log('✅ formatJobPostingDateTimes: Result', {
-        jobTime,
-        jobTzName,
-        localTime,
-        localTzName,
-        result
-      });
-
-      return result;
+  /**
+   * Devuelve string con la fecha/hora en la zona del job posting y la local del usuario
+   * @deprecated Use FormatJobDateTimePipe instead to avoid infinite loops
+   */
+  formatJobPostingDateTimes(jobPosting: JobPosting): string {
+    // Este método ha sido reemplazado por FormatJobDateTimePipe para evitar ciclos infinitos
+    // Retornamos un valor simple sin procesamiento pesado
+    if (!jobPosting) return 'Fecha por confirmar';
+    
+    // Fallback simple sin logging excesivo
+    if (jobPosting.class_datetime_utc) {
+      const date = new Date(jobPosting.class_datetime_utc);
+      return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES');
     }
+    
+    if (jobPosting.class_date && jobPosting.start_time) {
+      const date = jobPosting.class_date instanceof Date ? jobPosting.class_date : new Date(jobPosting.class_date as string);
+      return date.toLocaleDateString('es-ES') + ' ' + jobPosting.start_time;
+    }
+    
+    return 'Fecha por confirmar';
+  }
   // Estado del componente
   isLoading = false;
   currentUserRole: UserRole | null = null;
@@ -546,6 +457,10 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
            !!jobPosting.assigned_tutor_id;
   }
 
+  canGoToClass(jobPosting: JobPosting): boolean {
+    return jobPosting.status === 'assigned' && !!jobPosting.assigned_tutor_id;
+  }
+
   canAssignTutor(jobPosting: JobPosting): boolean {
     return (this.currentUserRole === 'institution' || this.currentUserRole === 'admin') &&
            jobPosting.status === 'published';
@@ -821,6 +736,35 @@ export class JobPostingsComponent implements OnInit, OnDestroy {
         console.error('Error cancelling job:', error);
         this.showError('Error al cancelar la convocatoria');
         this.isLoading = false;
+      });
+  }
+
+  goToClass(jobPosting: JobPosting): void {
+    if (!this.canGoToClass(jobPosting)) {
+      this.showError('No se puede acceder a la clase en este momento');
+      return;
+    }
+
+    this.isLoading = true;
+    
+    // Buscar la clase asociada a este job posting
+    this.classInstanceService.getClassByJobPostingId(jobPosting.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (classInstance) => {
+          this.isLoading = false;
+          if (classInstance?.id) {
+            // Navegar a la clase
+            this.router.navigate(['/class', classInstance.id]);
+          } else {
+            this.showError('No se encontró la clase asociada a esta convocatoria');
+          }
+        },
+        error: (error) => {
+          console.error('Error al buscar la clase:', error);
+          this.showError('Error al buscar la clase asociada');
+          this.isLoading = false;
+        }
       });
   }
 

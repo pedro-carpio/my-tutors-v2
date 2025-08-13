@@ -19,7 +19,7 @@
             <div class="job-info-grid">
               <div class="info-item">
                 <mat-icon>event</mat-icon>
-                <span [innerHTML]="formatJobPostingDateTimes()"></span>
+                <span [innerHTML]="formattedDateTime"></span>
               </div>
               <div class="info-item">
                 <mat-icon>schedule</mat-icon>
@@ -71,7 +71,7 @@
                     <div class="class-details-grid">
                       <div class="detail-item">
                         <mat-icon>event</mat-icon>
-                        <span [innerHTML]="'<strong>Fecha y hora:</strong> ' + formatJobPostingDateTimes()"></span>
+                        <span [innerHTML]="'<strong>Fecha y hora:</strong> ' + formattedDateTime"></span>
                       </div>
                       <div class="detail-item">
                         <mat-icon>timer</mat-icon>
